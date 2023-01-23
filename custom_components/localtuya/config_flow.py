@@ -255,16 +255,25 @@ async def validate_input(hass: core.HomeAssistant, data):
                 reset_ids,
             )
         try:
+            #If reset dpids set - then assume reset is needed before status.
+            if (reset_ids is not None) and (
+                len(reset_ids) > 0
+            ):
+                self.debug(
+                    "Resetting command for DP IDs: %s",
+                    reset_ids,
+                )
+                #Assume we want to request status updated for the same set of DP_IDs as the reset ones.
+                interface.set_updatedps_list(reset_ids)
+
+                #Reset the interface
+                await interface.reset(reset_ids)
+
+            #Detect any other non-manual DPS strings
             detected_dps = await interface.detect_available_dps()
         except Exception:  # pylint: disable=broad-except
-            try:
-                _LOGGER.debug("Initial state update failed, trying reset command")
-                if len(reset_ids) > 0:
-                    await interface.reset(reset_ids)
-                    detected_dps = await interface.detect_available_dps()
-            except Exception:  # pylint: disable=broad-except
-                _LOGGER.debug("No DPS able to be detected")
-                detected_dps = {}
+            _LOGGER.debug("No DPS able to be detected")
+            detected_dps = {}
 
         # if manual DPs are set, merge these.
         _LOGGER.debug("Detected DPS: %s", detected_dps)
