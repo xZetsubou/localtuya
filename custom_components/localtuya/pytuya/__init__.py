@@ -490,8 +490,11 @@ class MessageDispatcher(ContextualLogger):
             self.debug("Got normal updatedps response")
             if self.RESET_SEQNO in self.listeners:
                 sem = self.listeners[self.RESET_SEQNO]
-                self.listeners[self.RESET_SEQNO] = msg
-                sem.release()
+                if isinstance(sem, asyncio.Semaphore):
+                    self.listeners[self.RESET_SEQNO] = msg
+                    sem.release()
+                else:
+                    self.debug("Got additional updatedps message without request - skipping: %s", sem)
         elif msg.cmd == SESS_KEY_NEG_RESP:
             self.debug("Got key negotiation response")
             if self.SESS_KEY_SEQNO in self.listeners:
@@ -502,6 +505,12 @@ class MessageDispatcher(ContextualLogger):
             if self.RESET_SEQNO in self.listeners:
                 self.debug("Got reset status update")
                 sem = self.listeners[self.RESET_SEQNO]
+                if isinstance(sem, asyncio.Semaphore):
+                    self.listeners[self.RESET_SEQNO] = msg
+                    sem.release()
+                else:
+                    self.debug("Got additional reset message without request - skipping: %s", sem)
+            else:
                 if isinstance(sem, asyncio.Semaphore):
                     self.listeners[self.RESET_SEQNO] = msg
                     sem.release()
