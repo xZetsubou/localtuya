@@ -810,8 +810,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             return await self.exchange(UPDATEDPS, dpIds)
 
         return True
+
     def set_updatedps_list(self, update_list):
-        """Set the DPS to be requested with the update command"""
+        """Set the DPS to be requested with the update command."""
         self.dps_whitelist = update_list
 
     async def update_dps(self, dps=None):
