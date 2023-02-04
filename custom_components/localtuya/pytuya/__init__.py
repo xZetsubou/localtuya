@@ -494,7 +494,10 @@ class MessageDispatcher(ContextualLogger):
                     self.listeners[self.RESET_SEQNO] = msg
                     sem.release()
                 else:
-                    self.debug("Got additional updatedps message without request - skipping: %s", sem)
+                    self.debug(
+                        "Got additional updatedps message without request - skipping: %s",
+                        sem,
+                    )
         elif msg.cmd == SESS_KEY_NEG_RESP:
             self.debug("Got key negotiation response")
             if self.SESS_KEY_SEQNO in self.listeners:
@@ -509,7 +512,10 @@ class MessageDispatcher(ContextualLogger):
                     self.listeners[self.RESET_SEQNO] = msg
                     sem.release()
                 else:
-                    self.debug("Got additional reset message without request - skipping: %s", sem)
+                    self.debug(
+                        "Got additional reset message without request - skipping: %s",
+                        sem,
+                    )
             else:
                 self.debug("Got status update")
                 self.listener(msg)
