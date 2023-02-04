@@ -511,12 +511,6 @@ class MessageDispatcher(ContextualLogger):
                 else:
                     self.debug("Got additional reset message without request - skipping: %s", sem)
             else:
-                if isinstance(sem, asyncio.Semaphore):
-                    self.listeners[self.RESET_SEQNO] = msg
-                    sem.release()
-                else:
-                    self.debug("Got additional reset message without request - skipping: %s", sem)
-            else:
                 self.debug("Got status update")
                 self.listener(msg)
         else:
