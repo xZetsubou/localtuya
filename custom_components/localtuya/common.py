@@ -205,7 +205,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         if self._interface is not None:
             try:
-                #If reset dpids set - then assume reset is needed before status.
+                # If reset dpids set - then assume reset is needed before status.
                 if (self._default_reset_dpids is not None) and (
                     len(self._default_reset_dpids) > 0
                 ):
@@ -213,10 +213,10 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                         "Resetting command for DP IDs: %s",
                         self._default_reset_dpids,
                     )
-                    #Assume we want to request status updated for the same set of DP_IDs as the reset ones.
+                    # Assume we want to request status updated for the same set of DP_IDs as the reset ones.
                     self._interface.set_updatedps_list(self._default_reset_dpids)
 
-                    #Reset the interface
+                    # Reset the interface
                     await self._interface.reset(self._default_reset_dpids)
 
                 self.debug("Retrieving initial state")
@@ -237,9 +237,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                     self._interface = None
 
             except Exception as e:  # pylint: disable=broad-except
-                self.exception(
-                    f"Connect to {self._dev_config_entry[CONF_HOST]} failed"
-                )
+                self.exception(f"Connect to {self._dev_config_entry[CONF_HOST]} failed")
                 if "json.decode" in str(type(e)):
                     await self.update_local_key()
 
