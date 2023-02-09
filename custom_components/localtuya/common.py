@@ -1,6 +1,5 @@
 """Code shared between all platforms."""
 import asyncio
-import json.decoder
 import logging
 import time
 from datetime import timedelta
