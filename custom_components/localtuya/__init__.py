@@ -221,6 +221,7 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
             await hass.config_entries.async_remove(config_entry.entry_id)
     if config_entry.version == 3:
         """ Revert Switch config flow to selectors convert DP IDs from int to str `require HA 2022.4 ` """
+        ignore = ["state_","select_options","select_options_friendly", "dps_default_value"]
         _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
         if config_entry.entry_id == stored_entries[0].entry_id:
             new_data = stored_entries[0].data.copy()
@@ -230,7 +231,7 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
                     for _ent in new_data[CONF_DEVICES][device][CONF_ENTITIES]:
                         ent_items = {}
                         for k, v in _ent.items():
-                            ent_items[k] = int(v) if type(v) == type("r") and v.isdigit() else v
+                            ent_items[k] = int(v) if type(v) == type("r") and not any(k in i for i in ignore) and v.isdigit() else v
                         new_data[CONF_DEVICES][device][CONF_ENTITIES][i].update(ent_items)
                         i = i + 1
             config_entry.version = new_version
