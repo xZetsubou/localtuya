@@ -2,7 +2,6 @@
 import asyncio
 import logging
 from functools import partial
-from .config_flow import _col_to_select
 
 import voluptuous as vol
 from homeassistant.components.climate import (
@@ -120,28 +119,28 @@ MODE_WAIT = 0.1
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_TARGET_TEMPERATURE_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_CURRENT_TEMPERATURE_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_TEMPERATURE_STEP): _col_to_select(
+        vol.Optional(CONF_TARGET_TEMPERATURE_DP): vol.In(dps),
+        vol.Optional(CONF_CURRENT_TEMPERATURE_DP): vol.In(dps),
+        vol.Optional(CONF_TEMPERATURE_STEP): vol.In(
             [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
-        vol.Optional(CONF_MAX_TEMP_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_MIN_TEMP_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_PRECISION): _col_to_select(
+        vol.Optional(CONF_MAX_TEMP_DP): vol.In(dps),
+        vol.Optional(CONF_MIN_TEMP_DP): vol.In(dps),
+        vol.Optional(CONF_PRECISION): vol.In(
             [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
-        vol.Optional(CONF_HVAC_MODE_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_HVAC_MODE_SET): _col_to_select(list(HVAC_MODE_SETS.keys())),
-        vol.Optional(CONF_HVAC_ACTION_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_HVAC_ACTION_SET): _col_to_select(list(HVAC_ACTION_SETS.keys())),
-        vol.Optional(CONF_ECO_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_HVAC_MODE_DP): vol.In(dps),
+        vol.Optional(CONF_HVAC_MODE_SET): vol.In(list(HVAC_MODE_SETS.keys())),
+        vol.Optional(CONF_HVAC_ACTION_DP): vol.In(dps),
+        vol.Optional(CONF_HVAC_ACTION_SET): vol.In(list(HVAC_ACTION_SETS.keys())),
+        vol.Optional(CONF_ECO_DP): vol.In(dps),
         vol.Optional(CONF_ECO_VALUE): str,
-        vol.Optional(CONF_PRESET_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_PRESET_SET): _col_to_select(list(PRESET_SETS.keys())),
-        vol.Optional(CONF_TEMPERATURE_UNIT): _col_to_select(
+        vol.Optional(CONF_PRESET_DP): vol.In(dps),
+        vol.Optional(CONF_PRESET_SET): vol.In(list(PRESET_SETS.keys())),
+        vol.Optional(CONF_TEMPERATURE_UNIT): vol.In(
             [TEMPERATURE_CELSIUS, TEMPERATURE_FAHRENHEIT]
         ),
-        vol.Optional(CONF_TARGET_PRECISION): _col_to_select(
+        vol.Optional(CONF_TARGET_PRECISION): vol.In(
             [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
         vol.Optional(CONF_HEURISTIC_ACTION): bool,

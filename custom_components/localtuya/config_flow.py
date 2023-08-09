@@ -75,7 +75,7 @@ def _col_to_select(opt_list: dict, multi_select = False, is_dps = False):
             ))
 
 
-ENTRIES_VERSION = 3
+ENTRIES_VERSION = 2
 
 PLATFORM_TO_ADD = "platform_to_add"
 NO_ADDITIONAL_ENTITIES = "no_additional_entities"

@@ -1,7 +1,6 @@
 """Platform to locally control Tuya-based switch devices."""
 import logging
 from functools import partial
-from .config_flow import _col_to_select
 
 import voluptuous as vol
 from homeassistant.components.switch import DOMAIN, SwitchEntity
@@ -26,9 +25,9 @@ _LOGGER = logging.getLogger(__name__)
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_CURRENT): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_CURRENT_CONSUMPTION): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_VOLTAGE): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_CURRENT): vol.In(dps),
+        vol.Optional(CONF_CURRENT_CONSUMPTION): vol.In(dps),
+        vol.Optional(CONF_VOLTAGE): vol.In(dps),
         vol.Required(CONF_RESTORE_ON_RECONNECT): bool,
         vol.Required(CONF_PASSIVE_ENTITY): bool,
         vol.Optional(CONF_DEFAULT_VALUE): str,
