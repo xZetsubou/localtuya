@@ -279,7 +279,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             self._last_state = self._state
 
     def update_state(self, action, position=None):
-        """update cover current states"""
+        """Update cover current states."""
         state = self._current_state_action
         # using Commands.
         if position is None:
