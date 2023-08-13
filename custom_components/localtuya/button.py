@@ -36,7 +36,7 @@ class LocaltuyaButton(LocalTuyaEntity, ButtonEntity):
         _LOGGER.debug("Initialized button [%s]", self.name)
 
     async def async_press(self):
-        """Press the button"""
+        """Press the button."""
         await self._device.set_dp(True, self._dp_id)
 
 
