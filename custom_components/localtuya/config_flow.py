@@ -6,6 +6,7 @@ from importlib import import_module
 
 
 import homeassistant.helpers.config_validation as cv
+
 # import homeassistant.helpers.entity_registry as er # Disabled it because no need to delete registry.
 import voluptuous as vol
 from homeassistant import config_entries, core, exceptions
@@ -82,7 +83,7 @@ def _col_to_select(opt_list: dict, multi_select=False, is_dps=False):
             SelectSelectorConfig(
                 options=[
                     SelectOptionDict(
-                        value=str(kv).split(" ")[0] if is_dps else str(l),
+                        value=str(kv).split(" ")[0] if is_dps else str(kv),
                         label=str(kv),
                     )
                     for kv in opt_list
