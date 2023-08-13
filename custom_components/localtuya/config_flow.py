@@ -89,7 +89,7 @@ def _col_to_select(opt_list: dict, multi_select=False, is_dps=False):
                     for kv in opt_list
                 ],
                 mode=SelectSelectorMode.DROPDOWN,
-                multiple=True if multi_select == True else False,
+                multiple=True if multi_select else False,
             )
         )
 
