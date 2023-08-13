@@ -20,7 +20,6 @@ PLATFORMS = [
     "switch",
     "vacuum",
 ]
-
 TUYA_DEVICES = "tuya_devices"
 
 ATTR_CURRENT = "current"
@@ -49,7 +48,6 @@ CONF_MANUAL_DPS = "manual_dps_strings"
 CONF_DEFAULT_VALUE = "dps_default_value"
 CONF_RESET_DPIDS = "reset_dpids"
 CONF_PASSIVE_ENTITY = "is_passive_entity"
-CONF_CATEGORY_ENTITY = "device_category"
 
 # light
 CONF_BRIGHTNESS_LOWER = "brightness_lower"
@@ -142,14 +140,14 @@ CONF_RESTORE_ON_RECONNECT = "restore_on_reconnect"
 
 # Categories
 ENTITY_CATEGORY = {
-    "Controls" : None,
-    "Configuration" : EntityCategory.CONFIG,
-    "Diagnostic" : EntityCategory.DIAGNOSTIC
+    "Controls": None,
+    "Configuration": EntityCategory.CONFIG,
+    "Diagnostic": EntityCategory.DIAGNOSTIC,
 }
 
 # Default Categories
 DEFAULT_CATEGORIES = {
-    "CONTROL" : ['switch', 'climate','fan','vacuum','light'],
-    "CONFIG" : ['select','number','button'],
-    "DIAGNOSTIC" : ['sensor','binary_sensor']
+    "CONTROL": ["switch", "climate", "fan", "vacuum", "light"],
+    "CONFIG": ["select", "number", "button"],
+    "DIAGNOSTIC": ["sensor", "binary_sensor"],
 }
