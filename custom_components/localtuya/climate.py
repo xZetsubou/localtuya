@@ -131,7 +131,9 @@ def flow_schema(dps):
             [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
         vol.Optional(CONF_HVAC_MODE_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_HVAC_MODE_SET): _col_to_select(list(HVAC_MODE_SETS.keys())),
+        vol.Optional(CONF_HVAC_MODE_SET): _col_to_select(
+        list(HVAC_MODE_SETS.keys())
+        ),
         vol.Optional(CONF_HVAC_ACTION_DP): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_HVAC_ACTION_SET): _col_to_select(list(HVAC_ACTION_SETS.keys())),
         vol.Optional(CONF_ECO_DP): _col_to_select(dps, is_dps=True),
