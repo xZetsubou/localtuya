@@ -6,7 +6,7 @@ from importlib import import_module
 
 
 import homeassistant.helpers.config_validation as cv
-import homeassistant.helpers.entity_registry as er
+# import homeassistant.helpers.entity_registry as er # Disabled it because no need to delete registry.
 import voluptuous as vol
 from homeassistant import config_entries, core, exceptions
 from homeassistant.helpers.selector import (
@@ -71,7 +71,7 @@ def _col_to_select(opt_list: dict, multi_select=False, is_dps=False):
         return SelectSelector(
             SelectSelectorConfig(
                 options=[
-                    SelectOptionDict(value=str(k), label=l) for l, k in opt_list.items()
+                    SelectOptionDict(value=str(v), label=k) for k, v in opt_list.items()
                 ],
                 mode=SelectSelectorMode.DROPDOWN,
             )
@@ -82,10 +82,10 @@ def _col_to_select(opt_list: dict, multi_select=False, is_dps=False):
             SelectSelectorConfig(
                 options=[
                     SelectOptionDict(
-                        value=str(l).split(" ")[0] if is_dps == True else str(l),
-                        label=str(l),
+                        value=str(kv).split(" ")[0] if is_dps else str(l),
+                        label=str(kv),
                     )
-                    for l in opt_list
+                    for kv in opt_list
                 ],
                 mode=SelectSelectorMode.DROPDOWN,
                 multiple=True if multi_select == True else False,
@@ -823,7 +823,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     # finished editing device. Let's store the new config entry....
                     dev_id = self.device_data[CONF_DEVICE_ID]
                     new_data = self.config_entry.data.copy()
-                    entry_id = self.config_entry.entry_id
+                    # entry_id = self.config_entry.entry_id
                     # removing entities from registry (they will be recreated)
                     # ent_reg = er.async_get(self.hass)
                     # reg_entities = {
