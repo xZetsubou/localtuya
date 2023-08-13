@@ -9,7 +9,12 @@ import homeassistant.helpers.config_validation as cv
 import homeassistant.helpers.entity_registry as er
 import voluptuous as vol
 from homeassistant import config_entries, core, exceptions
-from homeassistant.helpers.selector import SelectSelector, SelectSelectorConfig, SelectSelectorMode, SelectOptionDict
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+    SelectOptionDict,
+)
 from homeassistant.const import (
     CONF_CLIENT_ID,
     CONF_CLIENT_SECRET,
@@ -59,20 +64,33 @@ from .discovery import discover
 
 _LOGGER = logging.getLogger(__name__)
 
-def _col_to_select(opt_list: dict, multi_select = False, is_dps = False):
+
+def _col_to_select(opt_list: dict, multi_select=False, is_dps=False):
     """Convert collections to SelectSelectorConfig."""
     if type(opt_list) == dict:
-        return SelectSelector(SelectSelectorConfig(
-            options=[SelectOptionDict(value=str(k), label=l) for l, k in opt_list.items()],
-            mode=SelectSelectorMode.DROPDOWN,
-        ))
+        return SelectSelector(
+            SelectSelectorConfig(
+                options=[
+                    SelectOptionDict(value=str(k), label=l) for l, k in opt_list.items()
+                ],
+                mode=SelectSelectorMode.DROPDOWN,
+            )
+        )
     elif type(opt_list) == list:
-            # value used the same method as func available_dps_string, no spaces values.
-            return SelectSelector(SelectSelectorConfig(
-                options=[SelectOptionDict(value=str(l).split(' ')[0] if is_dps == True else str(l)
-                                        , label=str(l)) for l in opt_list],
-                mode=SelectSelectorMode.DROPDOWN, multiple = True if multi_select == True else False,
-            ))
+        # value used the same method as func available_dps_string, no spaces values.
+        return SelectSelector(
+            SelectSelectorConfig(
+                options=[
+                    SelectOptionDict(
+                        value=str(l).split(" ")[0] if is_dps == True else str(l),
+                        label=str(l),
+                    )
+                    for l in opt_list
+                ],
+                mode=SelectSelectorMode.DROPDOWN,
+                multiple=True if multi_select == True else False,
+            )
+        )
 
 
 ENTRIES_VERSION = 3
@@ -81,7 +99,7 @@ PLATFORM_TO_ADD = "platform_to_add"
 NO_ADDITIONAL_ENTITIES = "no_additional_entities"
 SELECTED_DEVICE = "selected_device"
 
-CUSTOM_DEVICE = {"Add custom device" : "..."}
+CUSTOM_DEVICE = {"Add custom device": "..."}
 
 CONF_ACTIONS = {
     CONF_ADD_DEVICE: "Add a new device",
@@ -97,7 +115,9 @@ CONFIGURE_SCHEMA = vol.Schema(
 
 CLOUD_SETUP_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_REGION, default="eu"): _col_to_select(["eu", "us", "cn", "in"]),
+        vol.Required(CONF_REGION, default="eu"): _col_to_select(
+            ["eu", "us", "cn", "in"]
+        ),
         vol.Optional(CONF_CLIENT_ID): cv.string,
         vol.Optional(CONF_CLIENT_SECRET): cv.string,
         vol.Optional(CONF_USER_ID): cv.string,
@@ -127,6 +147,7 @@ PICK_ENTITY_SCHEMA = vol.Schema(
     {vol.Required(PLATFORM_TO_ADD, default="switch"): _col_to_select(PLATFORMS)}
 )
 
+
 def devices_schema(discovered_devices, cloud_devices_list, add_custom_device=True):
     """Create schema for devices step."""
     devices = {}
@@ -145,7 +166,13 @@ def devices_schema(discovered_devices, cloud_devices_list, add_custom_device=Tru
     #         for ent in entries
     #     }
     # )
-    return vol.Schema({vol.Required(SELECTED_DEVICE, default=list(devices.values())[0]): _col_to_select(devices)})
+    return vol.Schema(
+        {
+            vol.Required(
+                SELECTED_DEVICE, default=list(devices.values())[0]
+            ): _col_to_select(devices)
+        }
+    )
 
 
 def options_schema(entities):
@@ -167,7 +194,8 @@ def options_schema(entities):
             vol.Optional(CONF_RESET_DPIDS): cv.string,
             vol.Required(
                 CONF_ENTITIES, description={"suggested_value": entity_names}
-            ): cv.multi_select(entity_names),# _col_to_select(entity_names, multi_select=True)
+            ): cv.multi_select(entity_names),
+            # _col_to_select(entity_names, multi_select=True)
             vol.Required(CONF_ENABLE_ADD_ENTITIES, default=False): bool,
         }
     )
@@ -219,8 +247,11 @@ def platform_schema(platform, dps_strings, allow_id=True, yaml=False):
     if allow_id:
         schema[vol.Required(CONF_ID)] = _col_to_select(dps_strings, is_dps=True)
     schema[vol.Required(CONF_FRIENDLY_NAME)] = str
-    schema[vol.Required(CONF_CATEGORY_ENTITY, default=str(default_category(platform)))] = _col_to_select(ENTITY_CATEGORY)
+    schema[
+        vol.Required(CONF_CATEGORY_ENTITY, default=str(default_category(platform)))
+    ] = _col_to_select(ENTITY_CATEGORY)
     return vol.Schema(schema).extend(flow_schema(platform, dps_strings))
+
 
 def default_category(_platform):
     """Auto Select default category depends on the platform"""
@@ -229,9 +260,10 @@ def default_category(_platform):
     elif any(_platform in i for i in DEFAULT_CATEGORIES["CONFIG"]):
         return EntityCategory.CONFIG
     elif any(_platform in i for i in DEFAULT_CATEGORIES["DIAGNOSTIC"]):
-        return  EntityCategory.DIAGNOSTIC
+        return EntityCategory.DIAGNOSTIC
     else:
         return str(None)
+
 
 def flow_schema(platform, dps_strings):
     """Return flow schema for a specific platform."""
