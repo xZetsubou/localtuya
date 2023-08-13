@@ -230,7 +230,7 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
                     for _ent in new_data[CONF_DEVICES][device][CONF_ENTITIES]:
                         ent_items = {}
                         for k, v in _ent.items():
-                            ent_items[k] = str(v) if type(v) == type(1) else v
+                            ent_items[k] = str(v) if isinstance(v, int) else v
                         new_data[CONF_DEVICES][device][CONF_ENTITIES][i].update(
                             ent_items
                         )
