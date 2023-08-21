@@ -481,6 +481,8 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         #     return self.async_abort(reason="already_configured")
 
         await self.async_set_unique_id(user_input.get(CONF_USER_ID))
+        self._abort_if_unique_id_configured()
+
         user_input[CONF_DEVICES] = {}
 
         return self.async_create_entry(
