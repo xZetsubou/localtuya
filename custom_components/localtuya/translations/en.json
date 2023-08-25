@@ -63,7 +63,7 @@
             },
             "add_device": {
                 "title": "Add a new device",
-                "description": "Pick one of the automatically discovered devices or `...` to manually to add a device.",
+                "description": "Pick one of the automatically discovered devices or `Add Device Manually`.",
                 "data": {
                     "selected_device": "Discovered Devices"
                 }
