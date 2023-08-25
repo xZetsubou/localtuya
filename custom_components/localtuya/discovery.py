@@ -1,6 +1,6 @@
 """Discovery module for Tuya devices.
 
-Entirely based on tuya-convert.py from tuya-convert:
+based on tuya-convert.py from tuya-convert:
 
 https://github.com/ct-Open-Source/tuya-convert/blob/master/scripts/tuya-discovery.py
 """
@@ -11,23 +11,44 @@ from hashlib import md5
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from Crypto.Cipher import AES
 
 _LOGGER = logging.getLogger(__name__)
 
 UDP_KEY = md5(b"yGAdlopoPVldABfn").digest()
 
+PREFIX_55AA_BIN = b"\x00\x00U\xaa"
+PREFIX_6699_BIN = b"\x00\x00\x66\x99"
+
 DEFAULT_TIMEOUT = 6.0
+
+
+def decrypt(msg, key):
+    def _unpad(data):
+        return data[: -ord(data[len(data) - 1 :])]
+
+    return _unpad(AES.new(key, AES.MODE_ECB).decrypt(msg)).decode()
+
+
+def decrypt_gcm(msg, key):
+    nonce = msg[:12]
+    return AES.new(key, AES.MODE_GCM, nonce=nonce).decrypt(msg[12:]).decode()
 
 
 def decrypt_udp(message):
     """Decrypt encrypted UDP broadcasts."""
-
-    def _unpad(data):
-        return data[: -ord(data[len(data) - 1 :])]
-
-    cipher = Cipher(algorithms.AES(UDP_KEY), modes.ECB(), default_backend())
-    decryptor = cipher.decryptor()
-    return _unpad(decryptor.update(message) + decryptor.finalize()).decode()
+    if message[:4] == PREFIX_55AA_BIN:
+        return decrypt(message[20:-8], UDP_KEY)
+    if message[:4] == PREFIX_6699_BIN:
+        unpacked = decrypt_gcm(message, hmac_key=UDP_KEY)
+        # strip return code if present
+        if unpacked[:4] == (chr(0) * 4):
+            unpacked = unpacked[4:]
+        # app sometimes has extra bytes at the end
+        while unpacked[-1] == chr(0):
+            unpacked = unpacked[:-1]
+        return unpacked
+    return decrypt(message, UDP_KEY)
 
 
 class TuyaDiscovery(asyncio.DatagramProtocol):
@@ -43,14 +64,19 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
         """Start discovery by listening to broadcasts."""
         loop = asyncio.get_running_loop()
         listener = loop.create_datagram_endpoint(
-            lambda: self, local_addr=("0.0.0.0", 6666)
+            lambda: self, local_addr=("0.0.0.0", 6666), reuse_port=True
         )
         encrypted_listener = loop.create_datagram_endpoint(
-            lambda: self, local_addr=("0.0.0.0", 6667)
+            lambda: self, local_addr=("0.0.0.0", 6667), reuse_port=True
+        )
+        tuyaApp_encrypted_listener = loop.create_datagram_endpoint(
+            lambda: self, local_addr=("0.0.0.0", 7000), reuse_port=True
         )
 
-        self._listeners = await asyncio.gather(listener, encrypted_listener)
-        _LOGGER.debug("Listening to broadcasts on UDP port 6666 and 6667")
+        self._listeners = await asyncio.gather(
+            listener, encrypted_listener, tuyaApp_encrypted_listener
+        )
+        _LOGGER.debug("Listening to broadcasts on UDP port 6666, 6667 and 7000")
 
     def close(self):
         """Stop discovery."""
@@ -65,7 +91,6 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
             data = decrypt_udp(data)
         except Exception:  # pylint: disable=broad-except
             data = data.decode()
-
         decoded = json.loads(data)
         self.device_found(decoded)
 
@@ -74,7 +99,6 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
         if device.get("gwId") not in self.devices:
             self.devices[device.get("gwId")] = device
             _LOGGER.debug("Discovered device: %s", device)
-
         if self._callback:
             self._callback(device)
 
