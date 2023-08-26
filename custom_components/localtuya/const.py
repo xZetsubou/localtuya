@@ -6,6 +6,9 @@ DOMAIN = "localtuya"
 DATA_DISCOVERY = "discovery"
 DATA_CLOUD = "cloud_data"
 
+# Order on priority
+SUPPORTED_PROTOCOL_VERSIONS = ["3.3", "3.1", "3.2", "3.4", "3.5"]
+
 # Platforms in this list must support config flows
 PLATFORMS = [
     "binary_sensor",
