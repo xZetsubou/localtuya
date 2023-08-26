@@ -63,7 +63,7 @@
             },
             "add_device": {
                 "title": "Add a new device",
-                "description": "Pick one of the automatically discovered devices or `Add Device Manually`.",
+                "description": "Pick one of the automatically discovered devices or Add Device Manually.",
                 "data": {
                     "selected_device": "Discovered Devices"
                 }
@@ -95,6 +95,7 @@
                     "host": "Host",
                     "device_id": "Device ID",
                     "local_key": "Local key",
+                    "node_id": "CID Only for sub devices",
                     "protocol_version": "Protocol Version",
                     "enable_debug": "Enable debugging for this device (debug must be enabled also in configuration.yaml)",
                     "scan_interval": "Scan interval (seconds, only when not updating automatically)",
