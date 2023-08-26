@@ -30,6 +30,11 @@ ATTR_CURRENT_CONSUMPTION = "current_consumption"
 ATTR_VOLTAGE = "voltage"
 ATTR_UPDATED_AT = "updated_at"
 
+# Tuya Devices
+CONF_TUYA_IP = "ip"
+CONF_TUYA_GWID = "gwId"
+CONF_TUYA_VERSION = "version"
+
 # config flow
 CONF_LOCAL_KEY = "local_key"
 CONF_ENABLE_DEBUG = "enable_debug"
