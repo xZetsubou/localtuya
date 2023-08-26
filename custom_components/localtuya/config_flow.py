@@ -62,6 +62,7 @@ from .const import (
     PLATFORMS,
     ENTITY_CATEGORY,
     DEFAULT_CATEGORIES,
+    SUPPORTED_PROTOCOL_VERSIONS,
 )
 from .discovery import discover
 
@@ -105,7 +106,7 @@ NO_ADDITIONAL_ENTITIES = "no_additional_entities"
 SELECTED_DEVICE = "selected_device"
 EXPORT_CONFIG = "export_config"
 
-CUSTOM_DEVICE = {"Add custom device": "..."}
+CUSTOM_DEVICE = {"Add Device Manually": "..."}
 
 CONF_ACTIONS = {
     CONF_ADD_DEVICE: "Add a new device",
@@ -139,8 +140,8 @@ DEVICE_SCHEMA = vol.Schema(
         vol.Required(CONF_HOST): cv.string,
         vol.Required(CONF_DEVICE_ID): cv.string,
         vol.Required(CONF_LOCAL_KEY): cv.string,
-        vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): _col_to_select(
-            ["3.1", "3.2", "3.3", "3.4"]
+        vol.Required(CONF_PROTOCOL_VERSION, default="auto"): _col_to_select(
+            ["auto"] + sorted(SUPPORTED_PROTOCOL_VERSIONS)
         ),
         vol.Required(CONF_ENABLE_DEBUG, default=False): bool,
         vol.Optional(CONF_SCAN_INTERVAL): int,
@@ -203,7 +204,7 @@ def options_schema(entities):
             vol.Required(CONF_HOST): cv.string,
             vol.Required(CONF_LOCAL_KEY): cv.string,
             vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): _col_to_select(
-                ["3.1", "3.2", "3.3", "3.4"]
+                sorted(SUPPORTED_PROTOCOL_VERSIONS)
             ),
             vol.Required(CONF_ENABLE_DEBUG, default=False): bool,
             vol.Optional(CONF_SCAN_INTERVAL): int,
@@ -328,13 +329,29 @@ async def validate_input(hass: core.HomeAssistant, data):
 
     reset_ids = None
     try:
-        interface = await pytuya.connect(
-            data[CONF_HOST],
-            data[CONF_DEVICE_ID],
-            data[CONF_LOCAL_KEY],
-            float(data[CONF_PROTOCOL_VERSION]),
-            data[CONF_ENABLE_DEBUG],
-        )
+        conf_protocol = data[CONF_PROTOCOL_VERSION]
+        auto_protocol = conf_protocol == "auto"
+        # If 'auto' will be loop through supported protocols.
+        for ver in SUPPORTED_PROTOCOL_VERSIONS:
+            version = ver if auto_protocol else conf_protocol
+            interface = await pytuya.connect(
+                address=data[CONF_HOST],
+                device_id=data[CONF_DEVICE_ID],
+                local_key=data[CONF_LOCAL_KEY],
+                protocol_version=float(version),
+                enable_debug=data[CONF_ENABLE_DEBUG],
+            )
+            # Break the loop if input isn't auto.
+            if not auto_protocol:
+                break
+
+            detected_dps = await interface.detect_available_dps()
+            # If Auto: using DPS detected we will assume this is the correct version if dps found.
+            if len(detected_dps) > 0:
+                # Set the conf_protocol to the worked version to return it and update self.device_data.
+                conf_protocol = version
+                break
+
         if CONF_RESET_DPIDS in data:
             reset_ids_str = data[CONF_RESET_DPIDS].split(",")
             reset_ids = []
@@ -406,7 +423,10 @@ async def validate_input(hass: core.HomeAssistant, data):
                 cloud_dp_codes.update(
                     {str(e["dp_id"]): e["code"] for e in cloud_device_specs[category]}
                 )
-    return dps_string_list(detected_dps, cloud_dp_codes)
+    return {
+        CONF_DPS_STRINGS: dps_string_list(detected_dps, cloud_dp_codes),
+        CONF_PROTOCOL_VERSION: conf_protocol,
+    }
 
 
 async def attempt_cloud_connection(hass, user_input):
@@ -589,7 +609,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         self.selected_device = None
         errors = {}
         if user_input is not None:
-            if user_input[SELECTED_DEVICE] != CUSTOM_DEVICE["Add custom device"]:
+            if user_input[SELECTED_DEVICE] != CUSTOM_DEVICE["Add Device Manually"]:
                 self.selected_device = user_input[SELECTED_DEVICE]
 
             return await self.async_step_configure_device()
@@ -713,7 +733,12 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         ]
                         return await self.async_step_configure_entity()
 
-                self.dps_strings = await validate_input(self.hass, user_input)
+                valid_data = await validate_input(self.hass, user_input)
+                self.dps_strings = valid_data[CONF_DPS_STRINGS]
+                # We will also get protocol version from valid date in case auto used.
+                self.device_data[CONF_PROTOCOL_VERSION] = valid_data[
+                    CONF_PROTOCOL_VERSION
+                ]
                 return await self.async_step_pick_entity_type()
             except CannotConnect:
                 errors["base"] = "cannot_connect"
@@ -749,7 +774,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             defaults[CONF_ENABLE_ADD_ENTITIES] = False
             schema = schema_defaults(options_schema(self.entities), **defaults)
         else:
-            defaults[CONF_PROTOCOL_VERSION] = "3.3"
+            defaults[CONF_PROTOCOL_VERSION] = "auto"
             defaults[CONF_HOST] = ""
             defaults[CONF_DEVICE_ID] = ""
             defaults[CONF_LOCAL_KEY] = ""
