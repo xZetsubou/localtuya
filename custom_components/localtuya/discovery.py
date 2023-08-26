@@ -1,8 +1,9 @@
 """Discovery module for Tuya devices.
 
 based on tuya-convert.py from tuya-convert:
+    https://github.com/ct-Open-Source/tuya-convert/blob/master/scripts/tuya-discovery.py
 
-https://github.com/ct-Open-Source/tuya-convert/blob/master/scripts/tuya-discovery.py
+Maintained by @xZetsubou
 """
 import asyncio
 import json
@@ -17,6 +18,7 @@ _LOGGER = logging.getLogger(__name__)
 
 UDP_KEY = md5(b"yGAdlopoPVldABfn").digest()
 
+PERFIX_APP_BROADCAST = b"\x00\x00f\x99\x00"
 PREFIX_55AA_BIN = b"\x00\x00U\xaa"
 PREFIX_6699_BIN = b"\x00\x00\x66\x99"
 
@@ -86,13 +88,18 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
 
     def datagram_received(self, data, addr):
         """Handle received broadcast message."""
-        data = data[20:-8]
         try:
-            data = decrypt_udp(data)
-        except Exception:  # pylint: disable=broad-except
-            data = data.decode()
-        decoded = json.loads(data)
-        self.device_found(decoded)
+            try:
+                data = decrypt_udp(data)
+            except Exception:  # pylint: disable=broad-except
+                data = data.decode()
+            decoded = json.loads(data)
+            self.device_found(decoded)
+        except:
+            if data[:5] == PERFIX_APP_BROADCAST:
+                _LOGGER.debug("Broadcast from app at ip: %s", addr[0])
+            else:
+                _LOGGER.debug("Failed to decode broadcast from %r: %r", addr[0], data)
 
     def device_found(self, device):
         """Discover a new device."""
