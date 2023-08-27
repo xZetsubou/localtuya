@@ -747,15 +747,16 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                             CONF_PRODUCT_NAME
                         )
                 if self.editing_device:
-                    _config = self.config_entry.data[CONF_DEVICES][dev_id].copy()
+                    dev_config = {}
                     if user_input.get(EXPORT_CONFIG):
+                        dev_config = self.config_entry.data[CONF_DEVICES][dev_id].copy()
                         export_tuya_config(
-                            _config, self.device_data[CONF_FRIENDLY_NAME]
+                            dev_config, self.device_data[CONF_FRIENDLY_NAME]
                         )
                         return self.async_create_entry(title="", data={})
                     # We will restore device-Model if it's already existed!
-                    if _config.get(CONF_MODEL):
-                        self.device_data[CONF_MODEL] = _config.get(CONF_MODEL)
+                    if dev_config.get(CONF_MODEL):
+                        self.device_data[CONF_MODEL] = dev_config.get(CONF_MODEL)
                     if user_input[CONF_ENABLE_ADD_ENTITIES]:
                         self.editing_device = False
                         user_input[CONF_DEVICE_ID] = dev_id
@@ -830,11 +831,11 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             )
             self.nodeID = defaults.get(CONF_NODE_ID, None)
             cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
-            placeholders = {"for_device": f" for device `{dev_id}`"}
+            placeholders["for_device"] = f" for device `{dev_id}`"
             if self.nodeID:
-                placeholders = {
-                    "for_device": f" for sub-device `{dev_id}.\nNodeID {self.nodeID}`"
-                }
+                placeholders.update(
+                    {"for_device": f"for Sub-Device `{dev_id}.NodeID {self.nodeID}`"}
+                )
             if dev_id in cloud_devs:
                 cloud_local_key = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
                 if defaults[CONF_LOCAL_KEY] != cloud_local_key:
