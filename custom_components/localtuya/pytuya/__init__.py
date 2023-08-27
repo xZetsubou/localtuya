@@ -1393,7 +1393,7 @@ async def connect(
     node_id=None,
     listener=None,
     port=6668,
-    timeout=5,
+    timeout=8,
 ):
     """Connect to a device."""
     loop = asyncio.get_running_loop()
