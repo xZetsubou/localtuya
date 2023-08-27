@@ -180,7 +180,6 @@ def devices_schema(
         # when editing devices get INFOS from stored!.
         if not add_custom_device and dev_id in extra_infos.keys():
             dev_name = extra_infos[dev_id].get(CONF_FRIENDLY_NAME, dev_id)
-            _LOGGER.debug("THIS NEW DEV_NAME: %s", dev_name)
         elif dev_id in cloud_devices_list.keys():
             dev_name = cloud_devices_list[dev_id][CONF_NAME]
         devices[f"{dev_name} ({dev_host})"] = dev_id
