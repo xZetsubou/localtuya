@@ -220,6 +220,7 @@ def mergeDevicesList(devList, cloudList, addSubDevices=True):
             if not addSubDevices:
                 newList[f"Sub Device"] = _devID
             else:
+                # Create a data [cloud and local gateway] to merge it with discovered devices.
                 local_GW = devList[gateway[0].get(CONF_ID)]
                 dev_data = {
                     _devID: {
