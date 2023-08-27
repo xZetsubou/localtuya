@@ -31,6 +31,7 @@ from .const import (
     ATTR_UPDATED_AT,
     CONF_DEFAULT_VALUE,
     CONF_ENABLE_DEBUG,
+    CONF_NODE_ID,
     CONF_LOCAL_KEY,
     CONF_MODEL,
     CONF_PASSIVE_ENTITY,
@@ -83,7 +84,6 @@ async def async_setup_entry(
         ]
 
         if entities_to_setup:
-
             tuyainterface = hass.data[DOMAIN][TUYA_DEVICES][dev_id]
 
             dps_config_fields = list(get_dps_for_platform(flow_schema))
@@ -194,6 +194,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self._local_key,
                 float(self._dev_config_entry[CONF_PROTOCOL_VERSION]),
                 self._dev_config_entry.get(CONF_ENABLE_DEBUG, False),
+                self._dev_config_entry.get(CONF_NODE_ID, None),
                 self,
             )
             self._interface.add_dps_to_request(self.dps_to_request)
