@@ -1129,9 +1129,17 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         try:
             json_payload = json.loads(payload)
         except Exception as ex:
-            raise DecodeError(
-                "could not decrypt data: wrong local_key? (exception: %s)" % ex
-            )
+            if len(payload) == 0:  # No respones probably worng Local_Key
+                raise ValueError("Connected but no respones localkey is incorrect?")
+            if "devid not" in payload:  # DeviceID Not found.
+                if self.node_id:
+                    raise ValueError("Node_ID is incorrect!")
+                else:
+                    raise ValueError("DeviceID Not found")
+            else:
+                raise DecodeError(
+                    "could not decrypt data: wrong local_key? (exception: %s)" % ex
+                )
             # json_payload = self.error_json(ERR_JSON, payload)
 
         # v3.4 stuffs it into {"data":{"dps":{"1":true}}, ...}
