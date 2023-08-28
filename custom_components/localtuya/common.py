@@ -42,6 +42,7 @@ from .const import (
     DOMAIN,
     TUYA_DEVICES,
     DEFAULT_CATEGORIES,
+    ENTITY_CATEGORY,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -486,13 +487,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         """Return the category of the entity."""
         if self.has_config(CONF_ENTITY_CATEGORY):
             category = self._config[CONF_ENTITY_CATEGORY]
-            if EntityCategory.CONFIG in category:
-                category = EntityCategory.CONFIG
-            elif EntityCategory.DIAGNOSTIC in category:
-                category = EntityCategory.DIAGNOSTIC
-            else:
-                category = None
-            return category
+            return ENTITY_CATEGORY.get(category, None)
         else:
             # Set Default values for unconfigured devices.
             if self.has_config(CONF_PLATFORM):
@@ -503,7 +498,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
                 from .config_flow import default_category
 
                 return default_category(platform)
-            return None
+        return None
 
     def dps(self, dp_index):
         """Return cached value for DPS index."""
