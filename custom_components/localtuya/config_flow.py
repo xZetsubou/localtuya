@@ -4,7 +4,7 @@ import logging
 import time
 from importlib import import_module
 
-from .helpers.templates import create_tuya_config, export_tuya_config, list_templates
+from .helpers import templates, _col_to_select
 
 import homeassistant.helpers.config_validation as cv
 
@@ -71,35 +71,6 @@ from .discovery import discover
 
 _LOGGER = logging.getLogger(__name__)
 
-
-def _col_to_select(opt_list: dict, multi_select=False, is_dps=False):
-    """Convert collections to SelectSelectorConfig."""
-    if type(opt_list) == dict:
-        return SelectSelector(
-            SelectSelectorConfig(
-                options=[
-                    SelectOptionDict(value=str(v), label=k) for k, v in opt_list.items()
-                ],
-                mode=SelectSelectorMode.DROPDOWN,
-            )
-        )
-    elif type(opt_list) == list:
-        # value used the same method as func available_dps_string, no spaces values.
-        return SelectSelector(
-            SelectSelectorConfig(
-                options=[
-                    SelectOptionDict(
-                        value=str(kv).split(" ")[0] if is_dps else str(kv),
-                        label=str(kv),
-                    )
-                    for kv in opt_list
-                ],
-                mode=SelectSelectorMode.DROPDOWN,
-                multiple=True if multi_select else False,
-            )
-        )
-
-
 ENTRIES_VERSION = 3
 
 PLATFORM_TO_ADD = "platform_to_add"
@@ -162,10 +133,10 @@ PICK_TEMPLATE = vol.Schema(
     {
         vol.Required(
             TEMPLATES,
-            default=list(list_templates().values())[0]
-            if list_templates()
+            default=list(templates.list_templates().values())[0]
+            if templates.list_templates()
             else "No templates found.",
-        ): _col_to_select(list_templates())
+        ): _col_to_select(templates.list_templates())
     }
 )
 
@@ -750,7 +721,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     dev_config = {}
                     if user_input.get(EXPORT_CONFIG):
                         dev_config = self.config_entry.data[CONF_DEVICES][dev_id].copy()
-                        export_tuya_config(
+                        templates.export_config(
                             dev_config, self.device_data[CONF_FRIENDLY_NAME]
                         )
                         return self.async_create_entry(title="", data={})
@@ -889,7 +860,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             self.use_template = True
             filename = user_input.get(TEMPLATES)
-            _config = create_tuya_config(filename)
+            _config = templates.import_config(filename)
             dev_conf = self.device_data
             dev_conf[CONF_ENTITIES] = _config
             dev_conf[CONF_DPS_STRINGS] = self.dps_strings
