@@ -497,13 +497,13 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
             # Set Default values for unconfigured devices.
             if self.has_config(CONF_PLATFORM):
                 platform = self._config[CONF_PLATFORM]
-            if any(platform in i for i in DEFAULT_CATEGORIES["CONTROL"]):
-                return None
-            elif any(platform in i for i in DEFAULT_CATEGORIES["CONFIG"]):
-                return EntityCategory.CONFIG
-            elif any(platform in i for i in DEFAULT_CATEGORIES["DIAGNOSTIC"]):
-                return EntityCategory.DIAGNOSTIC
-        return None
+                # Call default_category from config_flow  to set default values!
+                # This will be removed after a while, this is only made to convert who came from main integration.
+                # new users will be forced to choose category from config_flow.
+                from .config_flow import default_category
+
+                return default_category(platform)
+            return None
 
     def dps(self, dp_index):
         """Return cached value for DPS index."""
