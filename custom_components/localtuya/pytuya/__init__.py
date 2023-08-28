@@ -139,6 +139,7 @@ AP_CONFIG_NEW = 0x14  # 20 # FRM_AP_CFG_WF_V40
 BOARDCAST_LPV34 = 0x23  # 35 # FR_TYPE_BOARDCAST_LPV34
 LAN_EXT_STREAM = 0x40  # 64 # FRM_LAN_EXT_STREAM
 
+UPDATE_DPS_LIST = [3.2, 3.3, 3.4, 3.5]  # 3.2 behaves like 3.3 with type_0d
 
 PROTOCOL_VERSION_BYTES_31 = b"3.1"
 PROTOCOL_VERSION_BYTES_33 = b"3.3"
@@ -992,7 +993,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         Args:
             dps([int]): list of dps to update, default=detected&whitelisted
         """
-        if self.version in [3.2, 3.3, 3.4]:  # 3.2 behaves like 3.3 with type_0d
+        if self.version in UPDATE_DPS_LIST:
             if dps is None:
                 if not self.dps_cache:
                     await self.detect_available_dps()
