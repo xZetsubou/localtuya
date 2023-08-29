@@ -51,6 +51,7 @@ from .const import (
     CONF_TUYA_VERSION,
     CONF_MANUAL_DPS,
     CONF_MODEL,
+    CONF_PRODUCT_KEY,
     CONF_NO_CLOUD,
     CONF_PRODUCT_NAME,
     CONF_PROTOCOL_VERSION,
@@ -822,6 +823,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 defaults[CONF_DEVICE_ID] = device.get(CONF_TUYA_GWID)
                 defaults[CONF_PROTOCOL_VERSION] = device.get(CONF_TUYA_VERSION)
                 defaults[CONF_NODE_ID] = device.get(CONF_NODE_ID, None)
+                defaults[CONF_PRODUCT_KEY] = device.get(CONF_PRODUCT_KEY)
+
                 if dev_id in cloud_devs:
                     defaults[CONF_LOCAL_KEY] = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
                     defaults[CONF_FRIENDLY_NAME] = cloud_devs[dev_id].get(CONF_NAME)

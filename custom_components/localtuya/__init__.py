@@ -95,7 +95,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
         await device.set_dp(event.data[CONF_VALUE], event.data[CONF_DP])
 
-    def _device_discovered(device):
+    def _device_discovered(device: TuyaDevice):
         """Update address of device if it has changed."""
         device_ip = device["ip"]
         device_id = device["gwId"]
@@ -141,13 +141,11 @@ async def async_setup(hass: HomeAssistant, config: dict):
             hass.config_entries.async_update_entry(entry, data=new_data)
             device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
             if not device.connected:
-                device.async_connect()
+                hass.create_task(device.async_connect())
         elif device_id in hass.data[DOMAIN][TUYA_DEVICES]:
-            # _LOGGER.debug("Device %s found with IP %s", device_id, device_ip)
-
             device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
             if not device.connected:
-                device.async_connect()
+                hass.create_task(device.async_connect())
 
     def _shutdown(event):
         """Clean up resources when shutting down."""
@@ -157,7 +155,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
         """Try connecting to devices not already connected to."""
         for device_id, device in hass.data[DOMAIN][TUYA_DEVICES].items():
             if not device.connected:
-                device.async_connect()
+                hass.create_task(device.async_connect())
 
     async_track_time_interval(hass, _async_reconnect, RECONNECT_INTERVAL)
 
@@ -315,7 +313,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-async def update_listener(hass, config_entry):
+async def update_listener(hass: HomeAssistant, config_entry: ConfigEntry):
     """Update listener."""
     await hass.config_entries.async_reload(config_entry.entry_id)
 
