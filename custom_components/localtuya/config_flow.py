@@ -765,7 +765,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["base"] = "invalid_auth"
             except ValueError as ex:
                 errors["base"] = "value_error"
-                placeholders["error_value"] = str(ex)
                 _LOGGER.debug("Value Error: %s", ex)
             except EmptyDpsList:
                 errors["base"] = "empty_dps"

@@ -13,8 +13,7 @@
             "entity_already_configured": "Entity with this ID has already been configured.",
             "address_in_use": "Address used for discovery is already in use. Make sure no other application is using it (TCP port 6668).",
             "discovery_failed": "Something failed when discovering devices. See log for details.",
-            "empty_dps": "Connection to device succeeded but no datapoints found, please try again. Create a new issue and include debug logs if problem persists.",
-            "value_error":"An error has occurred: \n{error_value}, (check Logs for more infos!)"
+            "empty_dps": "Connection to device succeeded but no datapoints found, please try again. Create a new issue and include debug logs if problem persists."
         },
         "step": {
             "user": {
@@ -46,8 +45,7 @@
             "entity_already_configured": "Entity with this ID has already been configured.",
             "address_in_use": "Address used for discovery is already in use. Make sure no other application is using it (TCP port 6668).",
             "discovery_failed": "Something failed when discovering devices. See log for details.",
-            "empty_dps": "Connection to device succeeded but no datapoints found, please try again. Create a new issue and include debug logs if problem persists.",
-            "value_error":"An error has occurred: \n{error_value}, (check Logs for more infos!)"
+            "empty_dps": "Connection to device succeeded but an issue happend!, please try again, check the logs for Create a new issue and include debug logs if problem persists."
         },
         "step": {
             "yaml_import": {
@@ -56,11 +54,11 @@
             },
             "init": {
                 "title": "LocalTuya Configuration",
-                "description": "Please select the desired action.",
-                "data": {
+                "description": "Please choose the desired action.",
+                "menu_options": {
                     "add_device": "Add a new device",
                     "edit_device": "Edit a device",
-                    "setup_cloud": "Reconfigure Cloud API account"
+                    "cloud_setup": "Reconfigure Cloud API account"
                 }
             },
             "add_device": {
@@ -77,7 +75,7 @@
                     "selected_device": "Configured Devices"
                 }
             },
-            "cloud_setup": {
+            "configure_cloud": {
                 "title": "Cloud API account configuration",
                 "description": "Input the credentials for Tuya Cloud API.",
                 "data": {
@@ -115,6 +113,13 @@
                     "platform_to_add": "Platform",
                     "no_additional_entities": "Do not add any more entities",
                     "use_template" : "Import template file"
+                }
+            },
+            "choose_template":{
+                "title": "Select template",
+                "description": "[Choose a template from bottom list, Files are located in the templates folder! (Click for Wiki)](https://github.com/xZetsubou/hass-localtuya/discussions/13)",
+                "data": {
+                    "templates": "Template"
                 }
             },
             "configure_entity": {
