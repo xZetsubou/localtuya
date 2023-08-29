@@ -284,52 +284,35 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             )
             hass.data[DOMAIN][TUYA_DEVICES][dev_id] = TuyaDevice(hass, entry, dev_id)
 
-        await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_setup(entry, platform)
-                for platform in platforms
-            ]
-        )
-
-        for dev_id in device_ids:
-            hass.data[DOMAIN][TUYA_DEVICES][dev_id].async_connect()
-
         await async_remove_orphan_entities(hass, entry)
+        await hass.config_entries.async_forward_entry_setups(entry, platforms)
 
-    hass.async_create_task(setup_entities(entry.data[CONF_DEVICES].keys()))
-
+    await setup_entities(entry.data[CONF_DEVICES].keys())
     unsub_listener = entry.add_update_listener(update_listener)
+
     hass.data[DOMAIN][entry.entry_id] = {UNSUB_LISTENER: unsub_listener}
 
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Unload a config entry."""
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unloading the Tuya platforms."""
     platforms = {}
-
     for dev_id, dev_entry in entry.data[CONF_DEVICES].items():
         for entity in dev_entry[CONF_ENTITIES]:
             platforms[entity[CONF_PLATFORM]] = True
 
-    unload_ok = all(
-        await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_unload(entry, component)
-                for component in platforms
-            ]
-        )
-    )
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, platforms)
 
-    hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
     for dev_id, device in hass.data[DOMAIN][TUYA_DEVICES].items():
         if device.connected:
             await device.close()
 
     if unload_ok:
+        hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
         hass.data[DOMAIN][TUYA_DEVICES] = {}
 
-    return True
+    return unload_ok
 
 
 async def update_listener(hass, config_entry):
