@@ -9,6 +9,7 @@ DATA_CLOUD = "cloud_data"
 # Order on priority
 SUPPORTED_PROTOCOL_VERSIONS = ["3.3", "3.1", "3.2", "3.4", "3.5"]
 
+
 # Platforms in this list must support config flows
 PLATFORMS = [
     "binary_sensor",
@@ -48,10 +49,9 @@ CONF_USER_ID = "user_id"
 CONF_ENABLE_ADD_ENTITIES = "add_entities"
 
 
-CONF_ACTION = "action"
 CONF_ADD_DEVICE = "add_device"
 CONF_EDIT_DEVICE = "edit_device"
-CONF_SETUP_CLOUD = "setup_cloud"
+CONF_CLOUD_SETUP = "cloud_setup"
 CONF_NO_CLOUD = "no_cloud"
 CONF_MANUAL_DPS = "manual_dps_strings"
 CONF_DEFAULT_VALUE = "dps_default_value"
