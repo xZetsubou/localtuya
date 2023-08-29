@@ -40,7 +40,6 @@ from .cloud_api import TuyaCloudApi
 from .common import pytuya
 from .const import (
     ATTR_UPDATED_AT,
-    CONF_ACTION,
     CONF_ADD_DEVICE,
     CONF_DPS_STRINGS,
     CONF_EDIT_DEVICE,
@@ -56,7 +55,7 @@ from .const import (
     CONF_PRODUCT_NAME,
     CONF_PROTOCOL_VERSION,
     CONF_RESET_DPIDS,
-    CONF_SETUP_CLOUD,
+    CONF_CLOUD_SETUP,
     CONF_USER_ID,
     CONF_ENABLE_ADD_ENTITIES,
     DATA_CLOUD,
@@ -82,19 +81,10 @@ EXPORT_CONFIG = "export_config"
 
 CUSTOM_DEVICE = {"Add Device Manually": "..."}
 
-CONF_ACTIONS = {
-    CONF_ADD_DEVICE: "Add a new device",
-    CONF_EDIT_DEVICE: "Edit a device",
-    CONF_SETUP_CLOUD: "Reconfigure Cloud API account",
-}
+# Using list method so we can translate options.
+CONFIGURE_MENU = [CONF_ADD_DEVICE, CONF_EDIT_DEVICE, CONF_CLOUD_SETUP]
 
-CONFIGURE_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_ACTION, default=CONF_ADD_DEVICE): vol.In(CONF_ACTIONS),
-    }
-)
-
-CLOUD_SETUP_SCHEMA = vol.Schema(
+CLOUD_CONFIGURE_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_REGION, default="eu"): _col_to_select(
             ["eu", "us", "cn", "in"]
@@ -509,7 +499,7 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user",
-            data_schema=schema_defaults(CLOUD_SETUP_SCHEMA, **defaults),
+            data_schema=schema_defaults(CLOUD_CONFIGURE_SCHEMA, **defaults),
             errors=errors,
             description_placeholders=placeholders,
         )
@@ -557,18 +547,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input=None):
         """Manage basic options."""
-        # device_id = self.config_entry.data[CONF_DEVICE_ID]
-        if user_input is not None:
-            if user_input.get(CONF_ACTION) == CONF_SETUP_CLOUD:
-                return await self.async_step_cloud_setup()
-            if user_input.get(CONF_ACTION) == CONF_ADD_DEVICE:
-                return await self.async_step_add_device()
-            if user_input.get(CONF_ACTION) == CONF_EDIT_DEVICE:
-                return await self.async_step_edit_device()
-
-        return self.async_show_form(
+        return self.async_show_menu(
             step_id="init",
-            data_schema=CONFIGURE_SCHEMA,
+            menu_options=CONFIGURE_MENU,
         )
 
     async def async_step_cloud_setup(self, user_input=None):
@@ -616,8 +597,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         defaults[CONF_NO_CLOUD] = False
 
         return self.async_show_form(
-            step_id="cloud_setup",
-            data_schema=schema_defaults(CLOUD_SETUP_SCHEMA, **defaults),
+            step_id="configure_cloud",
+            data_schema=schema_defaults(CLOUD_CONFIGURE_SCHEMA, **defaults),
             errors=errors,
             description_placeholders=placeholders,
         )
@@ -785,6 +766,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             except ValueError as ex:
                 errors["base"] = "value_error"
                 placeholders["error_value"] = str(ex)
+                _LOGGER.debug("Value Error: %s", ex)
             except EmptyDpsList:
                 errors["base"] = "empty_dps"
             except Exception as ex:
