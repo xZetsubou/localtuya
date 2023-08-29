@@ -116,10 +116,13 @@
                 }
             },
             "choose_template":{
-                "title": "Select template",
-                "description": "[Choose a template from bottom list, Files are located in the templates folder! (Click for Wiki)](https://github.com/xZetsubou/hass-localtuya/discussions/13)",
+                "title": "Template selection",
+                "description": "[Template files are located in the templates directory! (Click for Wiki)](https://github.com/xZetsubou/hass-localtuya/discussions/13)",
                 "data": {
                     "templates": "Template"
+                },
+                "data_description": {
+                    "templates": "Pick a template from the list above"
                 }
             },
             "configure_entity": {
