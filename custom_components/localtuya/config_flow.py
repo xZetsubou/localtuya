@@ -556,6 +556,17 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             menu_options=CONFIGURE_MENU,
         )
 
+    async def async_step_device_setup_method(self, user_input=None):
+        """Manage basic options."""
+        # DEVICE_SETUP_METHOD = {
+        #     "pick_entity_type": "Setup Manually",
+        #     "choose_template": "Use Template",
+        # }
+        # return self.async_show_menu(
+        #     step_id="device_setup_method",
+        #     menu_options=DEVICE_SETUP_METHOD,
+        # )
+
     async def async_step_cloud_setup(self, user_input=None):
         """Handle the initial step."""
         errors = {}
@@ -762,6 +773,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     CONF_PROTOCOL_VERSION
                 ]
 
+                # return await self.async_step_device_setup_method()
                 return await self.async_step_pick_entity_type()
             except CannotConnect:
                 errors["base"] = "cannot_connect"
