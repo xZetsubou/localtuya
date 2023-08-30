@@ -92,15 +92,6 @@ from homeassistant.helpers.selector import (
 )
 
 
-class tuya_flow:
-    def set_defaults(edit_mode=False):
-        if edit_mode:
-            ...
-        else:
-            ...
-        ...
-
-
 ################################
 ## Global config config flows ##
 ################################
