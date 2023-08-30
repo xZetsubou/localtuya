@@ -166,14 +166,9 @@ def devices_schema(
 def mergeDevicesList(devList: dict, cloudList: dict, addSubDevices=True) -> dict:
     """Merge CloudDevices with Discovered LocalDevices (in specific ways)!"""
     # try Get SubDevices.
-
-
-def mergeDevicesList(devList: dict, cloudList: dict, addSubDevices=True) -> dict:
-    """Merge CloudDevices with Discovered LocalDevices (in specific ways)!"""
-    try:
-        # try Get SubDevices.
-        newList = devList.copy()
-        for _devID in cloudList.keys():
+    newList = devList.copy()
+    for _devID in cloudList.keys():
+        try:
             is_online = cloudList[_devID].get("online", None)
             sub_device = cloudList[_devID].get(CONF_NODE_ID, False)
             # We skip offline devices.
@@ -204,9 +199,9 @@ def mergeDevicesList(devList: dict, cloudList: dict, addSubDevices=True) -> dict
                         }
                     }
                     newList.update(dev_data)
-    except Exception as ex:
-        _LOGGER.debug(f"An error occurred while trying to pull sub-devices {ex}")
-        return devList
+        except Exception as ex:
+            _LOGGER.debug(f"An error occurred while trying to pull sub-devices {ex}")
+            continue
     return newList
 
 
