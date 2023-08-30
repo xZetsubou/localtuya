@@ -139,9 +139,10 @@ async def async_setup(hass: HomeAssistant, config: dict):
             )
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
             hass.config_entries.async_update_entry(entry, data=new_data)
-            device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
-            if not device.connected:
-                hass.create_task(device.async_connect())
+            # No need to do connect task here, when entry updated, it will reconnect. [elif].
+            # device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
+            # if not device.connected:
+            #     hass.create_task(device.async_connect())
         elif device_id in hass.data[DOMAIN][TUYA_DEVICES]:
             device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
             if not device.connected:
