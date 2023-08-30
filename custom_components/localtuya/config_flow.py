@@ -8,7 +8,7 @@ from .helpers import templates, _col_to_select
 
 import homeassistant.helpers.config_validation as cv
 
-# import homeassistant.helpers.entity_registry as er # Disabled it because no need to delete registry.
+# import homeassistant.helpers.entity_registry as er  # Disabled it because no need to delete registry.
 import voluptuous as vol
 from homeassistant import config_entries, core, exceptions
 from homeassistant.helpers.selector import (
@@ -163,14 +163,17 @@ def devices_schema(
     )
 
 
-def mergeDevicesList(devList, cloudList, addSubDevices=True):
+def mergeDevicesList(devList: dict, cloudList: dict, addSubDevices=True) -> dict:
+    """Merge CloudDevices with Discovered LocalDevices (in specific ways)!"""
     # try Get SubDevices.
     newList = devList.copy()
     for _devID in cloudList.keys():
         is_online = cloudList[_devID].get("online", None)
         sub_device = cloudList[_devID].get(CONF_NODE_ID, False)
+        # We skip offline devices.
         if not is_online:
             continue
+        # Make sure the device isn't already in localList.
         if _devID not in devList.values() and sub_device:
             # Get IP Assuming the LocalKey is the same LocalKey as GateWay!
             gateway = [
@@ -182,7 +185,7 @@ def mergeDevicesList(devList, cloudList, addSubDevices=True):
             if not addSubDevices:
                 newList[f"Sub Device"] = _devID
             else:
-                # Create a data [cloud and local gateway] to merge it with discovered devices.
+                # Create a data for sub_device [cloud and local gateway] to merge it with discovered devices.
                 local_GW = devList[gateway[0].get(CONF_ID)]
                 dev_data = {
                     _devID: {
