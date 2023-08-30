@@ -18,7 +18,7 @@
         "step": {
             "user": {
                 "title": "Cloud API account configuration",
-                "description": "Input the credentials for Tuya Cloud API.",
+                "description": "[Input the credentials for Tuya Cloud API. (Docs)](https://github.com/xZetsubou/hass-localtuya)",
                 "data": {
                     "region": "API server region",
                     "client_id": "Client ID",
