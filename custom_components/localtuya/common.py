@@ -4,6 +4,9 @@ import logging
 import time
 from datetime import timedelta
 
+from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import ConfigEntry
+
 from homeassistant.const import (
     CONF_DEVICE_ID,
     CONF_DEVICES,
@@ -135,7 +138,7 @@ def async_config_entry_by_device_id(hass, device_id):
 class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     """Cache wrapper for pytuya.TuyaInterface."""
 
-    def __init__(self, hass, config_entry, dev_id):
+    def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry, dev_id: str):
         """Initialize the cache."""
         super().__init__()
         self._hass = hass
@@ -182,7 +185,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Connect to device if not already connected."""
         # self.info("async_connect: %d %r %r", self._is_closing, self._connect_task, self._interface)
         if not self._is_closing and self._connect_task is None and not self._interface:
-            self._connect_task = asyncio.create_task(self._make_connection())
+            self._connect_task = self._hass.create_task(self._make_connection())
 
     async def _make_connection(self):
         """Subscribe localtuya entity events."""
@@ -487,7 +490,13 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         """Return the category of the entity."""
         if self.has_config(CONF_ENTITY_CATEGORY):
             category = self._config[CONF_ENTITY_CATEGORY]
-            return ENTITY_CATEGORY.get(category, None)
+            if EntityCategory.CONFIG in category:
+                category = EntityCategory.CONFIG
+            elif EntityCategory.DIAGNOSTIC in category:
+                category = EntityCategory.DIAGNOSTIC
+            else:
+                category = None
+            return category
         else:
             # Set Default values for unconfigured devices.
             if self.has_config(CONF_PLATFORM):
