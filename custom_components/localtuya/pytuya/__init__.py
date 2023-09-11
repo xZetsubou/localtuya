@@ -611,8 +611,13 @@ class MessageDispatcher(ContextualLogger):
 
             header = parse_header(self.buffer)
             hmac_key = self.local_key if self.version >= 3.4 else None
+            no_retcode = False
             msg = unpack_message(
-                self.buffer, header=header, hmac_key=hmac_key, logger=self
+                self.buffer,
+                header=header,
+                hmac_key=hmac_key,
+                no_retcode=no_retcode,
+                logger=self,
             )
             self.buffer = self.buffer[header_len - 4 + header.length :]
             self._dispatch(msg)
@@ -1212,9 +1217,17 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         # self.debug("Session nonce XOR'd: %r" % self.local_key)
 
         cipher = AESCipher(self.real_local_key)
-        self.local_key = self.dispatcher.local_key = cipher.encrypt(
-            self.local_key, False, pad=False
-        )
+        if self.version == 3.4:
+            self.local_key = self.dispatcher.local_key = cipher.encrypt(
+                self.local_key, False, pad=False
+            )
+        else:
+            iv = self.local_nonce[:12]
+            self.debug("Session IV: %r", iv)
+            self.local_key = cipher.encrypt(
+                self.local_key, use_base64=False, pad=False, iv=iv
+            )[12:28]
+
         self.debug("Session key negotiate success! session key: %r", self.local_key)
         return True
 
