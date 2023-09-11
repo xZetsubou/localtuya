@@ -1178,18 +1178,19 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             return False
 
         payload = rkey.payload
-        try:
-            # self.debug("decrypting %r using %r", payload, self.real_local_key)
-            cipher = AESCipher(self.real_local_key)
-            payload = cipher.decrypt(payload, False, decode_text=False)
-        except Exception as ex:
-            self.debug(
-                "session key step 2 decrypt failed, payload=%r with len:%d (%s)",
-                payload,
-                len(payload),
-                ex,
-            )
-            return False
+        if self.version == 3.4:
+            try:
+                # self.debug("decrypting %r using %r", payload, self.real_local_key)
+                cipher = AESCipher(self.real_local_key)
+                payload = cipher.decrypt(payload, False, decode_text=False)
+            except Exception as ex:
+                self.debug(
+                    "session key step 2 decrypt failed, payload=%r with len:%d (%s)",
+                    payload,
+                    len(payload),
+                    ex,
+                )
+                return False
 
         self.debug("decrypted session key negotiation step 2: payload=%r", payload)
 
@@ -1244,6 +1245,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 # add the 3.x header
                 payload = self.version_header + payload
             self.debug("final payload for cmd %r: %r", msg.cmd, payload)
+
             if self.version >= 3.5:
                 iv = True
                 # seqno cmd retcode payload crc crc_good, prefix, iv
@@ -1254,6 +1256,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 data = pack_message(msg, hmac_key=self.local_key)
                 self.debug("payload encrypted=%r", binascii.hexlify(data))
                 return data
+
             payload = self.cipher.encrypt(payload, False)
         elif self.version >= 3.2:
             # expect to connect and then disconnect to set new
