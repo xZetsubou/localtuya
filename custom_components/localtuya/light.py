@@ -131,7 +131,8 @@ def flow_schema(dps):
         vol.Optional(CONF_SCENE_VALUES): str,
         vol.Optional(CONF_SCENE_VALUES_FRIENDLY): str,
         vol.Optional(
-            CONF_MUSIC_MODE, default=False, description={"suggested_value": False}
+            CONF_MUSIC_MODE,
+            default=False,
         ): bool,
     }
 
