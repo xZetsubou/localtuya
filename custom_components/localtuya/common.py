@@ -19,6 +19,7 @@ from homeassistant.const import (
     STATE_UNKNOWN,
     CONF_ENTITY_CATEGORY,
     EntityCategory,
+    CONF_TYPE,
 )
 from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import (
@@ -421,15 +422,29 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         def _update_handler(status):
             """Update entity state when status was updated."""
+            # Event_data to fire an event in HA.
+            event = "states_update"
+            device_triggered = "device_triggered"
+            event_data = {
+                CONF_DEVICE_ID: self._dev_config_entry[CONF_DEVICE_ID],
+                CONF_TYPE: event,
+            }
             if status is None:
                 status = {}
             if self._status != status:
+                event_data.update({"old_status": self._status, "new_status": status})
                 self._status = status.copy()
                 if status:
                     self.status_updated()
 
                 # Update HA
                 self.schedule_update_ha_state()
+            elif status is not None:
+                event = device_triggered
+                event_data.update({CONF_TYPE: event, "status": status})
+
+            # Send an event with status
+            self.hass.bus.async_fire(f"localtuya_{event}", event_data)
 
         signal = f"localtuya_{self._dev_config_entry[CONF_DEVICE_ID]}"
 
