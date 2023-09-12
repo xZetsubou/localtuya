@@ -184,7 +184,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                     for value in self._config.get(CONF_SCENE_VALUES_FRIENDLY).split(";")
                 ]
                 self._scenes = dict(zip(friendly_values_list, values_list))
-            elif self._config.get(CONF_SCENE) < 20:
+            elif int(self._config.get(CONF_SCENE)) < 20:
                 self._scenes = SCENE_LIST_RGBW_255
             elif self._config.get(CONF_BRIGHTNESS) is None:
                 self._scenes = SCENE_LIST_RGB_1000
