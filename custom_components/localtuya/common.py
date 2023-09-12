@@ -360,12 +360,32 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     @callback
     def status_updated(self, status):
         """Device updated status."""
+        self._handle_event(self._status, status)
         self._status.update(status)
         self._dispatch_status()
 
     def _dispatch_status(self):
         signal = f"localtuya_{self._dev_config_entry[CONF_DEVICE_ID]}"
         async_dispatcher_send(self._hass, signal, self._status)
+
+    def _handle_event(self, old_status, new_status):
+        """Handle events in HA when devices updated."""
+        # Event_data to fire an event in HA.
+        event = "states_update"
+        device_triggered = "device_triggered"
+
+        event_data = {
+            CONF_DEVICE_ID: self._dev_config_entry[CONF_DEVICE_ID],
+            CONF_TYPE: event,
+        }
+        if old_status != new_status:
+            event_data.update({"old_states": self._status, "new_states": new_status})
+        elif new_status is not None:
+            event = device_triggered
+            event_data.update({CONF_TYPE: event, "states": new_status})
+
+        # Send an event with status
+        self._hass.bus.async_fire(f"localtuya_{event}", event_data)
 
     @callback
     def disconnected(self):
@@ -422,29 +442,15 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         def _update_handler(status):
             """Update entity state when status was updated."""
-            # Event_data to fire an event in HA.
-            event = "status_update"
-            device_triggered = "device_triggered"
-            event_data = {
-                CONF_DEVICE_ID: self._dev_config_entry[CONF_DEVICE_ID],
-                CONF_TYPE: event,
-            }
             if status is None:
                 status = {}
             if self._status != status:
-                event_data.update({"old_status": self._status, "new_status": status})
                 self._status = status.copy()
                 if status:
                     self.status_updated()
 
                 # Update HA
                 self.schedule_update_ha_state()
-            elif status is not None:
-                event = device_triggered
-                event_data.update({CONF_TYPE: event, "status": status})
-
-            # Send an event with status
-            self.hass.bus.async_fire(f"localtuya_{event}", event_data)
 
         signal = f"localtuya_{self._dev_config_entry[CONF_DEVICE_ID]}"
 
