@@ -754,16 +754,20 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         ].get("productKey")
                 # Handle Inputs on edit device mode.
                 if self.editing_device:
-                    dev_config = {}
+                    dev_config: dict = self.config_entry.data[CONF_DEVICES].get(
+                        dev_id, {}
+                    )
                     if user_input.get(EXPORT_CONFIG):
                         dev_config = self.config_entry.data[CONF_DEVICES][dev_id].copy()
                         templates.export_config(
                             dev_config, self.device_data[CONF_FRIENDLY_NAME]
                         )
                         return self.async_create_entry(title="", data={})
-                    # We will restore device-Model if it's already existed!
-                    if dev_config.get(CONF_MODEL):
-                        self.device_data[CONF_MODEL] = dev_config.get(CONF_MODEL)
+                    # We will restore device details if it's already existed!
+                    for res_conf in [CONF_MODEL, CONF_PRODUCT_KEY]:
+                        if dev_config.get(res_conf):
+                            self.device_data[res_conf] = dev_config.get(res_conf)
+
                     if user_input[CONF_ENABLE_ADD_ENTITIES]:
                         self.editing_device = False
                         user_input[CONF_DEVICE_ID] = dev_id
@@ -803,7 +807,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                             for entity in device_config[CONF_ENTITIES]
                             if int(entity[CONF_ID]) in entity_ids
                         ]
-                        # _LOGGER.debug("Edit Device Conf Data: %s", self.device_data)
                         return await self.async_step_configure_entity()
 
                 valid_data = await validate_input(
@@ -839,6 +842,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 if self.use_template
                 else self.config_entry.data[CONF_DEVICES][dev_id].copy()
             )
+
             self.nodeID = defaults.get(CONF_NODE_ID, None)
             cloud_devs = self.hass.data[DOMAIN][self.config_entry.entry_id][
                 DATA_CLOUD
