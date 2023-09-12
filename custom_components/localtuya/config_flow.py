@@ -358,10 +358,6 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
                     data[CONF_ENABLE_DEBUG],
                     data.get(CONF_NODE_ID, None),
                 )
-            # If connection to host is failed raise wrong address.
-            except OSError as ex:
-                if ex.errno == errno.EHOSTUNREACH:
-                    raise CannotConnect
 
                 # Break the loop if input isn't auto.
                 if not auto_protocol:
@@ -373,6 +369,10 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
                     # Set the conf_protocol to the worked version to return it and update self.device_data.
                     conf_protocol = version
                     break
+            # If connection to host is failed raise wrong address.
+            except OSError as ex:
+                if ex.errno == errno.EHOSTUNREACH:
+                    raise CannotConnect
             except:
                 continue
 
