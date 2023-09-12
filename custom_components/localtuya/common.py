@@ -423,7 +423,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         def _update_handler(status):
             """Update entity state when status was updated."""
             # Event_data to fire an event in HA.
-            event = "states_update"
+            event = "status_update"
             device_triggered = "device_triggered"
             event_data = {
                 CONF_DEVICE_ID: self._dev_config_entry[CONF_DEVICE_ID],
