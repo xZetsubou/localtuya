@@ -511,8 +511,11 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if not res:
                 return await self._create_entry(user_input)
             errors["base"] = res["reason"]
-            # if "1106" in res["msg"]:
-            #     error = "Wrong User ID Premssion Denid!"
+            # 1004 = Secret, 1106 = USER ID, 2009 = Client ID
+            if "1106" in res["msg"]:
+                res["msg"] = f"{res['msg']} Check UserID or country code!"
+            if "1004" in res["msg"]:
+                res["msg"] = f"{res['msg']} Check Secret Key!"
             placeholders = {"msg": res["msg"]}
 
         defaults = {}
