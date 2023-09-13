@@ -371,29 +371,30 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     def _handle_event(self, old_status, new_status):
         """Handle events in HA when devices updated."""
 
-        def fire_event(event, data):
+        def fire_event(event, data: dict):
+            event_data = {
+                CONF_DEVICE_ID: self._dev_config_entry[CONF_DEVICE_ID],
+                CONF_TYPE: event,
+            }
+            event_data.update(data)
             # Send an event with status, The default length of event without data is 2.
-            if len(data) > 2:
+            if len(event_data) > 2:
                 self._hass.bus.async_fire(f"localtuya_{event}", event_data)
 
         event = "states_update"
         device_triggered = "device_triggered"
 
-        event_data = {
-            CONF_DEVICE_ID: self._dev_config_entry[CONF_DEVICE_ID],
-            CONF_TYPE: event,
-        }
         # Device Initializing. if not old_states.
         # States update event.
         if old_status and old_status != new_status:
-            event_data.update({"old_states": self._status, "new_states": new_status})
-            fire_event(event, event_data)
+            data = {"old_states": old_status, "new_states": new_status}
+            fire_event(event, data)
 
         # Device triggered event.
         if old_status and new_status is not None:
             event = device_triggered
-            event_data.update({CONF_TYPE: event, "states": new_status})
-            fire_event(event, event_data)
+            data = {CONF_TYPE: event, "states": new_status}
+            fire_event(event, data)
 
     @callback
     def disconnected(self):
