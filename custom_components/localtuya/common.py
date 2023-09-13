@@ -383,6 +383,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         event = "states_update"
         device_triggered = "device_triggered"
+        device_dp_triggered = "device_dp_triggered"
 
         # Device Initializing. if not old_states.
         # States update event.
@@ -395,6 +396,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             event = device_triggered
             data = {CONF_TYPE: event, "states": new_status}
             fire_event(event, data)
+
+            if len(self._interface.dispatched_dps) < 2:
+                event = device_dp_triggered
+                data = {CONF_TYPE: event, "states": self._interface.dispatched_dps}
+                fire_event(event, data)
 
     @callback
     def disconnected(self):
