@@ -378,14 +378,18 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             CONF_DEVICE_ID: self._dev_config_entry[CONF_DEVICE_ID],
             CONF_TYPE: event,
         }
-        if old_status != new_status:
+        # Device Initializing. if not old_states.
+        # States update event.
+        if old_status and old_status != new_status:
             event_data.update({"old_states": self._status, "new_states": new_status})
-        elif new_status is not None:
+        # Device triggered event.
+        elif old_status and new_status is not None:
             event = device_triggered
             event_data.update({CONF_TYPE: event, "states": new_status})
 
-        # Send an event with status
-        self._hass.bus.async_fire(f"localtuya_{event}", event_data)
+        # Send an event with status, The default length of event without data is 2.
+        if len(event_data) > 2:
+            self._hass.bus.async_fire(f"localtuya_{event}", event_data)
 
     @callback
     def disconnected(self):
