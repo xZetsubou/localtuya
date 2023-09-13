@@ -753,6 +753,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.local_nonce = b"0123456789abcdef"  # not-so-random random key
         self.remote_nonce = b""
         self.dps_whitelist = UPDATE_DPS_WHITELIST
+        self.dispatched_dps = {}  # Store payload so we can trigger an event in HA.
 
     def set_version(self, protocol_version):
         """Set the device version and eventually start available DPs detection."""
@@ -1153,6 +1154,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         ):
             json_payload["dps"] = json_payload["data"]["dps"]
 
+        # We will store the payload to trigger an event in HA.
+        self.dispatched_dps = json_payload["dps"]
         return json_payload
 
     async def _negotiate_session_key(self):
