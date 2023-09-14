@@ -29,7 +29,7 @@ Credits
     For protocol reverse engineering
   * PyTuya https://github.com/clach04/python-tuya by clach04
     The origin of this python module (now abandoned)
-  * Tuya Protocol 3.4 Support by uzlonewolf
+  * Tuya Protocol 3.4 and 3.5 Support by uzlonewolf
     Enhancement to TuyaMessage logic for multi-payload messages and Tuya Protocol 3.4 support
   * TinyTuya https://github.com/jasonacox/tinytuya by jasonacox, uzlonewolf
     Several CLI tools and code for Tuya devices
@@ -417,7 +417,6 @@ def unpack_message(data, hmac_key=None, header=None, no_retcode=False, logger=No
                 payload,
                 use_base64=False,
                 decode_text=False,
-                verify_padding=False,
                 iv=iv,
                 header=data[4:header_len],
                 tag=crc,
@@ -603,11 +602,23 @@ class MessageDispatcher(ContextualLogger):
         """Add new data to the buffer and try to parse messages."""
         self.buffer += data
         header_len = struct.calcsize(MESSAGE_RECV_HEADER_FMT)
+        prefix_len = len(PREFIX_55AA_BIN)
 
         while self.buffer:
             # Check if enough data for measage header
             if len(self.buffer) < header_len:
                 break
+
+            prefix_offset_55AA = self.buffer.find(PREFIX_55AA_BIN)
+            prefix_offset_6699 = self.buffer.find(PREFIX_6699_BIN)
+
+            if prefix_offset_55AA < 0 and prefix_offset_6699 < 0:
+                self.buffer = self.buffer[1 - prefix_len :]
+            else:
+                prefix_offset = (
+                    prefix_offset_6699 if prefix_offset_55AA < 0 else prefix_offset_55AA
+                )
+                self.buffer = self.buffer[prefix_offset:]
 
             header = parse_header(self.buffer)
             hmac_key = self.local_key if self.version >= 3.4 else None
@@ -1225,7 +1236,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         else:
             iv = self.local_nonce[:12]
             self.debug("Session IV: %r", iv)
-            self.local_key = cipher.encrypt(
+            self.local_key = self.dispatcher.local_key = cipher.encrypt(
                 self.local_key, use_base64=False, pad=False, iv=iv
             )[12:28]
 
