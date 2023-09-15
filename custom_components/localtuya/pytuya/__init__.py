@@ -230,7 +230,6 @@ payload_dict = {
             "command_override": CONTROL_NEW,  # Uses CONTROL_NEW command
             "command": {"protocol": 5, "t": "int", "data": {"cid": ""}},
         },
-        CONTROL_NEW: {"command": {"protocol": 5, "t": "int", "data": {"cid": ""}}},
         DP_QUERY: {"command_override": DP_QUERY_NEW},
     },
     "v3.5": {
@@ -238,7 +237,6 @@ payload_dict = {
             "command_override": CONTROL_NEW,  # Uses CONTROL_NEW command
             "command": {"protocol": 5, "t": "int", "data": {"cid": ""}},
         },
-        CONTROL_NEW: {"command": {"protocol": 5, "t": "int", "data": {"cid": ""}}},
         DP_QUERY: {"command_override": DP_QUERY_NEW},
     },
 }
@@ -636,7 +634,7 @@ class MessageDispatcher(ContextualLogger):
     def _dispatch(self, msg):
         """Dispatch a message to someone that is listening."""
         self.debug("Dispatching message CMD %r %s", msg.cmd, msg)
-        if msg.seqno in self.listeners:
+        if msg.seqno in self.listeners and msg.cmd != STATUS:
             # self.debug("Dispatching sequence number %d", msg.seqno)
             sem = self.listeners[msg.seqno]
             if isinstance(sem, asyncio.Semaphore):
@@ -801,16 +799,20 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if msg.seqno > 0:
                 self.seqno = msg.seqno + 1
             decoded_message = self._decode_payload(msg.payload)
+            if "data" in decoded_message and "dps" in decoded_message:
+                decoded_message.pop("data")
             if "dps" in decoded_message:
                 if "cid" in decoded_message and decoded_message["cid"] != self.node_id:
                     return
-                # Special case for >= 3.4 devices.
-                if "data" in decoded_message:
-                    if (
-                        "cid" in decoded_message["data"]
-                        and decoded_message["data"]["cid"] != self.node_id
-                    ):
-                        return
+                self.dps_cache.update(decoded_message["dps"])
+            # Special case for >= 3.4 devices.
+            elif "data" in decoded_message:
+                if (
+                    "cid" in decoded_message["data"]
+                    and decoded_message["data"]["cid"] != self.node_id
+                ):
+                    return
+
                 self.dps_cache.update(decoded_message["dps"])
 
             listener = self.listener and self.listener()
@@ -1393,7 +1395,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if "dpId" in json_data:
                 json_data["dpId"] = data
             elif "data" in json_data:
-                json_data["data"].update({"dps": data})  # We don't want to remove CID
+                json_data["data"]["dps"] = data  # We don't want to remove CID
             else:
                 json_data["dps"] = data
         elif self.dev_type == "type_0d" and command == DP_QUERY:
