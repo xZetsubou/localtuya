@@ -1155,7 +1155,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             json_payload["dps"] = json_payload["data"]["dps"]
 
         # We will store the payload to trigger an event in HA.
-        self.dispatched_dps = json_payload["dps"]
+        if "dps" in json_payload:
+            self.dispatched_dps = json_payload["dps"]
         return json_payload
 
     async def _negotiate_session_key(self):
