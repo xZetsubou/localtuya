@@ -684,6 +684,24 @@ class MessageDispatcher(ContextualLogger):
         else:
             if msg.cmd == CONTROL_NEW:
                 self.debug("Got ACK message for command %d: will ignore it", msg.cmd)
+                # This workaround to prevent timeout error, cause control_new got stuck.
+                # Hope this won't cause errors to control.
+                try:
+                    seqno = list(self.listeners)[-1]
+                    if (
+                        seqno
+                        not in [
+                            self.HEARTBEAT_SEQNO,
+                            self.RESET_SEQNO,
+                        ]
+                        and seqno in self.listeners
+                    ):
+                        sem = self.listeners[seqno]
+                        if isinstance(sem, asyncio.Semaphore):
+                            self.listeners[seqno] = msg
+                            sem.release()
+                except:
+                    pass
             else:
                 self.debug(
                     "Got message type %d for unknown listener %d: %s",
