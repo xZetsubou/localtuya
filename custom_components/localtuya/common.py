@@ -289,6 +289,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                     timedelta(seconds=int(self._dev_config_entry[CONF_SCAN_INTERVAL])),
                 )
 
+            self._is_closing = False
             self.info(f"Successfully connected to {self._dev_config_entry[CONF_HOST]}")
 
         self._connect_task = None
@@ -380,6 +381,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             # self._connect_task.cancel()
             self._connect_task = None
         self.warning("Disconnected - waiting for discovery broadcast")
+        # If it's disconnect by unexpected error.
+        if self._is_closing is not True:
+            asyncio.create_task(self.async_connect())
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
