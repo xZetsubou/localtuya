@@ -581,7 +581,13 @@ class MessageDispatcher(ContextualLogger):
     async def wait_for(self, seqno, cmd, timeout=5):
         """Wait for response to a sequence number to be received and return it."""
         if seqno in self.listeners:
+            self.error(f"listener exists for {seqno}")
+            return
             raise Exception(f"listener exists for {seqno}")
+
+        # This is for >= 3.4 devices [workaround].
+        if cmd == CONTROL_NEW and self.version >= 3.4:
+            seqno += 2
 
         self.debug("Command %d waiting for seq. number %d", cmd, seqno)
         self.listeners[seqno] = asyncio.Semaphore(0)
@@ -684,24 +690,6 @@ class MessageDispatcher(ContextualLogger):
         else:
             if msg.cmd == CONTROL_NEW:
                 self.debug("Got ACK message for command %d: will ignore it", msg.cmd)
-                # This workaround to prevent timeout error, cause control_new got stuck.
-                # Hope this won't cause errors to control.
-                try:
-                    seqno = list(self.listeners)[-1]
-                    if (
-                        seqno
-                        not in [
-                            self.HEARTBEAT_SEQNO,
-                            self.RESET_SEQNO,
-                        ]
-                        and seqno in self.listeners
-                    ):
-                        sem = self.listeners[seqno]
-                        if isinstance(sem, asyncio.Semaphore):
-                            self.listeners[seqno] = msg
-                            sem.release()
-                except:
-                    pass
             else:
                 self.debug(
                     "Got message type %d for unknown listener %d: %s",
@@ -1002,7 +990,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
     async def status(self):
         """Return device status."""
-        status = await self.exchange(DP_QUERY)
+        payload = self._generate_payload(DP_QUERY)
+        status = await self.exchange(payload.cmd)
+
         if status and "dps" in status:
             self.dps_cache.update(status["dps"])
         return self.dps_cache
