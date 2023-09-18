@@ -639,6 +639,10 @@ class MessageDispatcher(ContextualLogger):
 
     def _dispatch(self, msg):
         """Dispatch a message to someone that is listening."""
+        # ON devices >= 3.4 the seqno get conflict with the waited seqno.
+        # The devices sends cmds 8 and 9 usually before NEW_CONTROL which increase the seqno.
+        # ^ This needs to be handle in better way, The fix atm is just workaround.
+
         self.debug("Dispatching message CMD %r %s", msg.cmd, msg)
         if msg.seqno in self.listeners and msg.cmd != STATUS:
             # self.debug("Dispatching sequence number %d", msg.seqno)
@@ -687,6 +691,12 @@ class MessageDispatcher(ContextualLogger):
             else:
                 self.debug("Got status update")
                 self.listener(msg)
+                # workdaround for >= v3.4 devices until find prper way to wait seqno correctly.
+                if msg.seqno in self.listeners:
+                    sem = self.listeners[msg.seqno]
+                    if isinstance(sem, asyncio.Semaphore):
+                        self.listeners[msg.seqno] = msg
+                        sem.release()
         else:
             if msg.cmd == CONTROL_NEW:
                 self.debug("Got ACK message for command %d: will ignore it", msg.cmd)
