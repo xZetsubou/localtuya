@@ -990,8 +990,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
     async def status(self):
         """Return device status."""
-        payload = self._generate_payload(DP_QUERY)
-        status = await self.exchange(payload.cmd)
+        status = await self.exchange(DP_QUERY)
 
         if status and "dps" in status:
             self.dps_cache.update(status["dps"])
