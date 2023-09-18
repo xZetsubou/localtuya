@@ -9,6 +9,7 @@ A Home Assistant custom Integration for local handling of Tuya-based devices.
   * [Adding the Integration](#adding-the-integration)
   * [Integration Options](#integration-options)
   * [Add Devices](#add-devices)
+  * [Templates](https://github.com/xZetsubou/hass-localtuya/discussions/13)
 - [Debugging](#debugging)
 - [Notes](#notes)
 - [Credits](#credits)
