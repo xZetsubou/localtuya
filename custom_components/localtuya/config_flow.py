@@ -767,6 +767,10 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     for res_conf in [CONF_MODEL, CONF_PRODUCT_KEY]:
                         if dev_config.get(res_conf):
                             self.device_data[res_conf] = dev_config.get(res_conf)
+                    # Remove the values that assigned as "-"
+                    for del_data in [CONF_RESET_DPIDS, CONF_MANUAL_DPS]:
+                        if del_data in user_input and user_input[del_data] == "-":
+                            self.device_data.pop(del_data)
 
                     if user_input[CONF_ENABLE_ADD_ENTITIES]:
                         self.editing_device = False
