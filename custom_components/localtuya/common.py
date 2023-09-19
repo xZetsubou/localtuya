@@ -397,12 +397,13 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             data = {CONF_TYPE: event, "states": new_status}
             fire_event(event, data)
 
-            if len(self._interface.dispatched_dps) == 1:
-                event = device_dp_triggered
-                dp_trigger = list(self._interface.dispatched_dps)[0]
-                dp_value = self._interface.dispatched_dps.get(dp_trigger)
-                data = {CONF_TYPE: event, "dp": dp_trigger, "value": dp_value}
-                fire_event(event, data)
+            if self._interface is not None:
+                if len(self._interface.dispatched_dps) == 1:
+                    event = device_dp_triggered
+                    dp_trigger = list(self._interface.dispatched_dps)[0]
+                    dp_value = self._interface.dispatched_dps.get(dp_trigger)
+                    data = {CONF_TYPE: event, "dp": dp_trigger, "value": dp_value}
+                    fire_event(event, data)
 
     @callback
     def disconnected(self):
