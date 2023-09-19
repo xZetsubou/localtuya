@@ -384,7 +384,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         # If it's disconnect by unexpected error.
         if self._is_closing is not True:
             self._is_closing = True
-            asyncio.create_task(self.async_connect())
+            self._hass.create_task(self.async_connect())
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
