@@ -472,11 +472,6 @@ async def attempt_cloud_connection(hass, user_input):
         user_input.get(CONF_USER_ID),
     )
 
-    res = await cloud_api.async_get_access_token()
-    if res != "ok":
-        _LOGGER.error("Cloud API connection failed: %s", res)
-        return cloud_api, {"reason": "authentication_failed", "msg": res}
-
     res = await cloud_api.async_get_devices_list()
     if res != "ok":
         _LOGGER.error("Cloud API get_devices_list failed: %s", res)
@@ -558,7 +553,7 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle options flow for LocalTuya integration."""
 
-    def __init__(self, config_entry):
+    def __init__(self, config_entry: config_entries.ConfigEntry):
         """Initialize localtuya options flow."""
         self.config_entry = config_entry
         # self.dps_strings = config_entry.data.get(CONF_DPS_STRINGS, gen_dps_strings())
@@ -574,8 +569,12 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         self.template_device = None
         self.nodeID = None
 
+        self.cloud_data: TuyaCloudApi
+
     async def async_step_init(self, user_input=None):
         """Manage basic options."""
+        self.cloud_data = self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_CLOUD]
+
         return self.async_show_menu(
             step_id="init",
             menu_options=CONFIGURE_MENU,
@@ -673,8 +672,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["base"] = "discovery_failed"
 
         allDevices = mergeDevicesList(
-            self.discovered_devices,
-            self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_CLOUD].device_list,
+            self.discovered_devices, self.cloud_data.device_list
         )
         devices = {}
 
@@ -694,12 +692,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="add_device",
-            data_schema=devices_schema(
-                devices,
-                self.hass.data[DOMAIN][self.config_entry.entry_id][
-                    DATA_CLOUD
-                ].device_list,
-            ),
+            data_schema=devices_schema(devices, self.cloud_data.device_list),
             errors=errors,
         )
 
@@ -726,9 +719,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="edit_device",
             data_schema=devices_schema(
                 devices,
-                self.hass.data[DOMAIN][self.config_entry.entry_id][
-                    DATA_CLOUD
-                ].device_list,
+                self.cloud_data.device_list,
                 False,
                 self.config_entry.data[CONF_DEVICES],
             ),
@@ -745,9 +736,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 self.device_data = user_input.copy()
                 self.nodeID = self.nodeID or user_input.get(CONF_NODE_ID, None)
                 if dev_id is not None:
-                    cloud_devs = self.hass.data[DOMAIN][self.config_entry.entry_id][
-                        DATA_CLOUD
-                    ].device_list
+                    cloud_devs = self.cloud_data.device_list
                     if dev_id in cloud_devs:
                         self.device_data[CONF_MODEL] = cloud_devs[dev_id].get(
                             CONF_PRODUCT_NAME
@@ -853,9 +842,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             )
 
             self.nodeID = defaults.get(CONF_NODE_ID, None)
-            cloud_devs = self.hass.data[DOMAIN][self.config_entry.entry_id][
-                DATA_CLOUD
-            ].device_list
+            cloud_devs = self.cloud_data.device_list
             placeholders["for_device"] = f" for device `{dev_id}`"
             if self.nodeID:
                 placeholders.update(
@@ -887,9 +874,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             defaults[CONF_NODE_ID] = ""
             if dev_id is not None:
                 # Insert default values from discovery and cloud if present
-                cloud_devs = self.hass.data[DOMAIN][self.config_entry.entry_id][
-                    DATA_CLOUD
-                ].device_list
+                cloud_devs = self.cloud_data.device_list
                 local_devs = self.discovered_devices
                 allDevices = mergeDevicesList(local_devs, cloud_devs)
                 device = allDevices[dev_id]
