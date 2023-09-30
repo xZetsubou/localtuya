@@ -319,7 +319,7 @@ def strip_dps_values(user_input, dps_strings):
 def config_schema():
     """Build schema used for setting up component."""
     entity_schemas = [
-        platform_schema(platform, range(1, 256), yaml=True) for platform in PLATFORMS
+        platform_schema(plats, range(1, 256), yaml=True) for plats in PLATFORMS.values()
     ]
     return vol.Schema(
         {
@@ -443,14 +443,19 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
     if data[CONF_DEVICE_ID] in hass.data[DOMAIN][entry_id][DATA_CLOUD].device_list:
         cloud_device_specs, res = await hass.data[DOMAIN][entry_id][
             DATA_CLOUD
-        ].async_get_device_specifications(data[CONF_DEVICE_ID])
+        ].async_get_device_query_properties(data[CONF_DEVICE_ID])
         if res != "ok":
             _LOGGER.error("Cloud DP specification request failed: %s", res)
         else:
-            for category in ("functions", "status"):
+            for category in cloud_device_specs:
                 cloud_dp_codes.update(
-                    {str(e["dp_id"]): e["code"] for e in cloud_device_specs[category]}
+                    {
+                        str(e["dp_id"]): e["code"]
+                        # + (f", name: {e['custom_name']}" if e["custom_name"] else "")
+                        for e in cloud_device_specs[category]
+                    }
                 )
+
     return {
         CONF_DPS_STRINGS: dps_string_list(detected_dps, cloud_dp_codes),
         CONF_PROTOCOL_VERSION: conf_protocol,
