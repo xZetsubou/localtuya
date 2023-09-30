@@ -472,6 +472,11 @@ async def attempt_cloud_connection(hass, user_input):
         user_input.get(CONF_USER_ID),
     )
 
+    res = await cloud_api.async_get_access_token()
+    if res != "ok":
+        _LOGGER.error("Cloud API connection failed: %s", res)
+        return cloud_api, {"reason": "authentication_failed", "msg": res}
+
     res = await cloud_api.async_get_devices_list()
     if res != "ok":
         _LOGGER.error("Cloud API get_devices_list failed: %s", res)
