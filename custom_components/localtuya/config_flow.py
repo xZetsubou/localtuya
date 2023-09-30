@@ -319,7 +319,7 @@ def strip_dps_values(user_input, dps_strings):
 def config_schema():
     """Build schema used for setting up component."""
     entity_schemas = [
-        platform_schema(platform, range(1, 256), yaml=True) for platform in PLATFORMS
+        platform_schema(plats, range(1, 256), yaml=True) for plats in PLATFORMS.values()
     ]
     return vol.Schema(
         {

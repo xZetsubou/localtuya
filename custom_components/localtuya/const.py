@@ -1,5 +1,5 @@
 """Constants for localtuya integration."""
-from homeassistant.const import EntityCategory
+from homeassistant.const import EntityCategory, Platform
 
 DOMAIN = "localtuya"
 
@@ -11,19 +11,19 @@ SUPPORTED_PROTOCOL_VERSIONS = ["3.3", "3.1", "3.2", "3.4", "3.5"]
 
 
 # Platforms in this list must support config flows
-PLATFORMS = [
-    "binary_sensor",
-    "button",
-    "climate",
-    "cover",
-    "fan",
-    "light",
-    "number",
-    "select",
-    "sensor",
-    "switch",
-    "vacuum",
-]
+PLATFORMS = {
+    "Binary Sensor": Platform.BINARY_SENSOR,
+    "Button": Platform.BUTTON,
+    "Climate": Platform.CLIMATE,
+    "Cover": Platform.COVER,
+    "Fan": Platform.FAN,
+    "Light": Platform.LIGHT,
+    "Number": Platform.NUMBER,
+    "Selector": Platform.SELECT,
+    "Sensor": Platform.SENSOR,
+    "Switch": Platform.SWITCH,
+    "Vacuum": Platform.VACUUM,
+}
 TUYA_DEVICES = "tuya_devices"
 
 ATTR_CURRENT = "current"
