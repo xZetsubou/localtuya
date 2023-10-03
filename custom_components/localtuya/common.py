@@ -21,6 +21,7 @@ from homeassistant.const import (
     CONF_ENTITY_CATEGORY,
     EntityCategory,
     CONF_TYPE,
+    CONF_ICON,
 )
 from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import (
@@ -430,12 +431,14 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     """Representation of a Tuya entity."""
 
+    _attr_has_entity_name = True
+
     def __init__(self, device, config_entry, dp_id, logger, **kwargs):
         """Initialize the Tuya entity."""
         super().__init__()
         self._device = device
         self._dev_config_entry = config_entry
-        self._config = get_entity_config(config_entry, dp_id)
+        self._config: dict = get_entity_config(config_entry, dp_id)
         self._dp_id = dp_id
         self._status = {}
         self._state = None
@@ -522,9 +525,12 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         return self._config[CONF_FRIENDLY_NAME]
 
     @property
-    def device_class(self):
-        """Return the class of this device."""
-        return self._config.get(CONF_DEVICE_CLASS, None)
+    def icon(self) -> str | None:
+        """Icon of the entity."""
+        if icon := self._config.get(CONF_ICON, False):
+            return icon
+
+        return None
 
     @property
     def should_poll(self):
@@ -561,7 +567,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         else:
             # Set Default values for unconfigured devices.
             if self.has_config(CONF_PLATFORM):
-                platform = self._config[CONF_PLATFORM]
+                platform = self._config.get(CONF_PLATFORM)
                 # Call default_category from config_flow  to set default values!
                 # This will be removed after a while, this is only made to convert who came from main integration.
                 # new users will be forced to choose category from config_flow.
@@ -569,6 +575,11 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
                 return default_category(platform)
         return None
+
+    @property
+    def device_class(self):
+        """Return the class of this device."""
+        return self._config.get(CONF_DEVICE_CLASS, None)
 
     def dps(self, dp_index):
         """Return cached value for DPS index."""
