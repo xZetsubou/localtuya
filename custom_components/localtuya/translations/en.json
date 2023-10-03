@@ -130,7 +130,7 @@
                 "description": "Please fill out the details for {entity} with type `{platform}`. All settings except for `ID` can be changed from the Options page later.",
                 "data": {
                     "id": "ID",
-                    "friendly_name": "Friendly name",
+                    "friendly_name": "Friendly name for entity (device_name_entity name)",
                     "current": "Current",
                     "current_consumption": "Current Consumption",
                     "voltage": "Voltage",
