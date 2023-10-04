@@ -142,6 +142,7 @@
                     "span_time": "Full opening time, in secs. (for *timed* mode only)",
                     "unit_of_measurement": "Unit of Measurement",
                     "device_class": "Device Class",
+                    "state_class": "State Class",
                     "scaling": "Scaling Factor",
                     "state_on": "On Value",
                     "state_off": "Off Value",
@@ -210,6 +211,10 @@
                     "step_size": "Minimum increment between numbers",
                     "is_passive_entity": "Passive entity - requires integration to send initialisation value",
                     "entity_category": "Show the entity in this categroy"
+                },
+                "data_description": {
+                    "device_class": "[Device Classes More Info Here](https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes)",
+                    "state_class": "[State Class More Info Here](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes)"
                 }
             }
         }
