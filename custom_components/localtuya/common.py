@@ -526,7 +526,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def name(self):
         """Get name of Tuya entity."""
-        return self._config[CONF_FRIENDLY_NAME]
+        return self._config.get(CONF_FRIENDLY_NAME)
 
     @property
     def icon(self) -> str | None:
