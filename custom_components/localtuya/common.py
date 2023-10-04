@@ -153,7 +153,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         super().__init__()
         self._hass = hass
         self._config_entry = config_entry
-        self._dev_config_entry = config_entry.data[CONF_DEVICES][dev_id].copy()
+        self._dev_config_entry: dict = config_entry.data[CONF_DEVICES][dev_id].copy()
         self._interface = None
         self._status = {}
         self.dps_to_request = {}
@@ -171,7 +171,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             for reset_id in reset_ids_str:
                 self._default_reset_dpids.append(int(reset_id.strip()))
 
-        self.set_logger(_LOGGER, self._dev_config_entry[CONF_DEVICE_ID])
+        self.set_logger(
+            _LOGGER,
+            self._dev_config_entry.get(CONF_DEVICE_ID),
+            self._dev_config_entry.get(CONF_ENABLE_DEBUG),
+        )
 
         # This has to be done in case the device type is type_0d
         for entity in self._dev_config_entry[CONF_ENTITIES]:
@@ -342,7 +346,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             try:
                 await self._interface.set_dp(state, dp_index)
             except Exception:  # pylint: disable=broad-except
-                self.exception("Failed to set DP %d to %s", dp_index, str(state))
+                self.debug("Failed to set DP %d to %s", dp_index, str(state))
         else:
             self.error(
                 "Not connected to device %s", self._dev_config_entry[CONF_FRIENDLY_NAME]
@@ -354,7 +358,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             try:
                 await self._interface.set_dps(states)
             except Exception:  # pylint: disable=broad-except
-                self.exception("Failed to set DPs %r", states)
+                self.debug("Failed to set DPs %r", states)
         else:
             self.error(
                 "Not connected to device %s", self._dev_config_entry[CONF_FRIENDLY_NAME]
