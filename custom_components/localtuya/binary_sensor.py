@@ -51,7 +51,7 @@ class LocaltuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
         super().status_updated()
 
         state = str(self.dps(self._dp_id)).lower()
-        if state == self._config[CONF_STATE_ON].lower():
+        if state == self._config[CONF_STATE_ON].lower() or state == "true":
             self._is_on = True
         else:
             self._is_on = False
