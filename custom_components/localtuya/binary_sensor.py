@@ -11,10 +11,10 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.const import CONF_DEVICE_CLASS
 
 from .common import LocalTuyaEntity, async_setup_entry
+from .const import CONF_STATE_ON
 
 _LOGGER = logging.getLogger(__name__)
 
-CONF_STATE_ON = "state_on"
 CONF_STATE_OFF = "state_off"
 
 

@@ -21,6 +21,7 @@ PLATFORMS = {
     "Number": Platform.NUMBER,
     "Selector": Platform.SELECT,
     "Sensor": Platform.SENSOR,
+    "Siren": Platform.SIREN,
     "Switch": Platform.SWITCH,
     "Vacuum": Platform.VACUUM,
 }
@@ -57,6 +58,9 @@ CONF_MANUAL_DPS = "manual_dps_strings"
 CONF_DEFAULT_VALUE = "dps_default_value"
 CONF_RESET_DPIDS = "reset_dpids"
 CONF_PASSIVE_ENTITY = "is_passive_entity"
+
+# Binary_sensor, Siren
+CONF_STATE_ON = "state_on"
 
 # light
 CONF_BRIGHTNESS_LOWER = "brightness_lower"
