@@ -38,8 +38,8 @@ def flow_schema(dps):
             vol.Coerce(float),
             vol.Range(min=0.0, max=1000000.0),
         ),
-        vol.Required(CONF_RESTORE_ON_RECONNECT): bool,
-        vol.Required(CONF_PASSIVE_ENTITY): bool,
+        vol.Optional(CONF_RESTORE_ON_RECONNECT, default=False): bool,
+        vol.Optional(CONF_PASSIVE_ENTITY, default=False): bool,
         vol.Optional(CONF_DEFAULT_VALUE): str,
     }
 
