@@ -24,6 +24,8 @@ from homeassistant.components.climate.const import (
     SUPPORT_PRESET_MODE,
     SUPPORT_TARGET_TEMPERATURE,
     SUPPORT_TARGET_TEMPERATURE_RANGE,
+    ATTR_MIN_TEMP,
+    ATTR_MAX_TEMP,
 )
 from homeassistant.const import (
     ATTR_TEMPERATURE,
@@ -45,8 +47,6 @@ from .const import (
     CONF_HVAC_ACTION_SET,
     CONF_HVAC_MODE_DP,
     CONF_HVAC_MODE_SET,
-    CONF_MAX_TEMP_DP,
-    CONF_MIN_TEMP_DP,
     CONF_PRECISION,
     CONF_PRESET_DP,
     CONF_PRESET_SET,
@@ -125,8 +125,8 @@ def flow_schema(dps):
         vol.Optional(CONF_TEMPERATURE_STEP): _col_to_select(
             [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
-        vol.Optional(CONF_MAX_TEMP_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_MIN_TEMP_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(ATTR_MIN_TEMP, default=DEFAULT_MIN_TEMP): float,
+        vol.Optional(ATTR_MAX_TEMP, default=DEFAULT_MAX_TEMP): float,
         vol.Optional(CONF_PRECISION): _col_to_select(
             [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
@@ -169,9 +169,9 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._preset_mode = None
         self._hvac_action = None
         self._precision = float(self._config.get(CONF_PRECISION, DEFAULT_PRECISION))
-        self._target_precision = float(self._config.get(
-            CONF_TARGET_PRECISION, self._precision
-        ))
+        self._target_precision = float(
+            self._config.get(CONF_TARGET_PRECISION, self._precision)
+        )
         self._conf_hvac_mode_dp = self._config.get(CONF_HVAC_MODE_DP)
         self._conf_hvac_mode_set = HVAC_MODE_SETS.get(
             self._config.get(CONF_HVAC_MODE_SET), {}
@@ -195,7 +195,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         supported_features = 0
         if self.has_config(CONF_TARGET_TEMPERATURE_DP):
             supported_features = supported_features | SUPPORT_TARGET_TEMPERATURE
-        if self.has_config(CONF_MAX_TEMP_DP):
+        if self.has_config(ATTR_MAX_TEMP):
             supported_features = supported_features | SUPPORT_TARGET_TEMPERATURE_RANGE
         if self.has_config(CONF_PRESET_DP) or self.has_config(CONF_ECO_DP):
             supported_features = supported_features | SUPPORT_PRESET_MODE
@@ -344,8 +344,8 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def min_temp(self):
         """Return the minimum temperature."""
-        if self.has_config(CONF_MIN_TEMP_DP):
-            return self.dps_conf(CONF_MIN_TEMP_DP)
+        if _min_temp := self._config.get(ATTR_MIN_TEMP):
+            return _min_temp
         # DEFAULT_MIN_TEMP is in C
         if self.temperature_unit == TEMP_FAHRENHEIT:
             return DEFAULT_MIN_TEMP * 1.8 + 32
@@ -355,8 +355,8 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def max_temp(self):
         """Return the maximum temperature."""
-        if self.has_config(CONF_MAX_TEMP_DP):
-            return self.dps_conf(CONF_MAX_TEMP_DP)
+        if _max_temp := self._config.get(ATTR_MAX_TEMP):
+            return _max_temp
         # DEFAULT_MAX_TEMP is in C
         if self.temperature_unit == TEMP_FAHRENHEIT:
             return DEFAULT_MAX_TEMP * 1.8 + 32
