@@ -10,7 +10,9 @@ from homeassistant.components.cover import (
     DOMAIN,
     CoverEntityFeature,
     CoverEntity,
+    DEVICE_CLASSES_SCHEMA,
 )
+from homeassistant.const import CONF_DEVICE_CLASS
 from .config_flow import _col_to_select
 from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
@@ -35,8 +37,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 COVER_COMMANDS = {
-    "ON, OFF and Stop": "on_off_stop",
     "Open, Close and Stop": "open_close_stop",
+    "ON, OFF and Stop": "on_off_stop",
     "fz, zz and Stop": "fz_zz_stop",
     "1, 2 and 3": "1_2_3",
     "0, 1 and 2": "0_1_2",
@@ -70,6 +72,7 @@ def flow_schema(dps):
         vol.Optional(CONF_SPAN_TIME, default=DEFAULT_SPAN_TIME): vol.All(
             vol.Coerce(float), vol.Range(min=1.0, max=300.0)
         ),
+        vol.Optional(CONF_DEVICE_CLASS): DEVICE_CLASSES_SCHEMA,
     }
 
 
@@ -176,7 +179,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
         elif self._config[CONF_POSITIONING_MODE] == COVER_MODES["Position"]:
             converted_position = int(kwargs[ATTR_POSITION])
-            if self._config[CONF_POSITION_INVERTED]:
+            if self._config.get(CONF_POSITION_INVERTED):
                 converted_position = 100 - converted_position
             if 0 <= converted_position <= 100 and self.has_config(CONF_SET_POSITION_DP):
                 await self._device.set_dp(
@@ -244,7 +247,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
         if self.has_config(CONF_CURRENT_POSITION_DP):
             curr_pos = self.dps_conf(CONF_CURRENT_POSITION_DP)
-            if self._config[CONF_POSITION_INVERTED]:
+            if self._config.get(CONF_POSITION_INVERTED):
                 self._current_cover_position = 100 - curr_pos
             else:
                 self._current_cover_position = curr_pos

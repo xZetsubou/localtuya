@@ -3,7 +3,7 @@ import logging
 from functools import partial
 
 import voluptuous as vol
-from homeassistant.components.number import DOMAIN, NumberEntity
+from homeassistant.components.number import DOMAIN, NumberEntity, DEVICE_CLASSES_SCHEMA
 from homeassistant.const import CONF_DEVICE_CLASS, STATE_UNKNOWN
 
 from .common import LocalTuyaEntity, async_setup_entry
@@ -41,6 +41,7 @@ def flow_schema(dps):
         vol.Optional(CONF_RESTORE_ON_RECONNECT, default=False): bool,
         vol.Optional(CONF_PASSIVE_ENTITY, default=False): bool,
         vol.Optional(CONF_DEFAULT_VALUE): str,
+        vol.Optional(CONF_DEVICE_CLASS): DEVICE_CLASSES_SCHEMA,
     }
 
 
