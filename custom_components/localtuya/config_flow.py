@@ -26,6 +26,7 @@ from homeassistant.const import (
     CONF_FRIENDLY_NAME,
     CONF_ENTITY_CATEGORY,
     CONF_HOST,
+    CONF_ICON,
     CONF_ID,
     CONF_NAME,
     CONF_PLATFORM,
@@ -1015,6 +1016,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 entity = strip_dps_values(user_input, self.dps_strings)
                 entity[CONF_ID] = self.current_entity[CONF_ID]
                 entity[CONF_PLATFORM] = self.current_entity[CONF_PLATFORM]
+                entity[CONF_ICON] = self.current_entity.get(CONF_ICON, "")
                 self.device_data[CONF_ENTITIES].append(entity)
                 if len(self.entities) == len(self.device_data[CONF_ENTITIES]):
                     # finished editing device. Let's store the new config entry....
