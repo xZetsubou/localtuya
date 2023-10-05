@@ -16,9 +16,8 @@ from homeassistant.const import (
     STATE_UNKNOWN,
 )
 
-CONF_STATE_CLASS = "state_class"
 from .common import LocalTuyaEntity, async_setup_entry
-from .const import CONF_SCALING
+from .const import CONF_SCALING, CONF_STATE_CLASS
 
 _LOGGER = logging.getLogger(__name__)
 
