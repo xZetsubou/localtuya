@@ -1,4 +1,6 @@
-"""Platform to locally control Tuya-based climate devices."""
+"""Platform to locally control Tuya-based climate devices.
+    # PRESETS and HVAC_MODE Needs to be handle in better way.
+"""
 import asyncio
 import logging
 from functools import partial
