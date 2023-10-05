@@ -12,11 +12,8 @@ from homeassistant.components.climate import (
     ClimateEntity,
 )
 from homeassistant.components.climate.const import (
-    CURRENT_HVAC_HEAT,
-    CURRENT_HVAC_IDLE,
-    HVAC_MODE_AUTO,
-    HVAC_MODE_HEAT,
-    HVAC_MODE_OFF,
+    HVACMode,
+    HVACAction,
     PRESET_AWAY,
     PRESET_ECO,
     PRESET_HOME,
@@ -59,45 +56,65 @@ _LOGGER = logging.getLogger(__name__)
 
 HVAC_MODE_SETS = {
     "manual/auto": {
-        HVAC_MODE_HEAT: "manual",
-        HVAC_MODE_AUTO: "auto",
+        HVACMode.HEAT: "manual",
+        HVACMode.AUTO: "auto",
     },
     "Manual/Auto": {
-        HVAC_MODE_HEAT: "Manual",
-        HVAC_MODE_AUTO: "Auto",
+        HVACMode.HEAT: "Manual",
+        HVACMode.AUTO: "Auto",
     },
     "Manual/Program": {
-        HVAC_MODE_HEAT: "Manual",
-        HVAC_MODE_AUTO: "Program",
+        HVACMode.HEAT: "Manual",
+        HVACMode.AUTO: "Program",
+    },
+    "auto/cold/hot/wet": {
+        HVACMode.AUTO: "auto",
+        HVACMode.COOL: "cold",
+        HVACMode.HEAT: "hot",
+        HVACMode.DRY: "wet",
     },
     "m/p": {
-        HVAC_MODE_HEAT: "m",
-        HVAC_MODE_AUTO: "p",
+        HVACMode.HEAT: "m",
+        HVACMode.AUTO: "p",
     },
     "True/False": {
-        HVAC_MODE_HEAT: True,
+        HVACMode.HEAT: True,
     },
     "1/0": {
-        HVAC_MODE_HEAT: "1",
-        HVAC_MODE_AUTO: "0",
+        HVACMode.HEAT: "1",
+        HVACMode.AUTO: "0",
+    },
+    "smart/auto": {
+        HVACMode.HEAT_COOL: "1",
+        HVACMode.AUTO: "auto",
     },
 }
 HVAC_ACTION_SETS = {
     "True/False": {
-        CURRENT_HVAC_HEAT: True,
-        CURRENT_HVAC_IDLE: False,
+        HVACAction.HEATING: True,
+        HVACAction.IDLE: False,
     },
     "open/close": {
-        CURRENT_HVAC_HEAT: "open",
-        CURRENT_HVAC_IDLE: "close",
+        HVACAction.HEATING: "open",
+        HVACAction.IDLE: "close",
     },
     "heating/no_heating": {
-        CURRENT_HVAC_HEAT: "heating",
-        CURRENT_HVAC_IDLE: "no_heating",
+        HVACAction.HEATING: "heating",
+        HVACAction.IDLE: "no_heating",
+    },
+    "heating/cooling": {
+        HVACAction.HEATING: "heating",
+        HVACAction.COOLING: "cooling",
+        HVACAction.IDLE: "ventilation",
+        HVACAction.OFF: "off",
     },
     "Heat/Warming": {
-        CURRENT_HVAC_HEAT: "Heat",
-        CURRENT_HVAC_IDLE: "Warming",
+        HVACAction.HEATING: "Heat",
+        HVACAction.IDLE: "Warming",
+    },
+    "heating/warming": {
+        HVACAction.HEATING: "heating",
+        HVACAction.IDLE: "warming",
     },
 }
 PRESET_SETS = {
@@ -105,6 +122,17 @@ PRESET_SETS = {
         PRESET_AWAY: "Holiday",
         PRESET_HOME: "Program",
         PRESET_NONE: "Manual",
+    },
+    "auto/smart": {
+        "auto": "Auto",
+        "smart": "Smart",
+    },
+    "auto/manual/smart/comfortable/eco": {
+        "auto": "Auto",
+        "manual": "Manual",
+        "smart": "Smart",
+        "comfortable": "Comfortable",
+        "eco": "ECO",
     },
 }
 
@@ -231,7 +259,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         """Return the list of available operation modes."""
         if not self.has_config(CONF_HVAC_MODE_DP):
             return None
-        return list(self._conf_hvac_mode_set) + [HVAC_MODE_OFF]
+        return list(self._conf_hvac_mode_set) + [HVACMode.OFF]
 
     @property
     def hvac_action(self):
@@ -240,22 +268,22 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         Need to be one of CURRENT_HVAC_*.
         """
         if self._config.get(CONF_HEURISTIC_ACTION, False):
-            if self._hvac_mode == HVAC_MODE_HEAT:
+            if self._hvac_mode == HVACMode.HEAT:
                 if self._current_temperature < (
                     self._target_temperature - self._precision
                 ):
-                    self._hvac_action = CURRENT_HVAC_HEAT
+                    self._hvac_action = HVACMode.HEAT
                 if self._current_temperature == (
                     self._target_temperature - self._precision
                 ):
-                    if self._hvac_action == CURRENT_HVAC_HEAT:
-                        self._hvac_action = CURRENT_HVAC_HEAT
-                    if self._hvac_action == CURRENT_HVAC_IDLE:
-                        self._hvac_action = CURRENT_HVAC_IDLE
+                    if self._hvac_action == HVACMode.HEAT:
+                        self._hvac_action = HVACMode.HEAT
+                    if self._hvac_action == HVACAction.IDLE:
+                        self._hvac_action = HVACAction.IDLE
                 if (
                     self._current_temperature + self._precision
                 ) > self._target_temperature:
-                    self._hvac_action = CURRENT_HVAC_IDLE
+                    self._hvac_action = HVACAction.IDLE
             return self._hvac_action
         return self._hvac_action
 
@@ -313,7 +341,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
 
     async def async_set_hvac_mode(self, hvac_mode):
         """Set new target operation mode."""
-        if hvac_mode == HVAC_MODE_OFF:
+        if hvac_mode == HVACMode.OFF:
             await self._device.set_dp(False, self._dp_id)
             return
         if not self._state and self._conf_hvac_mode_dp != self._dp_id:
@@ -394,7 +422,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         # Update the HVAC status
         if self.has_config(CONF_HVAC_MODE_DP):
             if not self._state:
-                self._hvac_mode = HVAC_MODE_OFF
+                self._hvac_mode = HVACMode.OFF
             else:
                 for mode, value in self._conf_hvac_mode_set.items():
                     if self.dps_conf(CONF_HVAC_MODE_DP) == value:
@@ -402,7 +430,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
                         break
                 else:
                     # in case hvac mode and preset share the same dp
-                    self._hvac_mode = HVAC_MODE_AUTO
+                    self._hvac_mode = HVACMode.AUTO
 
         # Update the current action
         for action, value in self._conf_hvac_action_set.items():
