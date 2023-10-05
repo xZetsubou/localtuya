@@ -173,7 +173,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     return True
 
 
-async def async_migrate_entry(hass, config_entry: ConfigEntry):
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Migrate old entries merging all of them in one."""
     new_version = ENTRIES_VERSION
     stored_entries = hass.config_entries.async_entries(DOMAIN)

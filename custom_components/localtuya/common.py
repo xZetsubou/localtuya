@@ -31,7 +31,7 @@ from homeassistant.helpers.dispatcher import (
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.restore_state import RestoreEntity
 
-from . import pytuya
+from .core import pytuya
 from .const import (
     ATTR_STATE,
     ATTR_UPDATED_AT,

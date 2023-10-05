@@ -13,6 +13,7 @@ from homeassistant.const import (
     CONF_ENTITIES,
     CONF_DEVICE_CLASS,
 )
+
 import custom_components.localtuya.templates as templates_dir
 
 JSON_TYPE = list | dict | str
@@ -81,9 +82,9 @@ class templates:
             _LOGGER.error("Unable to save file %s: %s", fname, exc)
 
 
-###############################
-#         Config Flow         #
-###############################
+################################
+## Global config config flows ##
+################################
 from homeassistant.helpers.selector import (
     SelectSelector,
     SelectSelectorConfig,
@@ -92,9 +93,6 @@ from homeassistant.helpers.selector import (
 )
 
 
-################################
-## Global config config flows ##
-################################
 def _col_to_select(opt_list, multi_select=False, is_dps=False):
     """Convert collections to SelectSelectorConfig."""
     if type(opt_list) == dict:
@@ -121,3 +119,9 @@ def _col_to_select(opt_list, multi_select=False, is_dps=False):
                 multiple=True if multi_select else False,
             )
         )
+
+
+###############################
+#    Auto configure device    #
+###############################
+from .tuya_devices import generate_tuya_device

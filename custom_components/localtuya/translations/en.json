@@ -106,6 +106,22 @@
                     "export_config": "Export the device config."
                 }
             },
+            "device_setup_method": {
+                "title": "Auto Configure",
+                "description": "Pick the setup method for the device auto works similar to HA tuya integration",
+                "menu_options": {
+                    "auto_configure_device":"Auto Configure (Beta)",
+                    "pick_entity_type": "Setup Manually (Advanced)",
+                    "choose_template":"Use Template (Pre-Config)"
+                }
+            },
+            "auto_configure_device": {
+                "title": "Auto Configure",
+                "description": "An Error occurred if reason isn't showing check logs: {err_msg}",
+                "menu_options": {
+                    "device_setup_method":"Return to Setup method"
+                }
+            },
             "pick_entity_type": {
                 "title": "Entity type selection",
                 "description": "Please pick the type of entity you want to add.",
@@ -213,8 +229,8 @@
                     "entity_category": "Show the entity in this categroy"
                 },
                 "data_description": {
-                    "device_class": "[Device Classes More Info Here](https://developers.home-assistant.io/docs/core/entity/sensor/#available-device-classes)",
-                    "state_class": "[State Class More Info Here](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes)"
+                    "device_class": "[Device Classes: More Info](https://www.home-assistant.io/docs/configuration/customizing-devices/#device-class)",
+                    "state_class": "[State Classes: More Info Here](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes)"
                 }
             }
         }
