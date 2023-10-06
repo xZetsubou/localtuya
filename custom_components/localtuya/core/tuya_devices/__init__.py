@@ -67,7 +67,7 @@ def generate_tuya_device(localtuya_data: dict, tuya_category: str) -> dict | lis
 
     if not tuya_category or not detected_dps:
         return
-    entities = []
+    entities = {}
 
     for platform, tuya_data in DATA_PLATFORMS.items():
         if cat_data := tuya_data.get(tuya_category):
@@ -105,14 +105,20 @@ def generate_tuya_device(localtuya_data: dict, tuya_category: str) -> dict | lis
                     if not local_entity.get(CONF_ID):
                         continue
                     # Workaround to Prevent duplicated id.
-                    if any(ids.get("id") == local_entity["id"] for ids in entities):
+                    if local_entity[CONF_ID] in entities:
                         continue
 
                     local_entity.update(main_confs)
                     local_entity[CONF_PLATFORM] = platform
-                    entities.append(local_entity)
+                    entities[local_entity.get(CONF_ID)] = local_entity
 
-    return entities
+    # sort entites by id
+    sorted_ids = sorted(entities, key=int)
+
+    # convert to list of configs
+    list_entities = [entities.get(id) for id in sorted_ids]
+
+    return list_entities
 
 
 def parse_enum(dp_code):
