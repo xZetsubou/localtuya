@@ -1,18 +1,16 @@
 """
 Helpers functions for HASS-LocalTuya.
 """
+
+from enum import Enum
+from fnmatch import fnmatch
 import logging
 import os.path
 import yaml
 
-from fnmatch import fnmatch
 from homeassistant.util.yaml import load_yaml
+from homeassistant.const import CONF_PLATFORM, CONF_ENTITIES
 
-from homeassistant.const import (
-    CONF_PLATFORM,
-    CONF_ENTITIES,
-    CONF_DEVICE_CLASS,
-)
 
 import custom_components.localtuya.templates as templates_dir
 
@@ -61,8 +59,10 @@ class templates:
         export_config = []
         for cfg in config[CONF_ENTITIES]:
             # Special case device_classes
-            if CONF_DEVICE_CLASS in cfg.keys():
-                cfg[CONF_DEVICE_CLASS] = cfg.get(CONF_DEVICE_CLASS).split("/ /")[0]
+            for k, v in cfg.items():
+                if not type(v) is str and isinstance(v, Enum):
+                    cfg[k] = v.value
+
             ents = {cfg[CONF_PLATFORM]: cfg}
             export_config.append(ents)
         fname = (
