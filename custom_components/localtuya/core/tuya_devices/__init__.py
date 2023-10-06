@@ -124,8 +124,8 @@ def generate_tuya_device(localtuya_data: dict, tuya_category: str) -> dict | lis
 def parse_enum(dp_code):
     """get enum value if code type is enum"""
     try:
-        dp_code = dp_code.value
+        parsed_dp_code = dp_code.value
     except:
-        dp_code = dp_code
+        parsed_dp_code = dp_code
 
-    return dp_code
+    return parsed_dp_code
