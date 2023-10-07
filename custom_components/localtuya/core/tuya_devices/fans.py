@@ -18,13 +18,6 @@ CONF_FAN_DIRECTION_REV = "fan_direction_reverse"
 CONF_FAN_DPS_TYPE = "fan_dps_type"
 CONF_FAN_ORDERED_LIST = "fan_speed_ordered_list"
 
-DEFAULTS_LOCALTUYA = {
-    CONF_FAN_DIRECTION_FWD: DIRECTION_FORWARD,
-    CONF_FAN_DIRECTION_REV: DIRECTION_REVERSE,
-    CONF_FAN_ORDERED_LIST: "disabled",
-    CONF_FAN_DPS_TYPE: "str",
-}
-
 FAN_SPEED_DP = (
     DPCode.FAN_SPEED_PERCENT,
     DPCode.FAN_SPEED,
@@ -32,6 +25,17 @@ FAN_SPEED_DP = (
     DPCode.FAN_SPEED_ENUM,
 )
 FANS_OSCILLATING = (DPCode.SWITCH_HORIZONTAL, DPCode.SWITCH_VERTICAL)
+
+
+def localtuya_fan(fwd, rev, order, dp_type):
+    """Define localtuya fan configs"""
+    data = {
+        CONF_FAN_DIRECTION_FWD: fwd,
+        CONF_FAN_DIRECTION_REV: rev,
+        CONF_FAN_ORDERED_LIST: order,
+        CONF_FAN_DPS_TYPE: dp_type,
+    }
+    return data
 
 
 FANS: dict[LocalTuyaEntity] = {
@@ -44,7 +48,9 @@ FANS: dict[LocalTuyaEntity] = {
             fan_speed_control=FAN_SPEED_DP,
             fan_direction=DPCode.FAN_DIRECTION,
             fan_oscillating_control=FANS_OSCILLATING,
-            custom_configs=DEFAULTS_LOCALTUYA,
+            custom_configs=localtuya_fan(
+                DIRECTION_FORWARD, DIRECTION_REVERSE, "disabled", "str"
+            ),
         ),
     )
 }

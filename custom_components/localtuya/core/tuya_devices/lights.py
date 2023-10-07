@@ -16,14 +16,21 @@ CONF_COLOR_TEMP_MAX_KELVIN = "color_temp_max_kelvin"
 CONF_COLOR_TEMP_REVERSE = "color_temp_reverse"
 CONF_MUSIC_MODE = "music_mode"
 
-DEFAULTS_VALUES = {
-    CONF_BRIGHTNESS_LOWER: 29,
-    CONF_BRIGHTNESS_UPPER: 1000,
-    CONF_COLOR_TEMP_MIN_KELVIN: 2700,
-    CONF_COLOR_TEMP_MAX_KELVIN: 6500,
-    CONF_COLOR_TEMP_REVERSE: False,
-    CONF_MUSIC_MODE: False,
-}
+
+def localtuya_light(
+    lower=29, upper=1000, min_kv=2700, max_kv=6500, temp_reverse=False, music_mode=False
+):
+    """Define localtuya light configs"""
+    data = {
+        CONF_BRIGHTNESS_LOWER: lower,
+        CONF_BRIGHTNESS_UPPER: upper,
+        CONF_COLOR_TEMP_MIN_KELVIN: min_kv,
+        CONF_COLOR_TEMP_MAX_KELVIN: max_kv,
+        CONF_COLOR_TEMP_REVERSE: temp_reverse,
+        CONF_MUSIC_MODE: music_mode,
+    }
+    return data
+
 
 LIGHTS: dict[LocalTuyaEntity] = {
     # Curtain Switch
@@ -33,7 +40,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             id=DPCode.SWITCH_BACKLIGHT,
             name="backlight",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # String Lights
@@ -46,7 +53,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             brightness=DPCode.BRIGHT_VALUE,
             color_temp=DPCode.TEMP_VALUE,
             color=DPCode.COLOUR_DATA,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Strip Lights
@@ -59,7 +66,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             brightness=DPCode.BRIGHT_VALUE,
             color_temp=DPCode.TEMP_VALUE,
             color=DPCode.COLOUR_DATA,
-            custom_configs=DEFAULTS_VALUES
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False)
             # default_color_type=DEFAULT_COLOR_TYPE_DATA_V2,
         ),
     ),
@@ -74,7 +81,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             color_temp=(DPCode.TEMP_VALUE_V2, DPCode.TEMP_VALUE),
             color=(DPCode.COLOUR_DATA_V2, DPCode.COLOUR_DATA),
             scene=(DPCode.SCENE_DATA, DPCode.SCENE_DATA_V2),
-            custom_configs=update_dict(DEFAULTS_VALUES, {CONF_MUSIC_MODE: True}),
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, True),
         ),
         # Not documented
         # Based on multiple reports: manufacturer customized Dimmer 2 switches
@@ -95,7 +102,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             color_temp=DPCode.TEMP_VALUE,
             color=DPCode.COLOUR_DATA,
             scene=(DPCode.SCENE_DATA, DPCode.SCENE_DATA_V2),
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
         # Some ceiling fan lights use LIGHT for DPCode instead of SWITCH_LED
         LocalTuyaEntity(
@@ -114,7 +121,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             color_temp=DPCode.TEMP_VALUE,
             color=DPCode.COLOUR_DATA,
             scene=(DPCode.SCENE_DATA, DPCode.SCENE_DATA_V2),
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Motion Sensor Light
@@ -127,7 +134,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             brightness=DPCode.BRIGHT_VALUE,
             color_temp=DPCode.TEMP_VALUE,
             color=DPCode.COLOUR_DATA,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Humidifier Light
@@ -139,7 +146,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             color_mode=DPCode.WORK_MODE,
             brightness=DPCode.BRIGHT_VALUE,
             color=DPCode.COLOUR_DATA_HSV,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Switch
@@ -149,7 +156,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             id=DPCode.SWITCH_BACKLIGHT,
             name="backlight",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Air Purifier
@@ -159,7 +166,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             id=DPCode.LIGHT,
             name="backlight",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Air conditioner
@@ -169,7 +176,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             id=DPCode.LIGHT,
             name="backlight",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Unknown light product
@@ -182,7 +189,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             color_mode=DPCode.WORK_MODE,
             brightness=DPCode.BRIGHT_VALUE,
             color=DPCode.COLOUR_DATA,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Unknown product with light capabilities
@@ -195,7 +202,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             color_mode=DPCode.WORK_MODE,
             brightness=DPCode.BRIGHT_VALUE,
             color=DPCode.COLOUR_DATA,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Heater
@@ -205,7 +212,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             id=DPCode.LIGHT,
             name="backlight",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Smart Camera
@@ -215,13 +222,13 @@ LIGHTS: dict[LocalTuyaEntity] = {
             id=DPCode.FLOODLIGHT_SWITCH,
             brightness=DPCode.FLOODLIGHT_LIGHTNESS,
             name="Floodlight",
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
         LocalTuyaEntity(
             id=DPCode.BASIC_INDICATOR,
             name="Indicator light",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Dimmer Switch
@@ -233,7 +240,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             brightness=DPCode.BRIGHT_VALUE_1,
             brightness_upper=DPCode.BRIGHTNESS_MAX_1,
             brightness_lower=DPCode.BRIGHTNESS_MIN_1,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
         LocalTuyaEntity(
             id=DPCode.SWITCH_LED_2,
@@ -241,7 +248,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             brightness=DPCode.BRIGHT_VALUE_2,
             brightness_upper=DPCode.BRIGHTNESS_MAX_2,
             brightness_lower=DPCode.BRIGHTNESS_MIN_2,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
         LocalTuyaEntity(
             id=DPCode.SWITCH_LED_3,
@@ -249,7 +256,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             brightness=DPCode.BRIGHT_VALUE_3,
             brightness_upper=DPCode.BRIGHTNESS_MAX_3,
             brightness_lower=DPCode.BRIGHTNESS_MIN_3,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Dimmer
@@ -261,19 +268,19 @@ LIGHTS: dict[LocalTuyaEntity] = {
             brightness=(DPCode.BRIGHT_VALUE_V2, DPCode.BRIGHT_VALUE),
             brightness_upper=DPCode.BRIGHTNESS_MAX_1,
             brightness_lower=DPCode.BRIGHTNESS_MIN_1,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
         LocalTuyaEntity(
             id=DPCode.SWITCH_LED_1,
             name="light",
             brightness=DPCode.BRIGHT_VALUE_1,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
         LocalTuyaEntity(
             id=DPCode.SWITCH_LED_2,
             name="light_2",
             brightness=DPCode.BRIGHT_VALUE_2,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Wake Up Light II
@@ -285,7 +292,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             brightness=(DPCode.BRIGHT_VALUE_V2, DPCode.BRIGHT_VALUE),
             brightness_upper=DPCode.BRIGHTNESS_MAX_1,
             brightness_lower=DPCode.BRIGHTNESS_MIN_1,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Solar Light
@@ -298,7 +305,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             brightness=DPCode.BRIGHT_VALUE,
             color_temp=DPCode.TEMP_VALUE,
             color=DPCode.COLOUR_DATA,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Ceiling Light
@@ -311,7 +318,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             brightness=DPCode.BRIGHT_VALUE,
             color_temp=DPCode.TEMP_VALUE,
             color=DPCode.COLOUR_DATA,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
         LocalTuyaEntity(
             id=DPCode.SWITCH_NIGHT_LIGHT,
@@ -327,7 +334,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
             color_mode=DPCode.WORK_MODE,
             brightness=DPCode.BRIGHT_CONTROLLER,
             color_temp=DPCode.TEMP_CONTROLLER,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
     # Fan
@@ -339,13 +346,13 @@ LIGHTS: dict[LocalTuyaEntity] = {
             color_mode=DPCode.WORK_MODE,
             brightness=DPCode.BRIGHT_VALUE,
             color_temp=DPCode.TEMP_VALUE,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
         LocalTuyaEntity(
             id=DPCode.SWITCH_LED,
             name="light_2",
             brightness=DPCode.BRIGHT_VALUE_1,
-            custom_configs=DEFAULTS_VALUES,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
     ),
 }

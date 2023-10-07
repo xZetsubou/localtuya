@@ -15,6 +15,17 @@ CONF_CURRENT_POSITION_DP = "current_position_dp"
 CONF_SET_POSITION_DP = "set_position_dp"
 CONF_POSITION_INVERTED = "position_inverted"
 
+
+def localtuya_cover(cmd_set, position_mode=None, inverted=False):
+    """Define localtuya cover configs"""
+    data = {
+        CONF_COMMANDS_SET: cmd_set,
+        CONF_POSITIONING_MODE: position_mode,
+        CONF_POSITION_INVERTED: inverted,
+    }
+    return data
+
+
 COVERS: dict[LocalTuyaEntity] = {
     # Curtain
     # Note: Multiple curtains isn't documented
@@ -23,10 +34,7 @@ COVERS: dict[LocalTuyaEntity] = {
         LocalTuyaEntity(
             id=DPCode.CONTROL,
             name="Curtain",
-            custom_configs={
-                "commands_set": "open_close_stop",
-                "positioning_mode": "position",
-            },
+            custom_configs=localtuya_cover("open_close_stop", "position"),
             current_state=DPCode.SITUATION_SET,
             current_position_dp=(DPCode.PERCENT_CONTROL, DPCode.PERCENT_STATE),
             set_position_dp=DPCode.PERCENT_CONTROL,
@@ -34,10 +42,7 @@ COVERS: dict[LocalTuyaEntity] = {
         LocalTuyaEntity(
             id=DPCode.CONTROL_2,
             name="Curtain 2",
-            custom_configs={
-                "commands_set": "open_close_stop",
-                "positioning_mode": "position",
-            },
+            custom_configs=localtuya_cover("open_close_stop", "position"),
             current_position_dp=DPCode.PERCENT_STATE_2,
             set_position_dp=DPCode.PERCENT_CONTROL_2,
             device_class=CoverDeviceClass.CURTAIN,
@@ -45,10 +50,7 @@ COVERS: dict[LocalTuyaEntity] = {
         LocalTuyaEntity(
             id=DPCode.CONTROL_3,
             name="Curtain 3",
-            custom_configs={
-                "commands_set": "open_close_stop",
-                "positioning_mode": "position",
-            },
+            custom_configs=localtuya_cover("open_close_stop", "position"),
             current_position_dp=DPCode.PERCENT_STATE_3,
             set_position_dp=DPCode.PERCENT_CONTROL_3,
             device_class=CoverDeviceClass.CURTAIN,
@@ -56,10 +58,7 @@ COVERS: dict[LocalTuyaEntity] = {
         LocalTuyaEntity(
             id=DPCode.MACH_OPERATE,
             name="Curtain",
-            custom_configs={
-                "commands_set": "fz_zz_stop",
-                "positioning_mode": "position",
-            },
+            custom_configs=localtuya_cover("fz_zz_stop", "position"),
             current_position_dp=DPCode.POSITION,
             set_position_dp=DPCode.POSITION,
             device_class=CoverDeviceClass.CURTAIN,
@@ -69,10 +68,7 @@ COVERS: dict[LocalTuyaEntity] = {
         LocalTuyaEntity(
             id=DPCode.SWITCH_1,
             name="Blind",
-            custom_configs={
-                "commands_set": "fz_zz_stop",
-                "positioning_mode": "position",
-            },
+            custom_configs=localtuya_cover("open_close_stop", "position"),
             current_position_dp=DPCode.PERCENT_CONTROL,
             set_position_dp=DPCode.PERCENT_CONTROL,
             device_class=CoverDeviceClass.BLIND,
@@ -84,33 +80,21 @@ COVERS: dict[LocalTuyaEntity] = {
         LocalTuyaEntity(
             id=DPCode.SWITCH_1,
             name="Door",
-            custom_configs={
-                "commands_set": "fz_zz_stop",
-                "positioning_mode": "position",
-                "position_inverted": True,
-            },
+            custom_configs=localtuya_cover("open_close_stop", "position", True),
             current_state=DPCode.DOORCONTACT_STATE,
             device_class=CoverDeviceClass.GARAGE,
         ),
         LocalTuyaEntity(
             id=DPCode.SWITCH_2,
             name="Door 2",
-            custom_configs={
-                "commands_set": "fz_zz_stop",
-                "positioning_mode": "position",
-                "position_inverted": True,
-            },
+            custom_configs=localtuya_cover("open_close_stop", "position", True),
             current_state=DPCode.DOORCONTACT_STATE_2,
             device_class=CoverDeviceClass.GARAGE,
         ),
         LocalTuyaEntity(
             id=DPCode.SWITCH_3,
             name="Door 3",
-            custom_configs={
-                "commands_set": "fz_zz_stop",
-                "positioning_mode": "position",
-                "position_inverted": True,
-            },
+            custom_configs=localtuya_cover("open_close_stop", "position", True),
             current_state=DPCode.DOORCONTACT_STATE_3,
             device_class=CoverDeviceClass.GARAGE,
         ),
@@ -121,10 +105,7 @@ COVERS: dict[LocalTuyaEntity] = {
         LocalTuyaEntity(
             id=DPCode.CONTROL,
             name="Curtain",
-            custom_configs={
-                "commands_set": "fz_zz_stop",
-                "positioning_mode": "position",
-            },
+            custom_configs=localtuya_cover("open_close_stop", "position"),
             current_position_dp=DPCode.PERCENT_CONTROL,
             set_position_dp=DPCode.PERCENT_CONTROL,
             device_class=CoverDeviceClass.CURTAIN,
@@ -132,10 +113,7 @@ COVERS: dict[LocalTuyaEntity] = {
         LocalTuyaEntity(
             id=DPCode.CONTROL_2,
             name="Curtain 2",
-            custom_configs={
-                "commands_set": "fz_zz_stop",
-                "positioning_mode": "position",
-            },
+            custom_configs=localtuya_cover("open_close_stop", "position"),
             current_position_dp=DPCode.PERCENT_CONTROL_2,
             set_position_dp=DPCode.PERCENT_CONTROL_2,
             device_class=CoverDeviceClass.CURTAIN,
@@ -147,10 +125,7 @@ COVERS: dict[LocalTuyaEntity] = {
         LocalTuyaEntity(
             id=DPCode.CONTROL,
             name="Curtain",
-            custom_configs={
-                "commands_set": "fz_zz_stop",
-                "positioning_mode": "position",
-            },
+            custom_configs=localtuya_cover("open_close_stop", "position"),
             current_position_dp=DPCode.PERCENT_STATE,
             set_position_dp=DPCode.PERCENT_CONTROL,
             device_class=CoverDeviceClass.CURTAIN,

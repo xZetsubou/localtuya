@@ -22,6 +22,12 @@ ON_OPENED = {CONF_STATE_ON: "opened"}
 ON_AQAB = {CONF_STATE_ON: "AQAB"}
 
 
+def localtuya_binarySensor(state_on="1"):
+    """Define localtuya binary_sensor configs"""
+    data = {CONF_STATE_ON: state_on}
+    return data
+
+
 # Commonly used sensors
 TAMPER_BINARY_SENSOR = LocalTuyaEntity(
     key=DPCode.TEMPER_ALARM,
