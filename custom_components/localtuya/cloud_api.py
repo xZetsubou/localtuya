@@ -184,6 +184,6 @@ class TuyaCloudApi:
     def token_validate(self):
         """Return whether token is expired or not"""
         cur_time = int(time.time())
-        expire_time = self._token_expire_time
+        expire_time = self._token_expire_time - 30
 
         return expire_time >= cur_time
