@@ -10,9 +10,6 @@ import requests
 
 _LOGGER = logging.getLogger(__name__)
 
-# The time that we will obtian new token if it's exceeded default 2 hours in milliseconds.
-REFRESH_TOKEN = 7200000
-
 
 # Signature algorithm.
 def calc_sign(msg, key):
@@ -40,7 +37,7 @@ class TuyaCloudApi:
         self._secret = secret
         self._user_id = user_id
         self._access_token = ""
-        self._last_token_time: int = int(time.time() * 1000) + REFRESH_TOKEN
+        self._token_expire_time: int = -1
 
         self.device_list = {}
 
@@ -68,9 +65,9 @@ class TuyaCloudApi:
 
     async def async_make_request(self, method, url, body=None, headers={}):
         """Perform requests."""
-        # tokens are only valid for 2hours, If the last request before more then 2 hours ago, We will obtain new token.
-        if int(time.time() * 1000) - int(self._last_token_time) >= REFRESH_TOKEN:
-            await self.async_refresh_token()
+        # obtain new token if expired.
+        if not self.token_validate and self._token_expire_time != -1:
+            await self.async_get_access_token()
 
         timestamp = str(int(time.time() * 1000))
         payload = self.generate_payload(method, timestamp, url, headers, body)
@@ -108,20 +105,12 @@ class TuyaCloudApi:
         # r = json.dumps(r.json(), indent=2, ensure_ascii=False) # Beautify the format
         return resp
 
-    async def async_refresh_token(self):
-        """Refresh the access token"""
-        old_token_time = self._last_token_time
-        self._last_token_time = int(time.time() * 1000) + REFRESH_TOKEN
-        self._access_token = ""
-        res = await self.async_get_access_token()
-        if res != "ok":
-            self._last_token_time = old_token_time
-            _LOGGER.error("Failed to obtain access token: %s", res)
-            return {"reason": "authentication_failed", "msg": res}
-        return True
-
     async def async_get_access_token(self):
         """Obtain a valid access token."""
+        # Reset access token
+        self._token_expire_time = -1
+        self._access_token = ""
+
         try:
             resp = await self.async_make_request("GET", "/v1.0/token?grant_type=1")
         except requests.exceptions.ConnectionError:
@@ -134,7 +123,8 @@ class TuyaCloudApi:
         if not r_json["success"]:
             return f"Error {r_json['code']}: {r_json['msg']}"
 
-        self._last_token_time = int(time.time() * 1000)
+        req_results = r_json["result"]
+        self._token_expire_time = int(time.time()) + int(req_results.get("expire_time"))
         self._access_token = resp.json()["result"]["access_token"]
         return "ok"
 
@@ -189,3 +179,11 @@ class TuyaCloudApi:
             return {}, f"Error {r_json['code']}: {r_json['msg']}"
 
         return r_json["result"], "ok"
+
+    @property
+    def token_validate(self):
+        """Return whether token is expired or not"""
+        cur_time = int(time.time())
+        expire_time = self._token_expire_time
+
+        return expire_time >= cur_time
