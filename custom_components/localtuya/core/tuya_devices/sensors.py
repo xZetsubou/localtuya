@@ -1,6 +1,7 @@
 """
     This a file contains available tuya data
     https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
+
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
 """
@@ -18,16 +19,27 @@ from homeassistant.const import (
 )
 
 from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
+from ...const import CONF_SCALING as SCALE_FACTOR
+
+
+def localtuya_sensor(unit_of_measurement=None, scale_factor: float = None) -> dict:
+    """Define LocalTuya Configs for Sensor."""
+    data = {CONF_UNIT_OF_MEASUREMENT: unit_of_measurement}
+    if scale_factor:
+        data.update({SCALE_FACTOR: scale_factor})
+
+    return data
+
 
 # Commonly used battery sensors, that are re-used in the sensors down below.
 BATTERY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = (
     LocalTuyaEntity(
         id=DPCode.BATTERY_PERCENTAGE,
         name="Battery",
-        custom_configs={CONF_UNIT_OF_MEASUREMENT: PERCENTAGE},
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
+        custom_configs=localtuya_sensor(PERCENTAGE),
     ),
     LocalTuyaEntity(
         id=DPCode.BATTERY_STATE,
@@ -313,21 +325,21 @@ SENSORS: dict[LocalTuyaEntity] = {
             name="Current",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricCurrent.AMPERE},
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
         ),
         LocalTuyaEntity(
             id=DPCode.CUR_POWER,
             name="Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfPower.KILO_WATT},
+            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.CUR_VOLTAGE,
             name="Voltage",
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricPotential.VOLT},
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
         ),
     ),
     # IoT Switch
@@ -338,7 +350,7 @@ SENSORS: dict[LocalTuyaEntity] = {
             name="Current",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricCurrent.AMPERE},
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
             # entity_registry_enabled_default=False,
         ),
         LocalTuyaEntity(
@@ -346,7 +358,7 @@ SENSORS: dict[LocalTuyaEntity] = {
             name="Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfPower.KILO_WATT},
+            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
             # entity_registry_enabled_default=False,
         ),
         LocalTuyaEntity(
@@ -354,7 +366,7 @@ SENSORS: dict[LocalTuyaEntity] = {
             name="Voltage",
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricPotential.VOLT},
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
             # entity_registry_enabled_default=False,
         ),
     ),
@@ -414,7 +426,7 @@ SENSORS: dict[LocalTuyaEntity] = {
         LocalTuyaEntity(
             id=DPCode.REMAIN_TIME,
             # translation_id="remaining_time",
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfTime.MINUTES},
+            custom_configs=localtuya_sensor(UnitOfTime.MINUTES),
             icon="mdi:timer",
         ),
     ),
@@ -481,7 +493,7 @@ SENSORS: dict[LocalTuyaEntity] = {
             name="Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfPower.KILO_WATT},
+            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
         ),
     ),
     # Gas Detector
@@ -654,7 +666,7 @@ SENSORS: dict[LocalTuyaEntity] = {
             id=DPCode.PHASE_A,
             name="Phase C Current",
             device_class=SensorDeviceClass.CURRENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricCurrent.AMPERE},
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
@@ -662,56 +674,56 @@ SENSORS: dict[LocalTuyaEntity] = {
             name="Phase C Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfPower.KILO_WATT},
+            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_A,
             name="Phase A Voltage",
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricPotential.VOLT},
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_B,
             name="Phase B Current",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricCurrent.AMPERE},
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_B,
             name="Phase B Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfPower.KILO_WATT},
+            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_B,
             name="Phase B Voltage",
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricPotential.VOLT},
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_C,
             name="Phase C Current",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricCurrent.AMPERE},
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_C,
             name="Phase C Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfPower.KILO_WATT},
+            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_C,
             name="Phase C Voltage",
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricPotential.VOLT},
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
         ),
     ),
     # Circuit Breaker
@@ -728,63 +740,63 @@ SENSORS: dict[LocalTuyaEntity] = {
             name="Phase C Current",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricCurrent.AMPERE},
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_A,
             name="Phase C Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfPower.KILO_WATT},
+            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_A,
             name="Phase A Voltage",
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricPotential.VOLT},
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_B,
             name="Phase B Current",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricCurrent.AMPERE},
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_B,
             name="Phase B Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfPower.KILO_WATT},
+            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_B,
             name="Phase B Voltage",
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricPotential.VOLT},
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_C,
             name="Phase C Current",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricCurrent.AMPERE},
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_C,
             name="Phase C Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfPower.KILO_WATT},
+            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_C,
             name="Phase C Voltage",
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricPotential.VOLT},
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
         ),
     ),
     # Robot Vacuum
@@ -974,7 +986,7 @@ SENSORS: dict[LocalTuyaEntity] = {
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
             entity_category=EntityCategory.DIAGNOSTIC,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricCurrent.AMPERE},
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
             # entity_registry_enabled_default=False,
         ),
         LocalTuyaEntity(
@@ -983,7 +995,7 @@ SENSORS: dict[LocalTuyaEntity] = {
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
             entity_category=EntityCategory.DIAGNOSTIC,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfPower.KILO_WATT},
+            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
             # entity_registry_enabled_default=False,
         ),
         LocalTuyaEntity(
@@ -992,7 +1004,7 @@ SENSORS: dict[LocalTuyaEntity] = {
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
             entity_category=EntityCategory.DIAGNOSTIC,
-            custom_configs={CONF_UNIT_OF_MEASUREMENT: UnitOfElectricPotential.VOLT},
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
             # entity_registry_enabled_default=False,
         ),
     ),
