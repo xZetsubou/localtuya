@@ -3,10 +3,6 @@
     https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
-
-    HOW TO ADD DEVICE: make sure the categaory doesn't exists if you want to create new category
-    Define the id=DPCode_code create new code if doesn't exists,
-
     #TODO get values using "Get the instructions set by category"
 """
 
@@ -114,6 +110,14 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
                 "power_on,power_off,last", "ON,OFF,Last State"
             ),
             condition_contains_any=["power_on", "power_off", "last"],
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status",
+            custom_configs=localtuya_selector("on,off,memory", "ON,OFF,Last State"),
+            condition_contains_any=["on", "off", "memory"],
         ),
         LocalTuyaEntity(
             id=DPCode.RELAY_STATUS,
