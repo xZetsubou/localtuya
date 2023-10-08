@@ -1,6 +1,7 @@
 """
     This a file contains available tuya data
     https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
+
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
 """
@@ -326,6 +327,12 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
         ),
         LocalTuyaEntity(
+            id=DPCode.OVERCHARGE_SWITCH,
+            name="Overcharge",
+            icon="mdi:flash-alert",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
             id=DPCode.SWITCH_1,
             name="Switch 1",
             device_class=SwitchDeviceClass.OUTLET,
@@ -576,6 +583,13 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Switch",
         ),
     ),
+    # Zigbee Gateway (dunno if it's useful)
+    # "wg2": (
+    #     LocalTuyaEntity(
+    #         id=DPCode.SWITCH_ALARM_SOUND,
+    #         name="Switch",
+    #     ),
+    # ),
     # SIREN: Siren (switch) with Temperature and humidity sensor
     # https://developer.tuya.com/en/docs/iot/f?id=Kavck4sr3o5ek
     "wsdcg": (

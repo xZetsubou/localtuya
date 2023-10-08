@@ -222,6 +222,7 @@ class DPCode(StrEnum):
     MACH_OPERATE = "mach_operate"
     MANUAL_FEED = "manual_feed"
     MASTER_MODE = "master_mode"  # alarm mode
+    MASTER_STATE = "master_state"  # alarm mode
     MATERIAL = "material"  # Material
     MIDDLE_CONFIRM = "middle_confirm"  # cover reset.
     MODE = "mode"  # Working mode / Mode
@@ -237,6 +238,7 @@ class DPCode(StrEnum):
     NEAR_DETECTION = "near_detection"
     OPPOSITE = "opposite"
     OPTIMUMSTART = "optimumstart"
+    OVERCHARGE_SWITCH = "overcharge_switch"
     OXYGEN = "oxygen"  # Oxygen bar
     PAUSE = "pause"
     PERCENT_CONTROL = "percent_control"
@@ -312,6 +314,7 @@ class DPCode(StrEnum):
     SWITCH_6 = "switch_6"  # Switch 6
     SWITCH_7 = "switch_7"  # Switch 7
     SWITCH_8 = "switch_8"  # Switch 8
+    SWITCH_ALARM_SOUND = "switch_alarm_sound"
     SWITCH_BACKLIGHT = "switch_backlight"  # Backlight switch
     SWITCH_CHARGE = "switch_charge"
     SWITCH_CONTROLLER = "switch_controller"

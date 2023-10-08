@@ -1,6 +1,7 @@
 """
     This a file contains available tuya data
     https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
+
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
 """
@@ -374,3 +375,6 @@ BINARY_SENSORS: dict[LocalTuyaEntity] = {
 
 BINARY_SENSORS["cl"] = FAULT_SENSOR
 BINARY_SENSORS["wk"] = FAULT_SENSOR
+BINARY_SENSORS["kg"] = FAULT_SENSOR
+BINARY_SENSORS["pc"] = FAULT_SENSOR
+BINARY_SENSORS["cz"] = FAULT_SENSOR
