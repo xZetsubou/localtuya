@@ -911,7 +911,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         cloud_data: TuyaCloudApi = self.cloud_data
         device_data = dev_id in cloud_data.device_list
         entries = self.hass.config_entries.async_entries(DOMAIN)
-        is_cloud = self.config_entry.data.get(CONF_NO_CLOUD)
+        is_cloud = not self.config_entry.data.get(CONF_NO_CLOUD)
 
         localtuya_data = {
             CONF_FRIENDLY_NAME: self.device_data.get(CONF_FRIENDLY_NAME),
