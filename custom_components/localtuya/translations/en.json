@@ -117,7 +117,7 @@
             },
             "auto_configure_device": {
                 "title": "Auto Configure",
-                "description": "An Error occurred: {err_msg}, if reason isn't showing check logs:",
+                "description": "An Error occurred: {err_msg}, if reason isn't showing check logs",
                 "menu_options": {
                     "device_setup_method":"Return to Setup method"
                 }
