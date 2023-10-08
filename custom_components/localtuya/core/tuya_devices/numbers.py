@@ -24,38 +24,6 @@ def localtuya_numbers(_min, _max, _step=1, native_unit=None) -> dict:
     return data
 
 
-ALARM_TIME = {CONF_MIN_VALUE: 0, CONF_MAX_VALUE: 60, CONF_STEPSIZE_VALUE: 1}
-WARM_TIME = {CONF_MIN_VALUE: 0, CONF_MAX_VALUE: 360, CONF_STEPSIZE_VALUE: 1}
-
-TEMP_SET_F = {CONF_MIN_VALUE: 32, CONF_MAX_VALUE: 212, CONF_STEPSIZE_VALUE: 1}
-
-
-MIN_0_MAX_9_S1 = {CONF_MIN_VALUE: 0, CONF_MAX_VALUE: 9, CONF_STEPSIZE_VALUE: 1}
-MIN_0_MAX_10_S1 = {CONF_MIN_VALUE: 0, CONF_MAX_VALUE: 10, CONF_STEPSIZE_VALUE: 1}
-MIN_0_MAX_24_S1 = {CONF_MIN_VALUE: 0, CONF_MAX_VALUE: 24, CONF_STEPSIZE_VALUE: 1}
-MIN_0_MAX_50_S1 = {CONF_MIN_VALUE: 0, CONF_MAX_VALUE: 50, CONF_STEPSIZE_VALUE: 1}
-MIN_0_MAX_100_S1 = {CONF_MIN_VALUE: 0, CONF_MAX_VALUE: 100, CONF_STEPSIZE_VALUE: 1}
-MIN_0_MAX_360_S1 = {CONF_MIN_VALUE: 0, CONF_MAX_VALUE: 360, CONF_STEPSIZE_VALUE: 1}
-MIN_0_MAX_500_S1 = {CONF_MIN_VALUE: 0, CONF_MAX_VALUE: 500, CONF_STEPSIZE_VALUE: 1}
-MIN_0_MAX_1000_S1 = {CONF_MIN_VALUE: 0, CONF_MAX_VALUE: 1000, CONF_STEPSIZE_VALUE: 1}
-MIN_0_MAX_1440_S1 = {CONF_MIN_VALUE: 0, CONF_MAX_VALUE: 1440, CONF_STEPSIZE_VALUE: 1}
-MIN_0_MAX_999999_S1 = {
-    CONF_MIN_VALUE: 0,
-    CONF_MAX_VALUE: 999999,
-    CONF_STEPSIZE_VALUE: 1,
-}
-
-
-MIN_1_MAX_10_S1 = {CONF_MIN_VALUE: 1, CONF_MAX_VALUE: 10, CONF_STEPSIZE_VALUE: 1}
-MIN_1_MAX_12_S1 = {CONF_MIN_VALUE: 1, CONF_MAX_VALUE: 12, CONF_STEPSIZE_VALUE: 1}
-
-MIN_1_MAX_60_S1 = {CONF_MIN_VALUE: 1, CONF_MAX_VALUE: 60, CONF_STEPSIZE_VALUE: 1}
-MIN_1_MAX_100_S1 = {CONF_MIN_VALUE: 1, CONF_MAX_VALUE: 100, CONF_STEPSIZE_VALUE: 1}
-
-MIN_10_MAX_1000_S1 = {CONF_MIN_VALUE: 10, CONF_MAX_VALUE: 1000, CONF_STEPSIZE_VALUE: 1}
-
-MIN_50_MAX_100_S1 = {CONF_MIN_VALUE: 50, CONF_MAX_VALUE: 100, CONF_STEPSIZE_VALUE: 1}
-
 NUMBERS: dict[LocalTuyaEntity] = {
     # Multi-functional Sensor
     # https://developer.tuya.com/en/docs/iot/categorydgnbj?id=Kaiuz3yorvzg3
@@ -64,7 +32,7 @@ NUMBERS: dict[LocalTuyaEntity] = {
             id=DPCode.ALARM_TIME,
             name="Time",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=ALARM_TIME,
+            custom_configs=localtuya_numbers(0, 60),
         ),
     ),
     # Smart Kettle
@@ -76,7 +44,7 @@ NUMBERS: dict[LocalTuyaEntity] = {
             device_class=NumberDeviceClass.TEMPERATURE,
             icon="mdi:thermometer",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_100_S1,
+            custom_configs=localtuya_numbers(0, 100),
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP_SET_F,
@@ -84,7 +52,7 @@ NUMBERS: dict[LocalTuyaEntity] = {
             device_class=NumberDeviceClass.TEMPERATURE,
             icon="mdi:thermometer",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=TEMP_SET_F,
+            custom_configs=localtuya_numbers(32, 212),
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP_BOILING_C,
@@ -92,7 +60,7 @@ NUMBERS: dict[LocalTuyaEntity] = {
             device_class=NumberDeviceClass.TEMPERATURE,
             icon="mdi:thermometer",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_100_S1,
+            custom_configs=localtuya_numbers(0, 100),
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP_BOILING_F,
@@ -100,14 +68,14 @@ NUMBERS: dict[LocalTuyaEntity] = {
             device_class=NumberDeviceClass.TEMPERATURE,
             icon="mdi:thermometer",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=TEMP_SET_F,
+            custom_configs=localtuya_numbers(32, 212),
         ),
         LocalTuyaEntity(
             id=DPCode.WARM_TIME,
             name="Heat preservation time",
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=WARM_TIME,
+            custom_configs=localtuya_numbers(0, 360),
         ),
     ),
     # Smart Pet Feeder
@@ -117,13 +85,13 @@ NUMBERS: dict[LocalTuyaEntity] = {
             id=DPCode.MANUAL_FEED,
             name="Feed",
             icon="mdi:bowl",
-            custom_configs=MIN_1_MAX_12_S1,
+            custom_configs=localtuya_numbers(1, 12),
         ),
         LocalTuyaEntity(
             id=DPCode.VOICE_TIMES,
             name="Voice prompt",
             icon="mdi:microphone",
-            custom_configs=MIN_0_MAX_10_S1,
+            custom_configs=localtuya_numbers(0, 10),
         ),
     ),
     # Human Presence Sensor
@@ -133,21 +101,21 @@ NUMBERS: dict[LocalTuyaEntity] = {
             id=DPCode.SENSITIVITY,
             name="sensitivity",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_9_S1,
+            custom_configs=localtuya_numbers(0, 9),
         ),
         LocalTuyaEntity(
             id=DPCode.NEAR_DETECTION,
             name="Near Detection CM",
             icon="mdi:signal-distance-variant",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_1000_S1,
+            custom_configs=localtuya_numbers(0, 1000),
         ),
         LocalTuyaEntity(
             id=DPCode.FAR_DETECTION,
             name="Far Detection CM",
             icon="mdi:signal-distance-variant",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_1000_S1,
+            custom_configs=localtuya_numbers(0, 1000),
         ),
     ),
     # Coffee maker
@@ -158,7 +126,7 @@ NUMBERS: dict[LocalTuyaEntity] = {
             name="Water Level",
             icon="mdi:cup-water",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_500_S1,
+            custom_configs=localtuya_numbers(0, 500),
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP_SET,
@@ -166,20 +134,20 @@ NUMBERS: dict[LocalTuyaEntity] = {
             device_class=NumberDeviceClass.TEMPERATURE,
             icon="mdi:thermometer",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_100_S1,
+            custom_configs=localtuya_numbers(0, 100),
         ),
         LocalTuyaEntity(
             id=DPCode.WARM_TIME,
             name="Heat preservation time",
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_1440_S1,
+            custom_configs=localtuya_numbers(0, 1440),
         ),
         LocalTuyaEntity(
             id=DPCode.POWDER_SET,
             name="Powder",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_24_S1,
+            custom_configs=localtuya_numbers(0, 24),
         ),
     ),
     # Switch
@@ -292,27 +260,26 @@ NUMBERS: dict[LocalTuyaEntity] = {
             name="Cooking temperature",
             icon="mdi:thermometer",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_500_S1,
+            custom_configs=localtuya_numbers(0, 500),
         ),
         LocalTuyaEntity(
             id=DPCode.COOK_TIME,
-            name="Cooking time Minutes",
+            name="Cooking time",
             icon="mdi:timer",
-            # native_unit_of_measurement=UnitOfTime.MINUTES,
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_360_S1,
+            custom_configs=localtuya_numbers(0, 360, 1, UnitOfTime.MINUTES),
         ),
         LocalTuyaEntity(
             id=DPCode.CLOUD_RECIPE_NUMBER,
             name="Cloud Recipes",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_999999_S1,
+            custom_configs=localtuya_numbers(0, 999999),
         ),
         LocalTuyaEntity(
             id=DPCode.APPOINTMENT_TIME,
             name="Appointment time",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_360_S1,
+            custom_configs=localtuya_numbers(0, 360),
         ),
     ),
     # Robot Vacuum
@@ -323,7 +290,7 @@ NUMBERS: dict[LocalTuyaEntity] = {
             name="volume",
             icon="mdi:volume-high",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_100_S1,
+            custom_configs=localtuya_numbers(0, 100),
         ),
     ),
     # Siren Alarm
@@ -333,7 +300,7 @@ NUMBERS: dict[LocalTuyaEntity] = {
             id=DPCode.ALARM_TIME,
             name="Alarm duration",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_1_MAX_60_S1,
+            custom_configs=localtuya_numbers(1, 60),
         ),
     ),
     # Smart Camera
@@ -344,14 +311,14 @@ NUMBERS: dict[LocalTuyaEntity] = {
             name="volume",
             icon="mdi:volume-high",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_1_MAX_10_S1,
+            custom_configs=localtuya_numbers(1, 10),
         ),
         LocalTuyaEntity(
             id=DPCode.FLOODLIGHT_LIGHTNESS,
             name="Floodlight brightness",
             icon="mdi:brightness-6",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_1_MAX_100_S1,
+            custom_configs=localtuya_numbers(1, 100),
         ),
     ),
     # Dimmer Switch
@@ -362,42 +329,42 @@ NUMBERS: dict[LocalTuyaEntity] = {
             name="minimum_brightness",
             icon="mdi:lightbulb-outline",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_10_MAX_1000_S1,
+            custom_configs=localtuya_numbers(10, 1000),
         ),
         LocalTuyaEntity(
             id=DPCode.BRIGHTNESS_MAX_1,
             name="maximum_brightness",
             icon="mdi:lightbulb-on-outline",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_10_MAX_1000_S1,
+            custom_configs=localtuya_numbers(10, 1000),
         ),
         LocalTuyaEntity(
             id=DPCode.BRIGHTNESS_MIN_2,
             name="minimum_brightness_2",
             icon="mdi:lightbulb-outline",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_10_MAX_1000_S1,
+            custom_configs=localtuya_numbers(10, 1000),
         ),
         LocalTuyaEntity(
             id=DPCode.BRIGHTNESS_MAX_2,
             name="maximum_brightness_2",
             icon="mdi:lightbulb-on-outline",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_10_MAX_1000_S1,
+            custom_configs=localtuya_numbers(10, 1000),
         ),
         LocalTuyaEntity(
             id=DPCode.BRIGHTNESS_MIN_3,
             name="minimum_brightness_3",
             icon="mdi:lightbulb-outline",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_10_MAX_1000_S1,
+            custom_configs=localtuya_numbers(10, 1000),
         ),
         LocalTuyaEntity(
             id=DPCode.BRIGHTNESS_MAX_3,
             name="maximum_brightness_3",
             icon="mdi:lightbulb-on-outline",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_10_MAX_1000_S1,
+            custom_configs=localtuya_numbers(10, 1000),
         ),
     ),
     # Dimmer Switch
@@ -408,28 +375,28 @@ NUMBERS: dict[LocalTuyaEntity] = {
             name="minimum_brightness",
             icon="mdi:lightbulb-outline",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_10_MAX_1000_S1,
+            custom_configs=localtuya_numbers(10, 1000),
         ),
         LocalTuyaEntity(
             id=DPCode.BRIGHTNESS_MAX_1,
             name="maximum_brightness",
             icon="mdi:lightbulb-on-outline",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_10_MAX_1000_S1,
+            custom_configs=localtuya_numbers(10, 1000),
         ),
         LocalTuyaEntity(
             id=DPCode.BRIGHTNESS_MIN_2,
             name="minimum_brightness_2",
             icon="mdi:lightbulb-outline",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_10_MAX_1000_S1,
+            custom_configs=localtuya_numbers(10, 1000),
         ),
         LocalTuyaEntity(
             id=DPCode.BRIGHTNESS_MAX_2,
             name="maximum_brightness_2",
             icon="mdi:lightbulb-on-outline",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_10_MAX_1000_S1,
+            custom_configs=localtuya_numbers(10, 1000),
         ),
     ),
     # Vibration Sensor
@@ -439,7 +406,7 @@ NUMBERS: dict[LocalTuyaEntity] = {
             id=DPCode.SENSITIVITY,
             name="Sensitivity",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_9_S1,
+            custom_configs=localtuya_numbers(0, 9),
         ),
     ),
     # Fingerbot
@@ -451,17 +418,15 @@ NUMBERS: dict[LocalTuyaEntity] = {
             id=DPCode.ARM_DOWN_PERCENT,
             name="Move Down",
             icon="mdi:arrow-down-bold",
-            # native_unit_of_measurement=PERCENTAGE,
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_50_MAX_100_S1,
+            custom_configs=localtuya_numbers(50, 100, 1, PERCENTAGE),
         ),
         LocalTuyaEntity(
             id=DPCode.ARM_UP_PERCENT,
             name="Move UP",
             icon="mdi:arrow-up-bold",
-            # native_unit_of_measurement=PERCENTAGE,
             entity_category=EntityCategory.CONFIG,
-            custom_configs=MIN_0_MAX_50_S1,
+            custom_configs=localtuya_numbers(0, 50, 1, PERCENTAGE),
         ),
         LocalTuyaEntity(
             id=DPCode.CLICK_SUSTAIN_TIME,
@@ -496,7 +461,7 @@ NUMBERS: dict[LocalTuyaEntity] = {
             name="Temperature",
             device_class=NumberDeviceClass.TEMPERATURE,
             icon="mdi:thermometer-lines",
-            custom_configs=TEMP_SET_F,
+            custom_configs=localtuya_numbers(32, 212, 1),
         ),
     ),
     # Thermostat

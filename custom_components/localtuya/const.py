@@ -59,6 +59,9 @@ CONF_DEFAULT_VALUE = "dps_default_value"
 CONF_RESET_DPIDS = "reset_dpids"
 CONF_PASSIVE_ENTITY = "is_passive_entity"
 
+# common
+CONF_NATIVE_UNIT_OF_MEASUREMENT = "native_unit_of_measurement"
+
 # Binary_sensor, Siren
 CONF_STATE_ON = "state_on"
 

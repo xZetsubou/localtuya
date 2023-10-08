@@ -133,7 +133,7 @@ PRESET_SETS = {
         "auto": "Auto",
         "manual": "Manual",
         "smart": "Smart",
-        "comfortable": "Comfortable",
+        "comfortable": "Comfort",
         "eco": "ECO",
     },
 }
