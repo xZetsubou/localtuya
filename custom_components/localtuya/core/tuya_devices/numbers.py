@@ -1,13 +1,12 @@
 """
     This a file contains available tuya data
     https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
+
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
-
-    #TODO get values using "Get the instructions set by category"
 """
 from homeassistant.components.number import NumberDeviceClass
-from homeassistant.const import PERCENTAGE, UnitOfTime
+from homeassistant.const import PERCENTAGE, UnitOfTime, CONF_UNIT_OF_MEASUREMENT
 
 from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
 from ...const import CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEPSIZE_VALUE
@@ -18,8 +17,7 @@ def localtuya_numbers(_min, _max, _step=1, native_unit=None) -> dict:
     data = {CONF_MIN_VALUE: _min, CONF_MAX_VALUE: _max, CONF_STEPSIZE_VALUE: _step}
 
     if native_unit:
-        pass
-        # data.update({"native_unit": native_unit})
+        data.update({CONF_UNIT_OF_MEASUREMENT: native_unit})
 
     return data
 
