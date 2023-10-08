@@ -388,7 +388,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             if len(event_data) > 2:
                 self._hass.bus.async_fire(f"localtuya_{event}", event_data)
 
-        event = "device_updated"
+        event = "states_update"
         device_triggered = "device_triggered"
         device_dp_triggered = "device_dp_triggered"
 
