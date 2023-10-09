@@ -282,6 +282,18 @@ LIGHTS: dict[LocalTuyaEntity] = {
             brightness=DPCode.BRIGHT_VALUE_2,
             custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
+        LocalTuyaEntity(
+            id=DPCode.SWITCH_LED_3,
+            name="Light 3",
+            brightness=DPCode.BRIGHT_VALUE_3,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SWITCH_LED_4,
+            name="Light 4",
+            brightness=DPCode.BRIGHT_VALUE_4,
+            custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
+        ),
     ),
     # Wake Up Light II
     # Not documented

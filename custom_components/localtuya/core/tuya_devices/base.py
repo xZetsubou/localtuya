@@ -113,6 +113,7 @@ class DPCode(StrEnum):
     BRIGHT_VALUE_1 = "bright_value_1"
     BRIGHT_VALUE_2 = "bright_value_2"
     BRIGHT_VALUE_3 = "bright_value_3"
+    BRIGHT_VALUE_4 = "bright_value_4"
     BRIGHT_VALUE_V2 = "bright_value_v2"
     CALLPHONE = "callphone"
     CH2O_STATE = "ch2o_state"
@@ -340,6 +341,7 @@ class DPCode(StrEnum):
     SWITCH_LED_1 = "switch_led_1"
     SWITCH_LED_2 = "switch_led_2"
     SWITCH_LED_3 = "switch_led_3"
+    SWITCH_LED_4 = "switch_led_4"
     SWITCH_NIGHT_LIGHT = "switch_night_light"
     SWITCH_SAVE_ENERGY = "switch_save_energy"
     SWITCH_SOUND = "switch_sound"  # Voice switch
