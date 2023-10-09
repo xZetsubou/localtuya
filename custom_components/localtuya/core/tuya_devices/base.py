@@ -73,6 +73,7 @@ class DPCode(StrEnum):
     """
 
     AIR_QUALITY = "air_quality"
+    ALARM_LOCK = "alarm_lock"
     ALARM_MESSAGE = "alarm_message"
     ALARM_RINGTONE = "alarm_ringtone"
     ALARM_STATE = "alarm_state"
@@ -82,9 +83,13 @@ class DPCode(StrEnum):
     ANGLE_HORIZONTAL = "angle_horizontal"
     ANGLE_VERTICAL = "angle_vertical"
     ANION = "anion"  # Ionizer unit
+    ANTILOCK_STATUS = "antilock_status"
     APPOINTMENT_TIME = "appointment_time"
+    ARMING_SWITCH = "arming_switch"
     ARM_DOWN_PERCENT = "arm_down_percent"
     ARM_UP_PERCENT = "arm_up_percent"
+    AUTOMATIC_LOCK = "automatic_lock"
+    AUTO_LOCK_TIME = "auto_lock_time"
     BASIC_ANTI_FLICKER = "basic_anti_flicker"
     BASIC_DEVICE_VOLUME = "basic_device_volume"
     BASIC_FLIP = "basic_flip"
@@ -109,6 +114,7 @@ class DPCode(StrEnum):
     BRIGHT_VALUE_2 = "bright_value_2"
     BRIGHT_VALUE_3 = "bright_value_3"
     BRIGHT_VALUE_V2 = "bright_value_v2"
+    CALLPHONE = "callphone"
     CH2O_STATE = "ch2o_state"
     CH2O_VALUE = "ch2o_value"
     CH4_SENSOR_STATE = "ch4_sensor_state"
@@ -120,6 +126,7 @@ class DPCode(StrEnum):
     CLEAN_RECORD = "clean_record"
     CLEAN_TIME = "clean_time"
     CLICK_SUSTAIN_TIME = "click_sustain_time"
+    CLOSED_OPENED = "closed_opened"
     CLOSED_OPENED_KIT = "closed_opened_kit"
     CLOUD_RECIPE_NUMBER = "cloud_recipe_number"
     CO2_STATE = "co2_state"
@@ -168,6 +175,7 @@ class DPCode(StrEnum):
     DEHUMIDITY_SET_ENUM = "dehumidify_set_enum"
     DEHUMIDITY_SET_VALUE = "dehumidify_set_value"
     DISINFECTION = "disinfection"
+    DOORBELL = "doorbell"
     DOORCONTACT_STATE = "doorcontact_state"  # Status of door window sensor
     DOORCONTACT_STATE_2 = "doorcontact_state_2"
     DOORCONTACT_STATE_3 = "doorcontact_state_3"
@@ -202,6 +210,7 @@ class DPCode(StrEnum):
     GAS_SENSOR_STATUS = "gas_sensor_status"
     GAS_SENSOR_VALUE = "gas_sensor_value"
     HIGHTPROTECTVALUE = "hightprotectvalue"
+    HIJACK = "hijack"
     HUMIDIFIER = "humidifier"  # Humidification
     HUMIDITY = "humidity"  # Humidity
     HUMIDITY_CURRENT = "humidity_current"  # Current humidity
@@ -219,6 +228,7 @@ class DPCode(StrEnum):
     LOADSTATUS = "loadstatus"
     LOCK = "lock"  # Lock / Child lock
     LOWPROTECTVALUE = "lowprotectvalue"
+    LOW_POWER_THRESHOLD = "low_power_threshold"
     MACH_OPERATE = "mach_operate"
     MANUAL_FEED = "manual_feed"
     MASTER_MODE = "master_mode"  # alarm mode
@@ -236,6 +246,7 @@ class DPCode(StrEnum):
     MOVEMENT_DETECT_PIC = "movement_detect_pic"
     MUFFLING = "muffling"  # Muffling
     NEAR_DETECTION = "near_detection"
+    NORMAL_OPEN_SWITCH = "normal_open_switch"
     OPPOSITE = "opposite"
     OPTIMUMSTART = "optimumstart"
     OVERCHARGE_SWITCH = "overcharge_switch"
@@ -250,6 +261,7 @@ class DPCode(StrEnum):
     PHASE_A = "phase_a"
     PHASE_B = "phase_b"
     PHASE_C = "phase_c"
+    PHOTO_MODE = "photo_mode"
     PIR = "pir"  # Motion sensor
     PIR_SENSITIVITY = "pir_sensitivity"
     PM1 = "pm1"
@@ -298,6 +310,7 @@ class DPCode(StrEnum):
     SMOKE_SENSOR_VALUE = "smoke_sensor_value"
     SOS = "sos"  # Emergency State
     SOS_STATE = "sos_state"  # Emergency mode
+    SOUND_MODE = "sound_mode"
     SPEED = "speed"  # Speed level
     SPRAY_MODE = "spray_mode"  # Spraying mode
     START = "start"  # Start
@@ -362,6 +375,26 @@ class DPCode(StrEnum):
     TOTAL_PM = "total_pm"
     TOTAL_TIME = "total_time"
     TVOC = "tvoc"
+    UNLOCK_APP = "unlock_app"
+    UNLOCK_BLE = "unlock_ble"
+    UNLOCK_CARD = "unlock_card"
+    UNLOCK_DOUBLE = "unlock_double"
+    UNLOCK_DYNAMIC = "unlock_dynamic"
+    UNLOCK_EYE = "unlock_eye"
+    UNLOCK_FACE = "unlock_face"
+    UNLOCK_FINGERPRINT = "unlock_fingerprint"
+    UNLOCK_FINGER_VEIN = "unlock_finger_vein"
+    UNLOCK_HAND = "unlock_hand"
+    UNLOCK_IDENTITY_CARD = "unlock_identity_card"
+    UNLOCK_KEY = "unlock_key"
+    UNLOCK_PASSWORD = "unlock_password"
+    UNLOCK_PHONE_REMOTE = "unlock_phone_remote"
+    UNLOCK_REMOTE = "unlock_remote"
+    UNLOCK_REQUEST = "unlock_request"
+    UNLOCK_SPECIAL = "unlock_special"
+    UNLOCK_SWITCH = "unlock_switch"
+    UNLOCK_TEMPORARY = "unlock_temporary"
+    UNLOCK_VOICE_REMOTE = "unlock_voice_remote"
     UPPER_TEMP = "upper_temp"
     UPPER_TEMP_F = "upper_temp_f"
     UP_CONFIRM = "up_confirm"  # cover reset.

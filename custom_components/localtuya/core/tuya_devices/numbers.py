@@ -250,6 +250,22 @@ NUMBERS: dict[LocalTuyaEntity] = {
             custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
         ),
     ),
+    # Smart Lock
+    # https://developer.tuya.com/en/docs/iot/s?id=Kb0o2xhlkxbet
+    "mc": (
+        LocalTuyaEntity(
+            id=(
+                DPCode.UNLOCK_APP,
+                DPCode.UNLOCK_FINGERPRINT,
+                DPCode.UNLOCK_CARD,
+                DPCode.UNLOCK_DYNAMIC,
+                DPCode.UNLOCK_TEMPORARY,
+            ),
+            name="Temporary Unlock",
+            icon="mdi:lock-open",
+            custom_configs=localtuya_numbers(0, 999, 1, UnitOfTime.SECONDS),
+        ),
+    ),
     # Sous Vide Cooker
     # https://developer.tuya.com/en/docs/iot/categorymzj?id=Kaiuz2vy130ux
     "mzj": (
@@ -478,3 +494,14 @@ NUMBERS: dict[LocalTuyaEntity] = {
 }
 NUMBERS["cz"] = NUMBERS["kg"]
 NUMBERS["pc"] = NUMBERS["kg"]
+
+# Locker
+NUMBERS["bxx"] = NUMBERS["ms"]
+NUMBERS["gyms"] = NUMBERS["ms"]
+NUMBERS["jtmspro"] = NUMBERS["ms"]
+NUMBERS["hotelms"] = NUMBERS["ms"]
+NUMBERS["ms_category"] = NUMBERS["ms"]
+NUMBERS["jtmsbh"] = NUMBERS["ms"]
+NUMBERS["mk"] = NUMBERS["ms"]
+NUMBERS["videolock"] = NUMBERS["ms"]
+NUMBERS["photolock"] = NUMBERS["ms"]
