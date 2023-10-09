@@ -179,6 +179,8 @@ class DPCode(StrEnum):
     DOORCONTACT_STATE = "doorcontact_state"  # Status of door window sensor
     DOORCONTACT_STATE_2 = "doorcontact_state_2"
     DOORCONTACT_STATE_3 = "doorcontact_state_3"
+    DOOR_UNCLOSED = "door_unclosed"
+    DOOR_UNCLOSED_TRIGGER = "door_unclosed_trigger"
     DOWN_CONFIRM = "down_confirm"  # cover reset.
     DO_NOT_DISTURB = "do_not_disturb"
     DUSTER_CLOTH = "duster_cloth"

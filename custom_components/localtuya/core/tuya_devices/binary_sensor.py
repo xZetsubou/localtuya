@@ -210,6 +210,11 @@ BINARY_SENSORS: dict[LocalTuyaEntity] = {
             device_class=BinarySensorDeviceClass.DOOR,
             custom_configs=ON_OPENED,
         ),
+        LocalTuyaEntity(
+            id=DPCode.DOOR_UNCLOSED,
+            device_class=BinarySensorDeviceClass.DOOR,
+            custom_configs=STATE_TRUE,
+        ),
     ),
     # Door Window Sensor
     # https://developer.tuya.com/en/docs/iot/s?id=K9gf48hm02l8m
