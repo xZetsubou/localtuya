@@ -107,7 +107,7 @@
                 }
             },
             "device_setup_method": {
-                "title": "Auto Configure",
+                "title": "Configure device method",
                 "description": "Pick the setup method for the device auto works similar to HA tuya integration",
                 "menu_options": {
                     "auto_configure_device":"Auto Configure (Beta)",
