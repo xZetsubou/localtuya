@@ -1,6 +1,7 @@
 """
     This a file contains available tuya data
     https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
+
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
 """
@@ -264,7 +265,6 @@ LIGHTS: dict[LocalTuyaEntity] = {
     "tgq": (
         LocalTuyaEntity(
             id=DPCode.SWITCH_LED,
-            name="light",
             brightness=(DPCode.BRIGHT_VALUE_V2, DPCode.BRIGHT_VALUE),
             brightness_upper=DPCode.BRIGHTNESS_MAX_1,
             brightness_lower=DPCode.BRIGHTNESS_MIN_1,
@@ -272,13 +272,13 @@ LIGHTS: dict[LocalTuyaEntity] = {
         ),
         LocalTuyaEntity(
             id=DPCode.SWITCH_LED_1,
-            name="light",
+            name="Light 1",
             brightness=DPCode.BRIGHT_VALUE_1,
             custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
         LocalTuyaEntity(
             id=DPCode.SWITCH_LED_2,
-            name="light_2",
+            name="Light 2",
             brightness=DPCode.BRIGHT_VALUE_2,
             custom_configs=localtuya_light(29, 100, 2700, 6500, False, False),
         ),
