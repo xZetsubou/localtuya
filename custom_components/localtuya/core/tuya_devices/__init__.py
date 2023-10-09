@@ -87,6 +87,7 @@ def generate_tuya_device(localtuya_data: dict, tuya_category: str) -> dict | lis
                         for dp_code in code:
                             if any(dp_code in dps.split() for dps in detected_dps):
                                 code = parse_enum(dp_code)
+                                break
                             else:
                                 code = None
 
