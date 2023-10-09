@@ -87,6 +87,8 @@ def generate_tuya_device(localtuya_data: dict, tuya_category: str) -> dict | lis
                         for dp_code in code:
                             if any(dp_code in dps.split() for dps in detected_dps):
                                 code = parse_enum(dp_code)
+                            else:
+                                code = None
 
                     for dp_data in detected_dps:
                         dp_data: str = dp_data.lower()
@@ -95,7 +97,7 @@ def generate_tuya_device(localtuya_data: dict, tuya_category: str) -> dict | lis
                             if not any(cond in dp_data for cond in contains_any):
                                 continue
 
-                        if code.lower() in dp_data.split():
+                        if code and code.lower() in dp_data.split():
                             # Same method we use in config_flow to get dp.
                             local_entity[k] = dp_data.split(" ")[0]
 
