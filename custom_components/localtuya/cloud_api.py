@@ -5,7 +5,7 @@ import hmac
 import json
 import logging
 import time
-
+from .common import TuyaDeviceFunction, TuyaDeviceStatusRange
 import requests
 
 _LOGGER = logging.getLogger(__name__)
@@ -135,9 +135,37 @@ class TuyaCloudApi:
 
         self.device_list = {dev["id"]: dev for dev in r_json["result"]}
         # _LOGGER.debug("DEV_LIST: %s", self.device_list)
-
+        await self.update_device_function_cache()
         return "ok"
+    
+    async def update_device_function_cache(self, devIds: list = []):
+        """Update device function cache."""
+        for device_id in self.device_list.keys():
+            device: dict = self.device_list[device_id]
+            response = await self.get_device_specification(device_id)
+            if response.ok:
+                r_json = response.json()
+                result = r_json.get("result", {})
+                function_map = {}
+                if result.get("functions", False):
+                    for function in result["functions"]:
+                        code = function["code"]
+                        function_map[code] = TuyaDeviceFunction(**function)
 
+                status_range = {}
+                if result.get("status", False):
+                    for status in result["status"]:
+                        code = status["code"]
+                        status_range[code] = TuyaDeviceStatusRange(**status)
+                device.update({"function": function_map})
+                device.update({"status_range": status_range})
+
+    async def get_device_specification(self, device_id: str) -> dict[str, str]:
+        res = await self.async_make_request(
+            "GET", url=f"/v1.0/devices/{device_id}/specifications"
+        )
+        return res
+    
     async def async_get_device_specifications(self, device_id):
         """Obtain the DP ID mappings for a device."""
         resp = await self.async_make_request(
