@@ -3,7 +3,8 @@ import asyncio
 import logging
 import time
 from datetime import timedelta
-
+from typing import Any
+from types import SimpleNamespace
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 
@@ -710,3 +711,33 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         # Manually initialise
         await self._device.set_dp(restore_state, self._dp_id)
+
+class TuyaDeviceFunction(SimpleNamespace):
+    """Tuya device's function.
+
+    Attributes:
+        code(str): function's code
+        desc(str): function's description
+        name(str): function's name
+        type(str): function's type, which may be Boolean, Integer, Enum, Json
+        values(dict): function's value range
+    """
+
+    code: str
+    desc: str
+    name: str
+    type: str
+    values: dict[str, Any]
+    
+class TuyaDeviceStatusRange(SimpleNamespace):
+    """Tuya device's status range.
+
+    Attributes:
+        code(str): status's code
+        type(str): status's type, which may be Boolean, Integer, Enum, Json
+        values(dict): status's value range
+    """
+
+    code: str
+    type: str
+    values: str
