@@ -1,6 +1,7 @@
 """
     This a file contains available tuya data
     https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
+
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
 """
@@ -60,72 +61,80 @@ def localtuya_climate(
 CLIMATES: dict[LocalTuyaEntity] = {
     # Air conditioner
     # https://developer.tuya.com/en/docs/iot/categorykt?id=Kaiuz0z71ov2n
-    "kt": LocalTuyaEntity(
-        id=DPCode.SWITCH,
-        target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
-        current_temperature_dp=DPCode.TEMP_CURRENT,
-        hvac_mode_dp=DPCode.MODE,
-        hvac_action_dp=(DPCode.WORK_MODE, DPCode.WORK_STATUS),
-        custom_configs=localtuya_climate(
-            hvac_mode_set="auto/cold/hot/wet",
-            temp_step=1,
-            actions_set="heating/cooling",
-            unit=UNIT_C,
-            values_precsion=1,
-            target_precision=1,
-        ),
+    "kt": (
+        LocalTuyaEntity(
+            id=DPCode.SWITCH,
+            target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
+            current_temperature_dp=DPCode.TEMP_CURRENT,
+            hvac_mode_dp=DPCode.MODE,
+            hvac_action_dp=(DPCode.WORK_MODE, DPCode.WORK_STATUS),
+            custom_configs=localtuya_climate(
+                hvac_mode_set="auto/cold/hot/wet",
+                temp_step=1,
+                actions_set="heating/cooling",
+                unit=UNIT_C,
+                values_precsion=1,
+                target_precision=1,
+            ),
+        )
     ),
     # Heater
     # https://developer.tuya.com/en/docs/iot/f?id=K9gf46epy4j82
-    "qn": LocalTuyaEntity(
-        id=DPCode.SWITCH,
-        target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
-        current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
-        preset_dp=DPCode.MODE,
-        hvac_action_dp=DPCode.WORK_STATE,
-        custom_configs=localtuya_climate(
-            temp_step=1,
-            actions_set="heating/warming",
-            unit=UNIT_C,
-            values_precsion=1,
-            target_precision=1,
-            preset_set="auto/smart",
-        ),
+    "qn": (
+        LocalTuyaEntity(
+            id=DPCode.SWITCH,
+            target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
+            current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
+            preset_dp=DPCode.MODE,
+            hvac_action_dp=DPCode.WORK_STATE,
+            custom_configs=localtuya_climate(
+                temp_step=1,
+                actions_set="heating/warming",
+                unit=UNIT_C,
+                values_precsion=1,
+                target_precision=1,
+                preset_set="auto/smart",
+            ),
+        )
     ),
     # Heater
     # https://developer.tuya.com/en/docs/iot/categoryrs?id=Kaiuz0nfferyx
-    "rs": LocalTuyaEntity(
-        id=DPCode.SWITCH,
-        target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
-        current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
-        preset_dp=DPCode.MODE,
-        hvac_action_dp=DPCode.WORK_STATE,
-        custom_configs=localtuya_climate(
-            temp_step=1,
-            actions_set="heating/warming",
-            unit=UNIT_C,
-            values_precsion=1,
-            target_precision=1,
-            preset_set="auto/manual/smart/comfortable/eco",
-        ),
+    "rs": (
+        LocalTuyaEntity(
+            id=DPCode.SWITCH,
+            target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
+            current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
+            preset_dp=DPCode.MODE,
+            hvac_action_dp=DPCode.WORK_STATE,
+            custom_configs=localtuya_climate(
+                temp_step=1,
+                actions_set="heating/warming",
+                unit=UNIT_C,
+                values_precsion=1,
+                target_precision=1,
+                preset_set="auto/manual/smart/comfortable/eco",
+            ),
+        )
     ),
     # Thermostat
     # https://developer.tuya.com/en/docs/iot/f?id=K9gf45ld5l0t9
-    "wk": LocalTuyaEntity(
-        id=DPCode.SWITCH,
-        target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
-        current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
-        hvac_mode_dp=DPCode.SWITCH,
-        hvac_action_dp=DPCode.WORK_STATE,
-        preset_dp=DPCode.MODE,
-        custom_configs=localtuya_climate(
-            hvac_mode_set="True/False",
-            temp_step=1,
-            actions_set="True/False",
-            unit=UNIT_C,
-            values_precsion=1,
-            target_precision=1,
-        ),
+    "wk": (
+        LocalTuyaEntity(
+            id=DPCode.SWITCH,
+            target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
+            current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
+            hvac_mode_dp=DPCode.SWITCH,
+            hvac_action_dp=DPCode.WORK_STATE,
+            preset_dp=DPCode.MODE,
+            custom_configs=localtuya_climate(
+                hvac_mode_set="True/False",
+                temp_step=1,
+                actions_set="True/False",
+                unit=UNIT_C,
+                values_precsion=1,
+                target_precision=1,
+            ),
+        )
     ),
 }
 
