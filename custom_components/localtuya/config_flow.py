@@ -27,7 +27,7 @@ from homeassistant.const import (
     CONF_REGION,
     CONF_SCAN_INTERVAL,
     CONF_USERNAME,
-    EntityCategory,
+    EntityCategory, 
 )
 from homeassistant.core import callback
 
