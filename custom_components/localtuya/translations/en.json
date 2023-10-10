@@ -58,6 +58,7 @@
                 "menu_options": {
                     "add_device": "Add a new device",
                     "edit_device": "Edit a device",
+                    "auto_configure": "Auto configure all device",
                     "cloud_setup": "Reconfigure Cloud API account"
                 }
             },

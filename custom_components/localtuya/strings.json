@@ -44,6 +44,7 @@
                 "data": {
                     "add_device": "Add a new device",
                     "edit_device": "Edit a device",
+                    "auto_configure": "Auto configure all device",
                     "delete_device": "Delete a device",
                     "setup_cloud": "Reconfigure Cloud API account"
                 }

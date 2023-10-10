@@ -944,6 +944,77 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             menu_options=["device_setup_method"],
             description_placeholders=placeholders,
         )
+    
+    async def async_step_auto_configure(self, user_input=None):
+        """auto configure all device, only zigbee device"""
+        from .core.helpers import generate_tuya_device
+
+        errors = {}
+        cloud_data: TuyaCloudApi = self.cloud_data
+        self.discovered_devices = {}
+        data = self.hass.data.get(DOMAIN)
+
+        if data and DATA_DISCOVERY in data:
+            self.discovered_devices = data[DATA_DISCOVERY].devices
+        else:
+            try:
+                self.discovered_devices = await discover()
+            except OSError as ex:
+                if ex.errno == errno.EADDRINUSE:
+                    errors["base"] = "address_in_use"
+                else:
+                    errors["base"] = "discovery_failed"
+            except Exception as ex:
+                _LOGGER.exception("discovery failed: %s", ex)
+                errors["base"] = "discovery_failed"
+
+        allDevices = mergeDevicesList(
+            self.discovered_devices, self.cloud_data.device_list
+        )
+
+        new_data = self.config_entry.data.copy()
+        new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
+        for device_id in allDevices:
+            device = allDevices[device_id]
+            cloud_device = cloud_data.device_list.get(device_id, None)
+            if not cloud_device or not cloud_device.get("node_id", False) or not cloud_device.get("function", False):
+                continue
+            _LOGGER.warning(f"====================>>>>Auto configure all device, and now device_id is {device_id},device_name is {cloud_device['name']}>>>>>>>>device is {device}")
+            data = {
+                CONF_FRIENDLY_NAME: cloud_device.get("name"),
+                "host": device["ip"],
+                "device_id": device_id,
+                "local_key": cloud_device["local_key"],
+                "protocol_version": device["version"],
+                "enable_debug": False,
+                "node_id": cloud_device["node_id"]
+            }
+            # self.device_data = data
+            valid_data = await validate_input(
+                    self.hass, self.config_entry.entry_id, data
+                )
+            dps_strings = valid_data[CONF_DPS_STRINGS]
+            localtuya_data = {
+                CONF_FRIENDLY_NAME: cloud_device.get("name"),
+                CONF_DPS_STRINGS: dps_strings,
+            }
+            category = cloud_device.get("category", "")
+            dev_data = generate_tuya_device(localtuya_data, category)
+            if dev_data:
+                config = {
+                    **data,
+                    CONF_DPS_STRINGS: dps_strings,
+                    CONF_ENTITIES: dev_data,
+                }
+                new_data[CONF_DEVICES].update({device_id: config})
+                # await self.async_step_pick_entity_type(
+                #     {NO_ADDITIONAL_ENTITIES: True}
+                # )
+        self.hass.config_entries.async_update_entry(
+            self.config_entry,
+            data=new_data,
+        )
+        return self.async_create_entry(title="", data={})
 
     async def async_step_pick_entity_type(self, user_input=None):
         """Handle asking if user wants to add another entity."""
