@@ -581,6 +581,8 @@ SENSORS: dict[LocalTuyaEntity] = {
         ),
         *BATTERY_SENSORS,
     ),
+    # Thermostat
+    # https://developer.tuya.com/en/docs/iot/f?id=K9gf45ld5l0t9
     "wk": {
         LocalTuyaEntity(
             id=(DPCode.TEMP_CURRENT, DPCode.TEMPFLOOR),

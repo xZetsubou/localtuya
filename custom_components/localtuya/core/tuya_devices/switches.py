@@ -150,18 +150,6 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:power-sleep",
         ),
     ),
-    "wkcz": (
-        LocalTuyaEntity(
-            id=DPCode.SWITCH_1,
-            name="Switch 1",
-            device_class=SwitchDeviceClass.OUTLET,
-        ),
-        LocalTuyaEntity(
-            id=DPCode.SWITCH_2,
-            name="Switch 2",
-            device_class=SwitchDeviceClass.OUTLET,
-        ),
-    ),
     # Two-way temperature and humidity switch
     # "MOES Temperature and Humidity Smart Switch Module MS-103"
     # Documentation not found

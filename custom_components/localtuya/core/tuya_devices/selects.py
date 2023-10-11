@@ -1,6 +1,7 @@
 """
     This a file contains available tuya data
     https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
+
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
     #TODO get values using "Get the instructions set by category"
@@ -554,6 +555,8 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             ),
         ),
     ),
+    # Thermostat
+    # https://developer.tuya.com/en/docs/iot/f?id=K9gf45ld5l0t9
     "wk": (
         LocalTuyaEntity(
             id=DPCode.SENSORTYPE,

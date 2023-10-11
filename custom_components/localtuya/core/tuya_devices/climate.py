@@ -1,6 +1,7 @@
 """
     This a file contains available tuya data
     https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
+
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
 """
@@ -75,6 +76,7 @@ CLIMATES: dict[LocalTuyaEntity] = {
                 values_precsion=1,
                 target_precision=1,
             ),
+
         ),
     ),
     # Heater
