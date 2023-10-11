@@ -46,6 +46,7 @@ BATTERY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = (
         # translation_id="battery_state",
         icon="mdi:battery",
         entity_category=EntityCategory.DIAGNOSTIC,
+        custom_configs=localtuya_sensor(PERCENTAGE),
     ),
     LocalTuyaEntity(
         id=DPCode.BATTERY_VALUE,
@@ -53,6 +54,7 @@ BATTERY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = (
         device_class=SensorDeviceClass.BATTERY,
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.MEASUREMENT,
+        custom_configs=localtuya_sensor(PERCENTAGE),
     ),
     LocalTuyaEntity(
         id=DPCode.VA_BATTERY,
@@ -60,6 +62,15 @@ BATTERY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = (
         device_class=SensorDeviceClass.BATTERY,
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.MEASUREMENT,
+        custom_configs=localtuya_sensor(PERCENTAGE),
+    ),
+    LocalTuyaEntity(
+        id=DPCode.BATTERY,
+        name="Battery",
+        device_class=SensorDeviceClass.BATTERY,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.MEASUREMENT,
+        custom_configs=localtuya_sensor(PERCENTAGE),
     ),
 )
 
