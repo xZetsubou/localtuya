@@ -200,7 +200,7 @@ payload_dict = {
     # Default Device
     "type_0a": {
         AP_CONFIG: {  # [BETA] Set Control Values on Device
-            "command": {"gwId": "", "devId": "", "uid": "", "t": ""},
+            "command": {"gwId": "", "devId": "", "uid": "", "t": "", "cid": ""},
         },
         CONTROL: {  # Set Control Values on Device
             "command": {"devId": "", "uid": "", "t": "", "cid": ""},
@@ -1384,28 +1384,26 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             else:
                 json_data["uid"] = self.id
         if "cid" in json_data:
-            if nodeId is not None:
-                json_data["cid"] = nodeId
-            elif self.node_id != "" and self.node_id is not None:
-                json_data["cid"] = self.node_id
+            if cid := nodeId or self.node_id:
+                json_data["cid"] = cid
+                # for <= 3.3 we don't need `gwID`, `devID` and `uid` in payload.
+                for k in ["gwId", "devId", "uid"]:
+                    if k in json_data:
+                        json_data.pop(k)
             else:
-                # Remove "CID" if Device isn't sub.
                 del json_data["cid"]
-        # "cid" For 3.4 and 3.5 versions.
-        if "data" in json_data:
-            if "cid" in json_data["data"]:
-                if nodeId is not None:
-                    json_data["data"]["cid"] = self.node_id
-                elif self.node_id != "" and self.node_id is not None:
-                    json_data["data"]["cid"] = self.node_id
-                else:
-                    # Remove "CID" if Device isn't sub.
-                    del json_data["data"]["cid"]
+        if "data" in json_data and "cid" in json_data["data"]:
+            # "cid" in inside "data" For 3.4 and 3.5 versions.
+            if cid := nodeId or self.node_id:
+                json_data["data"]["cid"] = cid
+            else:
+                del json_data["data"]["cid"]
         if "t" in json_data:
             if json_data["t"] == "int":
                 json_data["t"] = int(time.time())
             else:
                 json_data["t"] = str(int(time.time()))
+
         if data is not None:
             if "dpId" in json_data:
                 json_data["dpId"] = data
