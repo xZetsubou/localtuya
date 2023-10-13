@@ -1393,7 +1393,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             else:
                 del json_data["cid"]
         if "data" in json_data and "cid" in json_data["data"]:
-            # "cid" in inside "data" For 3.4 and 3.5 versions.
+            # "cid" is inside "data" For 3.4 and 3.5 versions.
             if cid := nodeId or self.node_id:
                 json_data["data"]["cid"] = cid
             else:
