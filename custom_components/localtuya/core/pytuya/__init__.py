@@ -995,10 +995,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         """Return device status."""
         status: dict = await self.exchange(command=DP_QUERY, nodeID=cid)
 
-        if cid and status and "dps" in status:
-            self.dps_cache.update({cid: status["dps"]})
-        elif status and "dps" in status:
-            self.dps_cache.update({"parent": status["dps"]})
+        if status:
+            if cid and "dps" in status:
+                self.dps_cache.update({cid: status["dps"]})
+            elif "dps" in status:
+                self.dps_cache.update({"parent": status["dps"]})
 
         return self.dps_cache
 
@@ -1062,8 +1063,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         # list of available dps experience shows that the dps available are usually
         # in the ranges [1-25] and [100-110] need to split the bruteforcing in
         # different steps due to request payload limitation (max. length = 255)
-        # range increased to "170" if this cause an issue the futrue revert it to 110
-        self.dps_cache = {}
+
+        if not cid:
+            self.dps_cache = {}
         ranges = [(2, 11), (11, 21), (21, 31), (100, 111)]
 
         for dps_range in ranges:
@@ -1079,12 +1081,12 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             # if "dps" in data:
             if cid and cid in data:
                 self.dps_cache.update({cid: data[cid]})
-            elif "parent" in data:
+            elif not cid and "parent" in data:
                 self.dps_cache.update({"parent": data["parent"]})
 
             if self.dev_type == "type_0a" and not cid:
                 return self.dps_cache.get("parent")
-        self.dps_to_request = self.dps_cache.get(cid) or self.dps_cache.get("parent")
+
         return self.dps_cache.get(cid) if cid else self.dps_cache.get("parent")
 
     def add_dps_to_request(self, dp_indicies):

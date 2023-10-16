@@ -385,17 +385,12 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
             for reset_id in reset_ids_str:
                 reset_ids.append(int(reset_id.strip()))
             _LOGGER.debug(
-                "Reset DPIDs configured: %s (%s)",
-                data[CONF_RESET_DPIDS],
-                reset_ids,
+                "Reset DPIDs configured: %s (%s)", data[CONF_RESET_DPIDS], reset_ids
             )
         try:
             # If reset dpids set - then assume reset is needed before status.
             if (reset_ids is not None) and (len(reset_ids) > 0):
-                _LOGGER.debug(
-                    "Resetting command for DP IDs: %s",
-                    reset_ids,
-                )
+                _LOGGER.debug("Resetting command for DP IDs: %s", reset_ids)
                 # Assume we want to request status updated for the same set of DP_IDs as the reset ones.
                 interface.set_updatedps_list(reset_ids)
 
