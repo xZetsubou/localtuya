@@ -1080,9 +1080,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 self.dps_cache.update({"parent": data["dps"]})
 
             if self.dev_type == "type_0a":
-                return self.dps_cache
+                return self.dps_cache.get(cid) if cid else self.dps_cache.get("parent")
         self.dps_to_request = self.dps_cache
-        return self.dps_cache.get(cid) or self.dps_cache.get("parent")
+        return self.dps_cache.get(cid) if cid else self.dps_cache.get("parent")
 
     def add_dps_to_request(self, dp_indicies):
         """Add a datapoint (DP) to be included in requests."""
