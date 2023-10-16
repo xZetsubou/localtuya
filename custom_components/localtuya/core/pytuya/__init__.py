@@ -1076,12 +1076,15 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             except Exception as ex:
                 self.exception("Failed to get status: %s", ex)
                 raise
-            if "dps" in data:
-                self.dps_cache.update({"parent": data["dps"]})
+            # if "dps" in data:
+            if cid and cid in data:
+                self.dps_cache.update({cid: data[cid]})
+            elif "parent" in data:
+                self.dps_cache.update({"parent": data["parent"]})
 
-            if self.dev_type == "type_0a":
-                return self.dps_cache.get(cid) if cid else self.dps_cache.get("parent")
-        self.dps_to_request = self.dps_cache
+            if self.dev_type == "type_0a" and not cid:
+                return self.dps_cache.get("parent")
+        self.dps_to_request = self.dps_cache.get(cid) or self.dps_cache.get("parent")
         return self.dps_cache.get(cid) if cid else self.dps_cache.get("parent")
 
     def add_dps_to_request(self, dp_indicies):
