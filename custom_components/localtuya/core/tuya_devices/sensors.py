@@ -16,6 +16,7 @@ from homeassistant.const import (
     UnitOfPower,
     UnitOfTime,
     CONF_UNIT_OF_MEASUREMENT,
+    UnitOfTemperature,
 )
 
 from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
@@ -610,31 +611,34 @@ SENSORS: dict[LocalTuyaEntity] = {
     "wsdcg": (
         LocalTuyaEntity(
             id=DPCode.VA_TEMPERATURE,
-            # translation_id="temperature",
+            name="Temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
-            id=DPCode.TEMP_CURRENT,
-            # translation_id="temperature",
+            id=(DPCode.TEMP_CURRENT, DPCode.PRM_CONTENT),
+            name="Temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfTemperature.CELSIUS, 0.01),
         ),
         LocalTuyaEntity(
             id=DPCode.VA_HUMIDITY,
-            # translation_id="humidity",
+            name="Humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(PERCENTAGE, 0.01),
         ),
         LocalTuyaEntity(
-            id=DPCode.HUMIDITY_VALUE,
-            # translation_id="humidity",
+            id=(DPCode.HUMIDITY_VALUE, DPCode.PRM_CONTENT),
+            name="Humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(PERCENTAGE, 0.01),
         ),
         LocalTuyaEntity(
             id=DPCode.BRIGHT_VALUE,
-            # translation_id="illuminance",
+            translation_id="Illuminance",
             device_class=SensorDeviceClass.ILLUMINANCE,
             state_class=SensorStateClass.MEASUREMENT,
         ),

@@ -284,6 +284,8 @@ class DPCode(StrEnum):
     PRESENCE_STATE = "presence_state"
     PRESSURE_STATE = "pressure_state"
     PRESSURE_VALUE = "pressure_value"
+    PRM_CONTENT = "prm_content"
+    PRM_TEMPERATURE = "prm_temperature"
     PTZ_CONTROL = "ptz_control"
     PUMP_RESET = "pump_reset"  # Water pump reset
     RECORD_MODE = "record_mode"
