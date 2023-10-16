@@ -212,9 +212,9 @@ payload_dict = {
         DP_QUERY: {  # Get Data Points from Device
             "command": {"gwId": "", "devId": "", "uid": "", "t": "", "cid": ""},
         },
-        CONTROL_NEW: {"command": {"devId": "", "uid": "", "t": ""}},
-        DP_QUERY_NEW: {"command": {"devId": "", "uid": "", "t": ""}},
-        UPDATEDPS: {"command": {"dpId": [18, 19, 20]}},
+        CONTROL_NEW: {"command": {"devId": "", "uid": "", "t": "", "cid": ""}},
+        DP_QUERY_NEW: {"command": {"devId": "", "uid": "", "t": "", "cid": ""}},
+        UPDATEDPS: {"command": {"dpId": [18, 19, 20], "cid": ""}},
     },
     # Special Case Device "0d" - Some of these devices
     # Require the 0d command as the DP_QUERY status request and the list of
