@@ -298,6 +298,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                     self.warning(f"Initial state update failed {e}, trying key update")
                     await self.update_local_key()
                 await self.abort_connect()
+            finally:
+                pass
 
         if self._interface is not None:
             # Attempt to restore status for all entities that need to first set
@@ -473,10 +475,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self._connect_task = None
         # If it's disconnect by unexpected error.
         if self._is_closing is not True:
+            self.warning("Disconnected - waiting for discovery broadcast")
             self._is_closing = True
             self._hass.create_task(self.async_connect())
-        else:
-            self.warning("Disconnected - waiting for discovery broadcast")
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
