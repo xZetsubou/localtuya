@@ -61,6 +61,7 @@ from .const import (
     ENTITY_CATEGORY,
     DEFAULT_CATEGORIES,
     SUPPORTED_PROTOCOL_VERSIONS,
+    TUYA_DEVICES,
 )
 from .discovery import discover
 
@@ -336,40 +337,47 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
     detected_dps = {}
     error = None
     interface = None
-
     reset_ids = None
+    close = True
+
+    cid = data.get(CONF_NODE_ID, None)
+    localtuya_devices = hass.data[DOMAIN][entry_id][TUYA_DEVICES]
     try:
         conf_protocol = data[CONF_PROTOCOL_VERSION]
         auto_protocol = conf_protocol == "auto"
-        # If 'auto' will be loop through supported protocols.
-        for ver in SUPPORTED_PROTOCOL_VERSIONS:
-            try:
-                version = ver if auto_protocol else conf_protocol
-                interface = await pytuya.connect(
-                    data[CONF_HOST],
-                    data[CONF_DEVICE_ID],
-                    data[CONF_LOCAL_KEY],
-                    float(version),
-                    data[CONF_ENABLE_DEBUG],
-                    data.get(CONF_NODE_ID, None),
-                )
+        # If sub device we will search if gateway is existed if not create new connection.
+        if cid and (existed_interface := localtuya_devices.get(data[CONF_HOST])):
+            interface = existed_interface._interface
+            close = False
+        else:
+            # If 'auto' will be loop through supported protocols.
+            for ver in SUPPORTED_PROTOCOL_VERSIONS:
+                try:
+                    version = ver if auto_protocol else conf_protocol
+                    interface = await pytuya.connect(
+                        data[CONF_HOST],
+                        data[CONF_DEVICE_ID],
+                        data[CONF_LOCAL_KEY],
+                        float(version),
+                        data[CONF_ENABLE_DEBUG],
+                    )
 
-                # Break the loop if input isn't auto.
-                if not auto_protocol:
-                    break
+                    # Break the loop if input isn't auto.
+                    if not auto_protocol:
+                        break
 
-                detected_dps = await interface.detect_available_dps()
-                # If Auto: using DPS detected we will assume this is the correct version if dps found.
-                if len(detected_dps) > 0:
-                    # Set the conf_protocol to the worked version to return it and update self.device_data.
-                    conf_protocol = version
-                    break
-            # If connection to host is failed raise wrong address.
-            except OSError as ex:
-                if ex.errno == errno.EHOSTUNREACH:
-                    raise CannotConnect
-            except:
-                continue
+                    detected_dps = await interface.detect_available_dps(cid=cid)
+                    # If Auto: using DPS detected we will assume this is the correct version if dps found.
+                    if len(detected_dps) > 0:
+                        # Set the conf_protocol to the worked version to return it and update self.device_data.
+                        conf_protocol = version
+                        break
+                # If connection to host is failed raise wrong address.
+                except OSError as ex:
+                    if ex.errno == errno.EHOSTUNREACH:
+                        raise CannotConnect
+                except:
+                    continue
 
         if CONF_RESET_DPIDS in data:
             reset_ids_str = data[CONF_RESET_DPIDS].split(",")
@@ -392,14 +400,15 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
                 interface.set_updatedps_list(reset_ids)
 
                 # Reset the interface
-                await interface.reset(reset_ids)
+                await interface.reset(reset_ids, cid=cid)
 
             # Detect any other non-manual DPS strings
-            detected_dps = await interface.detect_available_dps()
+
+            detected_dps = await interface.detect_available_dps(cid=cid)
         except ValueError as ex:
             error = ex
         except Exception as ex:  # pylint: disable=broad-except
-            _LOGGER.debug("No DPS able to be detected")
+            _LOGGER.debug(f"No DPS able to be detected {ex}")
             detected_dps = {}
 
         # if manual DPs are set, merge these.
@@ -421,7 +430,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
     except ValueError as ex:
         raise InvalidAuth from ex
     finally:
-        if interface:
+        if interface and close:
             await interface.close()
 
     # Indicate an error if no datapoints found as the rest of the flow

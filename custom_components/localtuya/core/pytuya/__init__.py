@@ -738,7 +738,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self,
         dev_id,
         local_key,
-        node_id,
         protocol_version,
         enable_debug,
         on_connected,
@@ -759,7 +758,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.loop = asyncio.get_running_loop()
         self.set_logger(_LOGGER, dev_id, enable_debug)
         self.id = dev_id
-        self.node_id = node_id
         self.local_key = local_key.encode("latin1")
         self.real_local_key = self.local_key
         self.dev_type = "type_0a"
@@ -817,14 +815,17 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 self.seqno = msg.seqno + 1
             decoded_message: dict = self._decode_payload(msg.payload)
 
-            if "cid" in decoded_message and decoded_message["cid"] != self.node_id:
-                return
-
             if "dps" in decoded_message:
-                self.dps_cache.update(decoded_message["dps"])
+                if cid := decoded_message.get("cid"):
+                    self.dps_cache.update({cid: decoded_message["dps"]})
+                else:
+                    self.dps_cache.update({"parent": decoded_message["dps"]})
 
             listener = self.listener and self.listener()
             if listener is not None:
+                if cid:
+                    listener = listener._sub_devices.get(cid, listener)
+
                 listener.status_updated(self.dps_cache)
 
         return MessageDispatcher(
@@ -940,7 +941,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 )
         return None
 
-    async def exchange(self, command, dps=None):
+    async def exchange(self, command, dps=None, nodeID=None):
         """Send and receive a message, returning response from device."""
         if self.version >= 3.4 and self.real_local_key == self.local_key:
             self.debug("3.4 or 3.5 device: negotiating a new session key")
@@ -951,7 +952,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             command,
             self.dev_type,
         )
-        payload = self._generate_payload(command, dps)
+        payload = self._generate_payload(command, dps, nodeId=nodeID)
         real_cmd = payload.cmd
         dev_type = self.dev_type
         # self.debug("Exchange: payload %r %r", payload.cmd, payload.payload)
@@ -987,27 +988,30 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 dev_type,
                 self.dev_type,
             )
-            return await self.exchange(command, dps)
+            return await self.exchange(command, dps, nodeID=nodeID)
         return payload
 
-    async def status(self):
+    async def status(self, cid=None):
         """Return device status."""
-        status = await self.exchange(DP_QUERY)
+        status: dict = await self.exchange(command=DP_QUERY, nodeID=cid)
 
-        if status and "dps" in status:
-            self.dps_cache.update(status["dps"])
+        if cid and status and "dps" in status:
+            self.dps_cache.update({cid: status["dps"]})
+        elif status and "dps" in status:
+            self.dps_cache.update({"parent": status["dps"]})
+
         return self.dps_cache
 
     async def heartbeat(self):
         """Send a heartbeat message."""
         return await self.exchange(HEART_BEAT)
 
-    async def reset(self, dpIds=None):
+    async def reset(self, dpIds=None, cid=None):
         """Send a reset message (3.3 only)."""
         if self.version == 3.3:
             self.dev_type = "type_0a"
             self.debug("reset switching to dev_type %s", self.dev_type)
-            return await self.exchange(UPDATEDPS, dpIds)
+            return await self.exchange(UPDATEDPS, dpIds, nodeID=cid)
 
         return True
 
@@ -1015,7 +1019,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         """Set the DPS to be requested with the update command."""
         self.dps_whitelist = update_list
 
-    async def update_dps(self, dps=None):
+    async def update_dps(self, dps=None, cid=None):
         """
         Request device to update index.
 
@@ -1025,18 +1029,20 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         if self.version in UPDATE_DPS_LIST:
             if dps is None:
                 if not self.dps_cache:
-                    await self.detect_available_dps()
+                    await self.detect_available_dps(cid=cid)
                 if self.dps_cache:
-                    dps = [int(dp) for dp in self.dps_cache]
+                    if cid and cid in self.dps_cache:
+                        dps = [int(dp) for dp in self.dps_cache[cid]]
+                    else:
+                        dps = [int(dp) for dp in self.dps_cache["parent"]]
                     # filter non whitelisted dps
                     dps = list(set(dps).intersection(set(self.dps_whitelist)))
-            self.debug("updatedps() entry (dps %s, dps_cache %s)", dps, self.dps_cache)
-            payload = self._generate_payload(UPDATEDPS, dps)
+            payload = self._generate_payload(UPDATEDPS, dps, nodeId=cid)
             enc_payload = self._encode_message(payload)
             self.transport.write(enc_payload)
         return True
 
-    async def set_dp(self, value, dp_index):
+    async def set_dp(self, value, dp_index, cid=None):
         """
         Set value (may be any type: bool, int or string) of any dps index.
 
@@ -1044,13 +1050,13 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             dp_index(int):   dps index to set
             value: new value for the dps index
         """
-        return await self.exchange(CONTROL, {str(dp_index): value})
+        return await self.exchange(CONTROL, {str(dp_index): value}, nodeID=cid)
 
-    async def set_dps(self, dps):
+    async def set_dps(self, dps, cid=None):
         """Set values for a set of datapoints."""
-        return await self.exchange(CONTROL, dps)
+        return await self.exchange(CONTROL, dps, nodeID=cid)
 
-    async def detect_available_dps(self):
+    async def detect_available_dps(self, cid=None):
         """Return which datapoints are supported by the device."""
         # type_0d devices need a sort of bruteforce querying in order to detect the
         # list of available dps experience shows that the dps available are usually
@@ -1066,18 +1072,17 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             self.dps_to_request = {"1": None}
             self.add_dps_to_request(range(*dps_range))
             try:
-                data = await self.status()
+                data = await self.status(cid=cid)
             except Exception as ex:
                 self.exception("Failed to get status: %s", ex)
                 raise
             if "dps" in data:
-                self.dps_cache.update(data["dps"])
+                self.dps_cache.update({"parent": data["dps"]})
 
             if self.dev_type == "type_0a":
                 return self.dps_cache
-        self.debug("Detected dps: %s", self.dps_cache)
         self.dps_to_request = self.dps_cache
-        return self.dps_cache
+        return self.dps_cache.get(cid) or self.dps_cache.get("parent")
 
     def add_dps_to_request(self, dp_indicies):
         """Add a datapoint (DP) to be included in requests."""
@@ -1162,10 +1167,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if len(payload) == 0:  # No respones probably worng Local_Key
                 raise ValueError("Connected but no respones localkey is incorrect?")
             if "devid not" in payload:  # DeviceID Not found.
-                if self.node_id:
-                    raise ValueError("Node_ID is incorrect!")
-                else:
-                    raise ValueError("DeviceID Not found")
+                raise ValueError("DeviceID Not found")
             else:
                 raise DecodeError(
                     "could not decrypt data: wrong local_key? (exception: %s)" % ex
@@ -1384,7 +1386,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             else:
                 json_data["uid"] = self.id
         if "cid" in json_data:
-            if cid := nodeId or self.node_id:
+            if cid := nodeId:
                 json_data["cid"] = cid
                 # for <= 3.3 we don't need `gwID`, `devID` and `uid` in payload.
                 for k in ["gwId", "devId", "uid"]:
@@ -1394,7 +1396,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 del json_data["cid"]
         if "data" in json_data and "cid" in json_data["data"]:
             # "cid" is inside "data" For 3.4 and 3.5 versions.
-            if cid := nodeId or self.node_id:
+            if cid := nodeId:
                 json_data["data"]["cid"] = cid
             else:
                 del json_data["data"]["cid"]
@@ -1435,7 +1437,6 @@ async def connect(
     local_key,
     protocol_version,
     enable_debug,
-    node_id=None,
     listener=None,
     port=6668,
     timeout=5,
@@ -1447,7 +1448,6 @@ async def connect(
         lambda: TuyaProtocol(
             device_id,
             local_key,
-            node_id,
             protocol_version,
             enable_debug,
             on_connected,

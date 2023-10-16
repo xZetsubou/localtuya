@@ -39,6 +39,7 @@ from .const import (
     DATA_DISCOVERY,
     DOMAIN,
     TUYA_DEVICES,
+    CONF_NODE_ID,
 )
 from .discovery import TuyaDiscovery
 
@@ -237,15 +238,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             res = await tuya_api.async_get_devices_list()
     hass.data[DOMAIN][entry.entry_id][DATA_CLOUD] = tuya_api
 
-    async def setup_entities(device_ids):
+    async def setup_entities(devices: dict):
         platforms = set()
-        for dev_id in device_ids:
+        for dev_id, config in devices.items():
+            host = config.get(CONF_HOST)
             entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
             platforms = platforms.union(
                 set(entity[CONF_PLATFORM] for entity in entities)
             )
 
-            hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES][dev_id] = TuyaDevice(
+            if node_id := config.get(CONF_NODE_ID):
+                # Setup sub device as gateway if no gateway not exist.
+                if host not in hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES]:
+                    hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES][host] = TuyaDevice(
+                        hass, entry, dev_id, True
+                    )
+
+                host = f"{host}_{node_id}"
+
+            hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES][host] = TuyaDevice(
                 hass, entry, dev_id
             )
 
@@ -257,16 +268,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             device.async_connect()
             for device in hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES].values()
         ]
-        try:
-            await asyncio.wait_for(asyncio.gather(*connect_task), 1)
-        except:
-            # If there is device that isn't connected to network it will return failed Initialization.
-            ...
+        await asyncio.wait_for(asyncio.gather(*connect_task), 5)
+        # await asyncio.gather(*connect_task)
+        # try:
+        #     await asyncio.wait_for(asyncio.gather(*connect_task), 1)
+        # except:
+        #     # If there is device that isn't connected to network it will return failed Initialization.
+        #     ...
 
-    await setup_entities(entry.data[CONF_DEVICES].keys())
+    await setup_entities(entry.data[CONF_DEVICES])
+
     # callback back to unsub listener
     unsub_listener = entry.add_update_listener(update_listener)
-
     hass.data[DOMAIN][entry.entry_id].update({UNSUB_LISTENER: unsub_listener})
 
     # Add reconnect trigger every 1mins to reconnect if device not connected.
@@ -332,7 +345,8 @@ async def async_remove_config_entry_device(
         )
         return True
 
-    await hass.data[DOMAIN][config_entry.entry_id][TUYA_DEVICES][dev_id].close()
+    host = config_entry.data[CONF_DEVICES][dev_id][CONF_HOST]
+    await hass.data[DOMAIN][config_entry.entry_id][TUYA_DEVICES][host].close()
 
     new_data = config_entry.data.copy()
     new_data[CONF_DEVICES].pop(dev_id)
@@ -353,9 +367,9 @@ def reconnectTask(hass: HomeAssistant, entry: ConfigEntry):
 
     async def _async_reconnect(now):
         """Try connecting to devices not already connected to."""
-        for devID, dev in hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES].items():
+        for host, dev in hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES].items():
             if not dev.connected:
-                hass.create_task(dev.async_connect())
+                hass.async_create_task(dev.async_connect())
 
     hass.data[DOMAIN][entry.entry_id][RECONNECT_TASK] = async_track_time_interval(
         hass, _async_reconnect, RECONNECT_INTERVAL
