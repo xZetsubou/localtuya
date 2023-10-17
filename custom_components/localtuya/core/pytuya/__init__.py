@@ -1406,7 +1406,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             else:
                 del json_data["data"]["cid"]
         if "t" in json_data:
-            if json_data["t"] == "int" or nodeId:
+            if json_data["t"] == "int":
                 json_data["t"] = int(time.time())
             else:
                 json_data["t"] = str(int(time.time()))
