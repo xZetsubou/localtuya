@@ -165,6 +165,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._node_id: str = not gateway and self._dev_config_entry.get(CONF_NODE_ID)
         self._gwateway: TuyaDevice = None
         self._sub_devices = {}
+
         self._status = {}
         self.dps_to_request = {}
         self._is_closing = False
@@ -466,14 +467,20 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self._unsub_interval()
             self._unsub_interval = None
         self._interface = None
+
+        if self._sub_devices:
+            for sub_dev in self._sub_devices.values():
+                sub_dev._interface = None
+
         if self._connect_task is not None:
             # self._connect_task.cancel()
             self._connect_task = None
+
         # If it's disconnect by unexpected error.
         if self._is_closing is not True:
             self.warning("Disconnected - waiting for discovery broadcast")
             self._is_closing = True
-            self._hass.create_task(self.async_connect())
+            self._hass.async_create_task(self.async_connect())
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
