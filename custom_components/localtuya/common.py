@@ -238,7 +238,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             if self._node_id:
                 gateway = self._gwateway
                 self._gwateway = self.get_gateway() if not gateway else gateway
-                if not self._gwateway.connected:
+                if not self._gwateway.connected or self._gwateway.is_connecting:
                     return
                 self._interface = self._gwateway._interface
                 self.info(f"Connect Sub Device {name} through gateway {host}")
@@ -333,6 +333,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 connect_sub_devices = [
                     device.async_connect() for device in self._sub_devices.values()
                 ]
+                self._connect_task = None
                 await asyncio.gather(*connect_sub_devices)
 
         self._connect_task = None
