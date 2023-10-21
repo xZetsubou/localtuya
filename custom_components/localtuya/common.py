@@ -146,7 +146,7 @@ def async_config_entry_by_device_id(hass, device_id):
 
 
 class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
-    """Cache wrapper for pytuya.TuyaInterface, and Sub Devices."""
+    """Cache wrapper for pytuya.TuyaInterface."""
 
     def __init__(
         self,
@@ -163,6 +163,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._interface = None
         # For SubDevices
         self._node_id: str = not gateway and self._dev_config_entry.get(CONF_NODE_ID)
+        self._fake_gateway = gateway
         self._gwateway: TuyaDevice = None
         self._sub_devices = {}
 
@@ -175,8 +176,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._entities = []
         self._local_key = self._dev_config_entry[CONF_LOCAL_KEY]
         self._default_reset_dpids = None
-        if CONF_RESET_DPIDS in self._dev_config_entry:
-            reset_ids_str = self._dev_config_entry[CONF_RESET_DPIDS].split(",")
+        if reset_dps := self._dev_config_entry.get(CONF_RESET_DPIDS):
+            reset_ids_str = reset_dps.split(",")
 
             self._default_reset_dpids = []
             for reset_id in reset_ids_str:
@@ -207,7 +208,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         return self._interface is not None
 
     def get_gateway(self):
-        """Search for gateway device if not exist create one"""
+        """Search for gateway device"""
         if not self._node_id:
             return
         entry_id = self._config_entry.entry_id
@@ -225,7 +226,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Connect to device if not already connected."""
         # self.info("async_connect: %d %r %r", self._is_closing, self._connect_task, self._interface)
         # if not self._is_closing and self._connect_task is None and not self._interface:
-        await asyncio.wait_for(self._make_connection(), 7)
+        await self._make_connection()
         # self._connect_task = asyncio.create_task(self._make_connection())
 
     async def _make_connection(self):
@@ -237,7 +238,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         try:
             if self._node_id:
                 gateway = self._gwateway
-                self._gwateway = self.get_gateway() if not gateway else gateway
+                self._gwateway = self.get_gateway()
                 if not self._gwateway.connected or self._gwateway.is_connecting:
                     return
                 self._interface = self._gwateway._interface
@@ -291,10 +292,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 await self.abort_connect()
 
             except Exception as e:  # pylint: disable=broad-except
-                if isinstance(e, ValueError):
-                    self.warning(f"Connect to {name} failed: {e}")
-                else:
-                    self.warning(f"Connect to {host} failed: {e}")
+                self.warning(f"Connect to {host} failed: {e}")
                 if "json.decode" in str(type(e)):
                     self.warning(f"Initial state update failed {e}, trying key update")
                     await self.update_local_key()
@@ -413,6 +411,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     @callback
     def status_updated(self, status: dict):
         """Device updated status."""
+        if self._fake_gateway:
+            # Fake gateways are only used to pass commands no need for update status.
+            return
         status = status.get(self._node_id) if self._node_id else status.get("parent")
         self._handle_event(self._status, status)
         self._status.update(status)
@@ -471,7 +472,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         if self._sub_devices:
             for sub_dev in self._sub_devices.values():
-                sub_dev._interface = None
+                sub_dev.disconnected()
 
         if self._connect_task is not None:
             # self._connect_task.cancel()
