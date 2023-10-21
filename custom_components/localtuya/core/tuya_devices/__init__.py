@@ -23,7 +23,7 @@ import logging
 
 # Supported files
 from .alarm_control_panels import ALARMS  # not added yet
-from .binary_sensor import BINARY_SENSORS
+from .binary_sensors import BINARY_SENSORS
 from .buttons import BUTTONS
 from .climates import CLIMATES
 from .covers import COVERS
