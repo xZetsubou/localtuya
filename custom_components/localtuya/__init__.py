@@ -7,7 +7,7 @@ from datetime import timedelta
 import homeassistant.helpers.config_validation as cv
 import homeassistant.helpers.entity_registry as er
 import voluptuous as vol
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import (
     CONF_CLIENT_ID,
     CONF_CLIENT_SECRET,
@@ -32,6 +32,8 @@ from .common import TuyaDevice, async_config_entry_by_device_id
 from .config_flow import ENTRIES_VERSION, config_schema
 from .const import (
     ATTR_UPDATED_AT,
+    CONF_GATEWAY_ID,
+    CONF_NODE_ID,
     CONF_NO_CLOUD,
     CONF_PRODUCT_KEY,
     CONF_USER_ID,
@@ -39,7 +41,6 @@ from .const import (
     DATA_DISCOVERY,
     DOMAIN,
     TUYA_DEVICES,
-    CONF_NODE_ID,
 )
 from .discovery import TuyaDiscovery
 
@@ -97,40 +98,53 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
         await device.set_dp(event.data[CONF_VALUE], event.data[CONF_DP])
 
-    def _device_discovered(device: TuyaDevice):
+    def _device_discovered(device: dict):
         """Update address of device if it has changed."""
         device_ip = device["ip"]
         device_id = device["gwId"]
         product_key = device["productKey"]
         # If device is not in cache, check if a config entry exists
-        entry = async_config_entry_by_device_id(hass, device_id)
+        entry: ConfigEntry = async_config_entry_by_device_id(hass, device_id)
         if entry is None:
             return
 
-        if device_id not in device_cache:
+        if device_id not in device_cache or device_id not in device_cache.get(
+            device_id, {}
+        ):
             if entry and device_id in entry.data[CONF_DEVICES]:
                 # Save address from config entry in cache to trigger
                 # potential update below
                 host_ip = entry.data[CONF_DEVICES][device_id][CONF_HOST]
-                device_cache[device_id] = host_ip
+                device_cache[device_id] = {device_id: host_ip}
+
+        for subdev_id, dev_config in entry.data[CONF_DEVICES].items():
+            if dev_config.get(CONF_NODE_ID):
+                if gateway_id := dev_config.get(CONF_GATEWAY_ID):
+                    if entry and device_id == gateway_id:
+                        device_cache[device_id] = device_cache.get(device_id, {})
+                        device_cache[device_id].update(
+                            {subdev_id: dev_config.get(CONF_HOST)}
+                        )
 
         if device_id not in device_cache:
             return
-
-        dev_entry = entry.data[CONF_DEVICES][device_id]
+        if not entry.state == ConfigEntryState.LOADED:
+            return
 
         new_data = entry.data.copy()
         updated = False
+        for dev_id, host in device_cache[device_id].items():
+            if dev_id not in entry.data[CONF_DEVICES]:
+                continue
+            dev_entry = entry.data[CONF_DEVICES][dev_id]
+            if host != device_ip:
+                updated = True
+                new_data[CONF_DEVICES][dev_id][CONF_HOST] = device_ip
+                device_cache[device_id][dev_id] = device_ip
 
-        if device_cache[device_id] != device_ip:
-            updated = True
-            new_data[CONF_DEVICES][device_id][CONF_HOST] = device_ip
-            device_cache[device_id] = device_ip
-
-        if dev_entry.get(CONF_PRODUCT_KEY) != product_key:
-            updated = True
-            new_data[CONF_DEVICES][device_id][CONF_PRODUCT_KEY] = product_key
-
+            if (p_key := dev_entry.get(CONF_PRODUCT_KEY)) and p_key != product_key:
+                updated = True
+                new_data[CONF_DEVICES][dev_id][CONF_PRODUCT_KEY] = product_key
         # Update settings if something changed, otherwise try to connect. Updating
         # settings triggers a reload of the config entry, which tears down the device
         # so no need to connect in that case.
@@ -141,9 +155,9 @@ async def async_setup(hass: HomeAssistant, config: dict):
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
             hass.config_entries.async_update_entry(entry, data=new_data)
             # No need to do connect task here, when entry updated, it will reconnect. [elif].
-            # device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
+            # device = hass.data[DOMAIN][TUYA_DEVICES][device_ip]
             # if not device.connected:
-            #     hass.create_task(device.async_connect())
+            #     hass.async_create_task(device.async_connect())
         # elif device_id in hass.data[DOMAIN][TUYA_DEVICES]:
         #     device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
         #     if not device.connected:
@@ -268,13 +282,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             device.async_connect()
             for device in hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES].values()
         ]
-        await asyncio.gather(*connect_to_devices)
-        # await asyncio.gather(*connect_task)
-        # try:
-        #     await asyncio.wait_for(asyncio.gather(*connect_task), 1)
-        # except:
-        #     # If there is device that isn't connected to network it will return failed Initialization.
-        #     ...
+
+        try:
+            await asyncio.wait_for(asyncio.gather(*connect_to_devices), 5)
+        except:
+            # If there is device that isn't connected to network it will return failed Initialization.
+            ...
 
     await setup_entities(entry.data[CONF_DEVICES])
 

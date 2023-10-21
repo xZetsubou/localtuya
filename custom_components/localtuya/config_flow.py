@@ -681,6 +681,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         allDevices = mergeDevicesList(
             self.discovered_devices, self.cloud_data.device_list
         )
+
         self.discovered_devices = allDevices
         devices = {}
 
