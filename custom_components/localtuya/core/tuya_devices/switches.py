@@ -558,7 +558,7 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
         ),
         LocalTuyaEntity(
-            id=DPCode.WINDOW_CHECK,
+            id=(DPCode.WINDOW_CHECK, DPCode.WINDOW_STATE),
             name="Open Window Detection",
             icon="mdi:window-open",
             entity_category=EntityCategory.CONFIG,

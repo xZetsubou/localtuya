@@ -61,10 +61,6 @@ HVAC_MODE_SETS = {
         HVACMode.HEAT: "manual",
         HVACMode.AUTO: "auto",
     },
-    "Manual/Auto": {
-        HVACMode.HEAT: "Manual",
-        HVACMode.AUTO: "Auto",
-    },
     "Manual/Program": {
         HVACMode.HEAT: "Manual",
         HVACMode.AUTO: "Program",
@@ -99,6 +95,10 @@ HVAC_ACTION_SETS = {
     "open/close": {
         HVACAction.HEATING: "open",
         HVACAction.IDLE: "close",
+    },
+    "opened/closed": {
+        HVACAction.HEATING: "opened",
+        HVACAction.IDLE: "closed",
     },
     "heating/no_heating": {
         HVACAction.HEATING: "heating",
