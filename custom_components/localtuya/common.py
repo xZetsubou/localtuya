@@ -49,6 +49,7 @@ from .const import (
     TUYA_DEVICES,
     DEFAULT_CATEGORIES,
     ENTITY_CATEGORY,
+    CONF_GATEWAY_ID,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -142,6 +143,10 @@ def async_config_entry_by_device_id(hass, device_id):
     for entry in current_entries:
         if device_id in entry.data[CONF_DEVICES]:
             return entry
+        # Search for gateway_id
+        for dev_conf in entry.data[CONF_DEVICES].values():
+            if (gw_id := dev_conf.get(CONF_GATEWAY_ID)) and gw_id == device_id:
+                return entry
     return None
 
 
@@ -242,9 +247,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 if not self._gwateway.connected or self._gwateway.is_connecting:
                     return
                 self._interface = self._gwateway._interface
-                self.info(f"Connect Sub Device {name} through gateway {host}")
+                # self.info(f"Connect Sub Device {name} through gateway {host}")
             else:
-                self.info("Trying to connect to %s...", host)
+                # self.info("Trying to connect to %s...", host)
                 self._interface = await pytuya.connect(
                     self._dev_config_entry[CONF_HOST],
                     self._dev_config_entry[CONF_DEVICE_ID],
@@ -479,7 +484,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self._connect_task = None
 
         # If it's disconnect by unexpected error.
-        if self._is_closing is not True:
+        if self._is_closing is not True and not self._node_id:
             self.warning("Disconnected - waiting for discovery broadcast")
             self._is_closing = True
             self._hass.async_create_task(self.async_connect())
