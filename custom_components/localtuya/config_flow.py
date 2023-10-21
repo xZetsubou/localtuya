@@ -186,15 +186,16 @@ def mergeDevicesList(devList: dict, cloudList: dict, addSubDevices=True) -> dict
                 else:
                     # Create a data for sub_device [cloud and local gateway] to merge it with discovered devices.
                     if len(gateway) > 0:
-                        local_GW = devList[gateway[0].get(CONF_ID)]
+                        local_GW: dict = devList[gateway[0].get(CONF_ID)]
                     else:  # If we can't find the gateway we will pull data without local "ip"
-                        local_GW = cloudList[_devID]
+                        continue
                     dev_data = {
                         _devID: {
                             CONF_TUYA_IP: local_GW.get(CONF_TUYA_IP),
                             CONF_TUYA_GWID: _devID,
                             CONF_TUYA_VERSION: local_GW.get(CONF_TUYA_VERSION, "auto"),
                             CONF_NODE_ID: cloudList[_devID].get(CONF_NODE_ID, None),
+                            "gateway_gwId": local_GW.get(CONF_TUYA_GWID),
                         }
                     }
                     newList.update(dev_data)
