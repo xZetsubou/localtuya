@@ -264,11 +264,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         await hass.config_entries.async_forward_entry_setups(entry, platforms)
 
         # Connect to tuya devices.
-        connect_task = [
+        connect_to_devices = [
             device.async_connect()
             for device in hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES].values()
         ]
-        await asyncio.wait_for(asyncio.gather(*connect_task), 5)
+        await asyncio.gather(*connect_to_devices)
         # await asyncio.gather(*connect_task)
         # try:
         #     await asyncio.wait_for(asyncio.gather(*connect_task), 1)
