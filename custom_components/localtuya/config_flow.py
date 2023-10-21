@@ -36,30 +36,31 @@ from .common import pytuya
 from .const import (
     ATTR_UPDATED_AT,
     CONF_ADD_DEVICE,
+    CONF_CLOUD_SETUP,
     CONF_DPS_STRINGS,
     CONF_EDIT_DEVICE,
+    CONF_ENABLE_ADD_ENTITIES,
     CONF_ENABLE_DEBUG,
-    CONF_NODE_ID,
+    CONF_GATEWAY_ID,
     CONF_LOCAL_KEY,
-    CONF_TUYA_GWID,
-    CONF_TUYA_IP,
-    CONF_TUYA_VERSION,
     CONF_MANUAL_DPS,
     CONF_MODEL,
-    CONF_PRODUCT_KEY,
+    CONF_NODE_ID,
     CONF_NO_CLOUD,
+    CONF_PRODUCT_KEY,
     CONF_PRODUCT_NAME,
     CONF_PROTOCOL_VERSION,
     CONF_RESET_DPIDS,
-    CONF_CLOUD_SETUP,
+    CONF_TUYA_GWID,
+    CONF_TUYA_IP,
+    CONF_TUYA_VERSION,
     CONF_USER_ID,
-    CONF_ENABLE_ADD_ENTITIES,
     DATA_CLOUD,
     DATA_DISCOVERY,
-    DOMAIN,
-    PLATFORMS,
-    ENTITY_CATEGORY,
     DEFAULT_CATEGORIES,
+    DOMAIN,
+    ENTITY_CATEGORY,
+    PLATFORMS,
     SUPPORTED_PROTOCOL_VERSIONS,
     TUYA_DEVICES,
 )
@@ -195,7 +196,7 @@ def mergeDevicesList(devList: dict, cloudList: dict, addSubDevices=True) -> dict
                             CONF_TUYA_GWID: _devID,
                             CONF_TUYA_VERSION: local_GW.get(CONF_TUYA_VERSION, "auto"),
                             CONF_NODE_ID: cloudList[_devID].get(CONF_NODE_ID, None),
-                            "gateway_gwId": local_GW.get(CONF_TUYA_GWID),
+                            CONF_GATEWAY_ID: local_GW.get(CONF_TUYA_GWID),
                         }
                     }
                     newList.update(dev_data)
@@ -680,6 +681,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         allDevices = mergeDevicesList(
             self.discovered_devices, self.cloud_data.device_list
         )
+        self.discovered_devices = allDevices
         devices = {}
 
         # To avoid duplicated entities we will get all devices in every hub.
@@ -747,11 +749,12 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         self.device_data[CONF_MODEL] = cloud_devs[dev_id].get(
                             CONF_PRODUCT_NAME
                         )
-                    # We add from local devices if exists because keys will re_update without it.
-                    if dev_id in self.discovered_devices.keys():
-                        self.device_data[CONF_PRODUCT_KEY] = self.discovered_devices[
-                            dev_id
-                        ].get("productKey")
+                    # Pulls some of device data that aren't required from user in config_flow.
+                    if device := self.discovered_devices.get(dev_id):
+                        self.device_data[CONF_PRODUCT_KEY] = device.get("productKey")
+                        if gateway_id := device.get(CONF_GATEWAY_ID):
+                            self.device_data[CONF_GATEWAY_ID] = gateway_id
+
                 # Handle Inputs on edit device mode.
                 if self.editing_device:
                     dev_config: dict = self.config_entry.data[CONF_DEVICES].get(
@@ -764,10 +767,10 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         )
                         return self.async_create_entry(title="", data={})
                     # We will restore device details if it's already existed!
-                    for res_conf in [CONF_MODEL, CONF_PRODUCT_KEY]:
+                    for res_conf in [CONF_GATEWAY_ID, CONF_MODEL, CONF_PRODUCT_KEY]:
                         if dev_config.get(res_conf):
                             self.device_data[res_conf] = dev_config.get(res_conf)
-                    # Remove the values that assigned as "-"
+                    # Remove the values that assigned as "- or empty space"
                     for rm_conf in [CONF_RESET_DPIDS, CONF_MANUAL_DPS]:
                         if rm_conf in user_input and user_input[rm_conf] in ["-", " "]:
                             self.device_data.pop(rm_conf)
@@ -881,9 +884,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             if dev_id is not None:
                 # Insert default values from discovery and cloud if present
                 cloud_devs = self.cloud_data.device_list
-                local_devs = self.discovered_devices
-                allDevices = mergeDevicesList(local_devs, cloud_devs)
-                device = allDevices[dev_id]
+                device = self.discovered_devices[dev_id]
                 defaults[CONF_HOST] = device.get(CONF_TUYA_IP)
                 defaults[CONF_DEVICE_ID] = device.get(CONF_TUYA_GWID)
                 defaults[CONF_PROTOCOL_VERSION] = device.get(CONF_TUYA_VERSION)
