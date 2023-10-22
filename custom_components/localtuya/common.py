@@ -231,7 +231,10 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Connect to device if not already connected."""
         # self.info("async_connect: %d %r %r", self._is_closing, self._connect_task, self._interface)
         # if not self._is_closing and self._connect_task is None and not self._interface:
-        await self._make_connection()
+        try:
+            await asyncio.wait_for(self._make_connection(), 5)
+        except TimeoutError:
+            ...
         # self._connect_task = asyncio.create_task(self._make_connection())
 
     async def _make_connection(self):
@@ -349,6 +352,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         if self._interface is not None:
             await self._interface.close()
             self._interface = None
+        self._connect_task = None
 
     async def update_local_key(self):
         """Retrieve updated local_key from Cloud API and update the config_entry."""

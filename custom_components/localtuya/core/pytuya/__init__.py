@@ -36,6 +36,7 @@ Credits
 """
 
 import asyncio
+import errno
 import base64
 import binascii
 import hmac
@@ -1450,18 +1451,24 @@ async def connect(
     """Connect to a device."""
     loop = asyncio.get_running_loop()
     on_connected = loop.create_future()
-    _, protocol = await loop.create_connection(
-        lambda: TuyaProtocol(
-            device_id,
-            local_key,
-            protocol_version,
-            enable_debug,
-            on_connected,
-            listener or EmptyListener(),
-        ),
-        address,
-        port,
-    )
+    try:
+        _, protocol = await loop.create_connection(
+            lambda: TuyaProtocol(
+                device_id,
+                local_key,
+                protocol_version,
+                enable_debug,
+                on_connected,
+                listener or EmptyListener(),
+            ),
+            address,
+            port,
+        )
+    except OSError as ex:
+        if ex.errno == errno.EHOSTUNREACH:
+            raise ValueError(f"The host is unreachable")
+    except:
+        raise ValueError(f"Port is closed for this host?")
 
     await asyncio.wait_for(on_connected, timeout=timeout)
     return protocol
