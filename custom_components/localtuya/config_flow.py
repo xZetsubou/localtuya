@@ -1,4 +1,5 @@
 """Config flow for LocalTuya integration integration."""
+import asyncio
 import errno
 import logging
 import time
@@ -356,14 +357,16 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
             for ver in SUPPORTED_PROTOCOL_VERSIONS:
                 try:
                     version = ver if auto_protocol else conf_protocol
-                    interface = await pytuya.connect(
-                        data[CONF_HOST],
-                        data[CONF_DEVICE_ID],
-                        data[CONF_LOCAL_KEY],
-                        float(version),
-                        data[CONF_ENABLE_DEBUG],
+                    interface = await asyncio.wait_for(
+                        pytuya.connect(
+                            data[CONF_HOST],
+                            data[CONF_DEVICE_ID],
+                            data[CONF_LOCAL_KEY],
+                            float(version),
+                            data[CONF_ENABLE_DEBUG],
+                        ),
+                        5,
                     )
-
                     # Break the loop if input isn't auto.
                     if not auto_protocol:
                         break
@@ -375,12 +378,10 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
                         conf_protocol = version
                         break
                 # If connection to host is failed raise wrong address.
-                except OSError as ex:
-                    if ex.errno == errno.EHOSTUNREACH:
-                        raise CannotConnect
+                except ValueError as ex:
+                    raise ValueError(ex)
                 except:
                     continue
-
         if CONF_RESET_DPIDS in data:
             reset_ids_str = data[CONF_RESET_DPIDS].split(",")
             reset_ids = []
@@ -425,7 +426,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
     except (ConnectionRefusedError, ConnectionResetError) as ex:
         raise CannotConnect from ex
     except ValueError as ex:
-        raise InvalidAuth from ex
+        error = ex
     finally:
         if interface and close:
             await interface.close()
@@ -833,6 +834,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
             except ValueError as ex:
+                placeholders["ex"] = str(ex)
                 errors["base"] = "value_error"
                 _LOGGER.debug("Value Error: %s", ex)
             except EmptyDpsList:
