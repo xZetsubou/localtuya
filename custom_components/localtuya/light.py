@@ -122,11 +122,7 @@ def flow_schema(dps):
         vol.Optional(CONF_COLOR_TEMP_MAX_KELVIN, default=DEFAULT_MAX_KELVIN): vol.All(
             vol.Coerce(int), vol.Range(min=1500, max=8000)
         ),
-        vol.Optional(
-            CONF_COLOR_TEMP_REVERSE,
-            default=DEFAULT_COLOR_TEMP_REVERSE,
-            description={"suggested_value": DEFAULT_COLOR_TEMP_REVERSE},
-        ): bool,
+        vol.Optional(CONF_COLOR_TEMP_REVERSE, default=DEFAULT_COLOR_TEMP_REVERSE): bool,
         vol.Optional(CONF_SCENE): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_SCENE_VALUES): str,
         vol.Optional(CONF_SCENE_VALUES_FRIENDLY): str,
@@ -152,18 +148,18 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         self._state = False
         self._brightness = None
         self._color_temp = None
-        self._lower_brightness = self._config.get(
-            CONF_BRIGHTNESS_LOWER, DEFAULT_LOWER_BRIGHTNESS
+        self._lower_brightness = int(
+            self._config.get(CONF_BRIGHTNESS_LOWER, DEFAULT_LOWER_BRIGHTNESS)
         )
-        self._upper_brightness = self._config.get(
-            CONF_BRIGHTNESS_UPPER, DEFAULT_UPPER_BRIGHTNESS
+        self._upper_brightness = int(
+            self._config.get(CONF_BRIGHTNESS_UPPER, DEFAULT_UPPER_BRIGHTNESS)
         )
         self._upper_color_temp = self._upper_brightness
         self._max_mired = color_util.color_temperature_kelvin_to_mired(
-            self._config.get(CONF_COLOR_TEMP_MIN_KELVIN, DEFAULT_MIN_KELVIN)
+            int(self._config.get(CONF_COLOR_TEMP_MIN_KELVIN, DEFAULT_MIN_KELVIN))
         )
         self._min_mired = color_util.color_temperature_kelvin_to_mired(
-            self._config.get(CONF_COLOR_TEMP_MAX_KELVIN, DEFAULT_MAX_KELVIN)
+            int(self._config.get(CONF_COLOR_TEMP_MAX_KELVIN, DEFAULT_MAX_KELVIN))
         )
         self._color_temp_reverse = self._config.get(
             CONF_COLOR_TEMP_REVERSE, DEFAULT_COLOR_TEMP_REVERSE
@@ -328,6 +324,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn on or control the light."""
+        _LOGGER.debug(f"This the kwargs {kwargs}")
         states = {}
         if not self.is_on:
             states[self._dp_id] = True
