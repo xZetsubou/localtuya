@@ -289,13 +289,13 @@ def platform_schema(platform, dps_strings, allow_id=True, yaml=False):
 def default_category(_platform):
     """Auto Select default category depends on the platform."""
     if any(_platform in i for i in DEFAULT_CATEGORIES["CONTROL"]):
-        return str(None)
+        return None
     elif any(_platform in i for i in DEFAULT_CATEGORIES["CONFIG"]):
         return EntityCategory.CONFIG
     elif any(_platform in i for i in DEFAULT_CATEGORIES["DIAGNOSTIC"]):
         return EntityCategory.DIAGNOSTIC
     else:
-        return str(None)
+        return None
 
 
 def flow_schema(platform, dps_strings):

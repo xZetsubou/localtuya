@@ -212,7 +212,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Return if connected to device."""
         return self._interface is not None
 
-    def get_gateway(self):
+    async def get_gateway(self):
         """Search for gateway device"""
         if not self._node_id:
             return
@@ -231,10 +231,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Connect to device if not already connected."""
         # self.info("async_connect: %d %r %r", self._is_closing, self._connect_task, self._interface)
         # if not self._is_closing and self._connect_task is None and not self._interface:
-        try:
-            await asyncio.wait_for(self._make_connection(), 5)
-        except TimeoutError:
-            ...
+        if not self._is_closing and not self.is_connecting and not self.connected:
+            try:
+                await asyncio.wait_for(self._make_connection(), 5)
+            except TimeoutError:
+                ...
         # self._connect_task = asyncio.create_task(self._make_connection())
 
     async def _make_connection(self):
@@ -245,9 +246,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         try:
             if self._node_id:
-                gateway = self._gwateway
-                self._gwateway = self.get_gateway()
+                self._gwateway = await self.get_gateway()
                 if not self._gwateway.connected or self._gwateway.is_connecting:
+                    self._connect_task = None
                     return
                 self._interface = self._gwateway._interface
                 # self.info(f"Connect Sub Device {name} through gateway {host}")
@@ -490,8 +491,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         # If it's disconnect by unexpected error.
         if self._is_closing is not True and not self._node_id:
             self.warning("Disconnected - waiting for discovery broadcast")
-            self._is_closing = True
-            self._hass.async_create_task(self.async_connect())
+            self._is_closing = False
+            self._hass.create_task(self.async_connect())
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
