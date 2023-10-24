@@ -37,7 +37,7 @@ from .common import pytuya
 from .const import (
     ATTR_UPDATED_AT,
     CONF_ADD_DEVICE,
-    CONF_CLOUD_SETUP,
+    CONF_CONFIGURE_CLOUD,
     CONF_DPS_STRINGS,
     CONF_EDIT_DEVICE,
     CONF_ENABLE_ADD_ENTITIES,
@@ -81,7 +81,7 @@ EXPORT_CONFIG = "export_config"
 CUSTOM_DEVICE = {"Add Device Manually": "..."}
 
 # Using list method so we can translate options.
-CONFIGURE_MENU = [CONF_ADD_DEVICE, CONF_EDIT_DEVICE, CONF_CLOUD_SETUP]
+CONFIGURE_MENU = [CONF_ADD_DEVICE, CONF_EDIT_DEVICE, CONF_CONFIGURE_CLOUD]
 
 CLOUD_CONFIGURE_SCHEMA = vol.Schema(
     {
@@ -599,7 +599,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             menu_options=DEVICE_SETUP_METHOD,
         )
 
-    async def async_step_cloud_setup(self, user_input=None):
+    async def async_step_configure_cloud(self, user_input=None):
         """Handle the initial step."""
         errors = {}
         placeholders = {}
