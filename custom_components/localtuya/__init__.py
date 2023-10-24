@@ -299,7 +299,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unloading the Tuya platforms."""
     # Get used platforms.
     platforms = {}
-    for dev_id, dev_entry in entry.data[CONF_DEVICES].items():
+    hass_data = hass.data[DOMAIN][entry.entry_id]
+    for host, dev_entry in entry.data[CONF_DEVICES].items():
         for entity in dev_entry[CONF_ENTITIES]:
             platforms[entity[CONF_PLATFORM]] = True
 
@@ -309,7 +310,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Close all connection to the devices.
     close_devices = [
         device.close()
-        for device in hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES].values()
+        for device in hass_data[TUYA_DEVICES].values()
         if device.connected
     ]
     # Just to prevent the loop get stuck in-case it calls multiples quickly
@@ -319,8 +320,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         pass
 
     # Unsub events.
-    hass.data[DOMAIN][entry.entry_id][RECONNECT_TASK]()
-    hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
+    hass_data[RECONNECT_TASK]()
+    hass_data[UNSUB_LISTENER]()
 
     hass.data[DOMAIN].pop(entry.entry_id)
 
