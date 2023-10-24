@@ -167,7 +167,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._dev_config_entry: dict = config_entry.data[CONF_DEVICES][dev_id].copy()
         self._interface = None
         # For SubDevices
-        self._node_id: str = not gateway and self._dev_config_entry.get(CONF_NODE_ID)
+        self._node_id: str = self._dev_config_entry.get(CONF_NODE_ID)
         self._fake_gateway = gateway
         self._gwateway: TuyaDevice = None
         self._sub_devices = {}
@@ -212,6 +212,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Return if connected to device."""
         return self._interface is not None
 
+    @property
+    def is_subdevice(self):
+        """Return whether this is a subdevice or not."""
+        return self._node_id and not self._fake_gateway
+
     async def get_gateway(self):
         """Search for gateway device"""
         if not self._node_id:
@@ -245,7 +250,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         name = self._dev_config_entry.get(CONF_FRIENDLY_NAME)
 
         try:
-            if self._node_id:
+            if self.is_subdevice:
                 self._gwateway = await self.get_gateway()
                 if not self._gwateway.connected or self._gwateway.is_connecting:
                     self._connect_task = None
@@ -271,27 +276,21 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         if self._interface is not None:
             try:
                 # If reset dpids set - then assume reset is needed before status.
-                if (self._default_reset_dpids is not None) and (
-                    len(self._default_reset_dpids) > 0
-                ):
-                    self.debug(
-                        "Resetting command for DP IDs: %s",
-                        self._default_reset_dpids,
-                    )
+                reset_dpids = self._default_reset_dpids
+                if (reset_dpids is not None) and (len(reset_dpids) > 0):
+                    self.debug(f"Resetting cmd for DP IDs: {reset_dpids}")
                     # Assume we want to request status updated for the same set of DP_IDs as the reset ones.
-                    self._interface.set_updatedps_list(self._default_reset_dpids)
+                    self._interface.set_updatedps_list(reset_dpids)
 
                     # Reset the interface
-                    await self._interface.reset(
-                        self._default_reset_dpids, cid=self._node_id
-                    )
+                    await self._interface.reset(reset_dpids, cid=self._node_id)
 
                 self.debug("Retrieving initial state")
 
                 status = await self._interface.status(cid=self._node_id)
                 if status is None:
                     raise Exception("Failed to retrieve status")
-                if not self._node_id:
+                if not self.is_subdevice:
                     self._interface.start_heartbeat()
                 self.status_updated(status)
 
@@ -335,7 +334,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 )
 
             self._is_closing = False
-            self.info(f"Successfully connected to {name if self._node_id else host}")
+            self.info(f"Success: connected to {name if self.is_subdevice else host}")
             if self._sub_devices:
                 connect_sub_devices = [
                     device.async_connect() for device in self._sub_devices.values()
@@ -347,7 +346,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
     async def abort_connect(self):
         """Abort the connect process to the interface[device]"""
-        if self._node_id:
+        if self.is_subdevice:
             self._interface = None
 
         if self._interface is not None:
