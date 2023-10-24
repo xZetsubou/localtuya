@@ -286,11 +286,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     await setup_entities(entry.data[CONF_DEVICES])
 
-    # callback back to unsub listener
+    # Unsub listener: callback to unsub
     unsub_listener = entry.add_update_listener(update_listener)
     hass.data[DOMAIN][entry.entry_id].update({UNSUB_LISTENER: unsub_listener})
 
-    # Add reconnect trigger every 1mins to reconnect if device not connected.
+    # Add reconnect task.
     reconnectTask(hass, entry)
     return True
 
@@ -372,7 +372,7 @@ async def async_remove_config_entry_device(
 
 
 def reconnectTask(hass: HomeAssistant, entry: ConfigEntry):
-    """Add reconnect task to (every 1mins), If devices is not connected"""
+    """Add a task to reconnect to the devices if is not connected [interval: RECONNECT_INTERVAL]"""
 
     async def _async_reconnect(now):
         """Try connecting to devices not already connected to."""

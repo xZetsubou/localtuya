@@ -915,19 +915,20 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         placeholders = {}
 
         # Gather the informations
+        is_cloud = not self.config_entry.data.get(CONF_NO_CLOUD)
         dev_id = self.selected_device
+        category = None
         node_id = self.nodeID
         cloud_data: TuyaCloudApi = self.cloud_data
         device_data = dev_id in cloud_data.device_list
-        entries = self.hass.config_entries.async_entries(DOMAIN)
-        is_cloud = not self.config_entry.data.get(CONF_NO_CLOUD)
+        if device_data:
+            category = cloud_data.device_list[dev_id].get("category", "")
 
         localtuya_data = {
             CONF_FRIENDLY_NAME: self.device_data.get(CONF_FRIENDLY_NAME),
             CONF_DPS_STRINGS: self.dps_strings,
         }
 
-        category = cloud_data.device_list[dev_id].get("category", "")
         dev_data = generate_tuya_device(localtuya_data, category)
 
         # Process to add the device to localtuya HA Config.
