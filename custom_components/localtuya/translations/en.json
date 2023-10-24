@@ -18,7 +18,7 @@
         "step": {
             "user": {
                 "title": "Cloud API account configuration",
-                "description": "Configure the credentials used to connect to the Tuya Cloud API. [More Info](https://github.com/xZetsubou/hass-localtuya)",
+                "description": "Configure the credentials used to connect to the Tuya Cloud API.",
                 "data": {
                     "region": "Data Center Region",
                     "client_id": "Client ID",
@@ -77,7 +77,7 @@
             },
             "configure_cloud": {
                 "title": "Manage Cloud API account",
-                "description": "Configure the credentials used to connect to the Tuya Cloud API. [More Info](https://github.com/xZetsubou/hass-localtuya)",
+                "description": "Configure the credentials used to connect to the Tuya Cloud API.",
                 "data": {
                     "region": "Data Center Region",
                     "client_id": "Client ID",
