@@ -647,7 +647,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         """Return the class of this device."""
         return self._config.get(CONF_DEVICE_CLASS, None)
 
-    def dps(self, dp_index):
+    def dp_value(self, dp_index):
         """Return cached value for DPS index."""
         value = self._status.get(str(dp_index))
         if value is None and not self._dev_config_entry.get(CONF_NODE_ID):
@@ -659,12 +659,8 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         return value
 
-    def dps_conf(self, conf_item):
-        """Return value of datapoint for user specified config item.
-
-        This method looks up which DP a certain config item uses based on
-        user configuration and returns its value.
-        """
+    def dp_value_conf(self, conf_item):
+        """Return DP Value based on config key, If entity has the key."""
         dp_index = self._config.get(conf_item)
         if dp_index is None:
             self.warning(
@@ -672,14 +668,14 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
                 self.entity_id,
                 conf_item,
             )
-        return self.dps(dp_index)
+        return self.dp_value(dp_index)
 
     def status_updated(self):
         """Device status was updated.
 
         Override in subclasses and update entity specific state.
         """
-        state = self.dps(self._dp_id)
+        state = self.dp_value(self._dp_id)
         self._state = state
 
         # Keep record in last_state as long as not during connection/re-connection,

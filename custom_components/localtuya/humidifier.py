@@ -82,21 +82,21 @@ class LocaltuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
     @property
     def mode(self) -> str | None:
         """Return the current mode."""
-        return self.dps_conf(self._dp_mode)
+        return self.dp_value_conf(self._dp_mode)
 
     @property
     def target_humidity(self) -> int | None:
         """Return the humidity we try to reach."""
         target_dp = self._config.get(self._dp_set_humidity, None)
 
-        return self.dps_conf(target_dp) if target_dp else None
+        return self.dp_value_conf(target_dp) if target_dp else None
 
     @property
     def current_humidity(self) -> int | None:
         """Return the current humidity."""
         curr_humidity = self._config.get(self._dp_current_humidity)
 
-        return self.dps_conf(self._dp_current_humidity) if curr_humidity else None
+        return self.dp_value_conf(self._dp_current_humidity) if curr_humidity else None
 
     async def async_turn_on(self, **kwargs):
         """Turn the device on."""
