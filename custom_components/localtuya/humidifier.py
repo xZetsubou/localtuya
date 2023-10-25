@@ -92,7 +92,7 @@ class LocaltuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
     @property
     def target_humidity(self) -> int | None:
         """Return the humidity we try to reach."""
-        target_dp = self._config.get(self._dp_target, None)
+        target_dp = self._config.get(self._dp_target_humidity, None)
 
         return self.dps_conf(target_dp) if target_dp else None
 
