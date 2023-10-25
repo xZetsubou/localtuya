@@ -581,14 +581,13 @@ class MessageDispatcher(ContextualLogger):
 
     async def wait_for(self, seqno, cmd, timeout=5):
         """Wait for response to a sequence number to be received and return it."""
+        # This is for >= 3.4 devices [workaround].
+        # if cmd == CONTROL_NEW and self.version >= 3.4:
+        #     seqno += 2
         if seqno in self.listeners:
             self.error(f"listener exists for {seqno}")
             return
             raise Exception(f"listener exists for {seqno}")
-
-        # This is for >= 3.4 devices [workaround].
-        if cmd == CONTROL_NEW and self.version >= 3.4:
-            seqno += 2
 
         self.debug("Command %d waiting for seq. number %d", cmd, seqno)
         self.listeners[seqno] = asyncio.Semaphore(0)
@@ -871,6 +870,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
     def connection_lost(self, exc):
         """Disconnected from device."""
+        if exc:
+            self.info(f"Connection Lost due to: {exc}")
         self.debug("Connection lost: %s", exc)
         self.real_local_key = self.local_key
         try:
