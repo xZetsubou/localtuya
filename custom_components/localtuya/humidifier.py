@@ -23,7 +23,6 @@ from homeassistant.components.humidifier.const import (
 CONF_HUMIDIFIER_SET_HUMIDITY_DP = "humidifier_set_humidity_dp"
 CONF_HUMIDIFIER_CURRENT_HUMIDITY_DP = "humidifier_current_humidity_dp"
 CONF_HUMIDIFIER_MODE_DP = "humidifier_mode_dp"
-CONF_HUMIDIFIER_TARGET_HUMIDITY_DP = "humidifier_target_humidity_dp"
 CONF_HUMIDIFIER_AVAILABLE_MODES = "humidifier_available_modes"
 
 from .common import LocalTuyaEntity, async_setup_entry
@@ -37,9 +36,6 @@ def flow_schema(dps):
     return {
         vol.Optional(CONF_HUMIDIFIER_SET_HUMIDITY_DP): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_HUMIDIFIER_MODE_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_HUMIDIFIER_TARGET_HUMIDITY_DP): _col_to_select(
-            dps, is_dps=True
-        ),
         vol.Required(ATTR_MIN_HUMIDITY, default=DEFAULT_MIN_HUMIDITY): int,
         vol.Required(ATTR_MAX_HUMIDITY, default=DEFAULT_MAX_HUMIDITY): int,
         vol.Optional(CONF_HUMIDIFIER_AVAILABLE_MODES): str,
@@ -54,7 +50,6 @@ class LocaltuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
     _dp_current_humidity = CONF_HUMIDIFIER_CURRENT_HUMIDITY_DP
     _dp_mode = CONF_HUMIDIFIER_MODE_DP
     _dp_set_humidity = CONF_HUMIDIFIER_SET_HUMIDITY_DP
-    _dp_target_humidity = CONF_HUMIDIFIER_TARGET_HUMIDITY_DP
 
     def __init__(
         self,
@@ -92,7 +87,7 @@ class LocaltuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
     @property
     def target_humidity(self) -> int | None:
         """Return the humidity we try to reach."""
-        target_dp = self._config.get(self._dp_target_humidity, None)
+        target_dp = self._config.get(self._dp_set_humidity, None)
 
         return self.dps_conf(target_dp) if target_dp else None
 

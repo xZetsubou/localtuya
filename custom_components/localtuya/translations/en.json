@@ -233,7 +233,6 @@
                     "humidifier_current_humidity_dp": "Current Humidity DP",
                     "humidifier_mode_dp": "(optional) Set mode DP",
                     "humidifier_set_humidity_dp": "Set Humidity DP",
-                    "humidifier_target_humidity_dp": "(optional) Set Humidity Target DP",
                     "min_humidity": "set the minimum supported humidity",
                     "max_humidity": "Set maximum supported humidity"
                 },
