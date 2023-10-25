@@ -110,7 +110,7 @@
                 "title": "Configure device entities",
                 "description": "LocalTuya will try to discover the rest of the configuration automatically. However, if this does not work for your device or you would like to tweak settings, choose the `manual` option.",
                 "menu_options": {
-                    "auto_configure_device":"Discover device entities automatically (BETA)",
+                    "auto_configure_device":"Discover device entities automatically",
                     "pick_entity_type": "Configure device entities manually",
                     "choose_template":"Use saved template"
                 }
