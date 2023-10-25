@@ -502,7 +502,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     def __init__(self, device, config_entry, dp_id, logger, **kwargs):
         """Initialize the Tuya entity."""
         super().__init__()
-        self._device = device
+        self._device: TuyaDevice = device
         self._dev_config_entry = config_entry
         self._config: dict = get_entity_config(config_entry, dp_id)
         self._dp_id = dp_id
