@@ -56,7 +56,7 @@
                 "title": "Configuration",
                 "description": "Select an option to proceed.",
                 "menu_options": {
-                    "add_device": "Search for new devices",
+                    "add_device": "Add new device",
                     "edit_device": "Reconfigure existing device",
                     "configure_cloud": "Manage Cloud API account"
                 }
