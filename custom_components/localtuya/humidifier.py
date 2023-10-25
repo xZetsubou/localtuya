@@ -99,7 +99,9 @@ class LocaltuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
     @property
     def current_humidity(self) -> int | None:
         """Return the current humidity."""
-        return self.dps_conf(self._dp_current_humidity)
+        curr_humidity = self._config.get(self._dp_current_humidity)
+
+        return self.dps_conf(self._dp_current_humidity) if curr_humidity else None
 
     async def async_turn_on(self, **kwargs):
         """Turn the device on."""
