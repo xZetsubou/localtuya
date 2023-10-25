@@ -319,6 +319,7 @@ class DPCode(StrEnum):
     SOUND_MODE = "sound_mode"
     SPEED = "speed"  # Speed level
     SPRAY_MODE = "spray_mode"  # Spraying mode
+    SPRAY_VOLUME = "spray_volume"  # Dehumidifier
     START = "start"  # Start
     STATUS = "status"
     STERILIZATION = "sterilization"  # Sterilization

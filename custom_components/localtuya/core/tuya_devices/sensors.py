@@ -1030,15 +1030,21 @@ SENSORS: dict[LocalTuyaEntity] = {
     "cs": (
         LocalTuyaEntity(
             id=DPCode.TEMP_INDOOR,
-            # translation_id="temperature",
+            name="Temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.HUMIDITY_INDOOR,
-            # translation_id="humidity",
+            name="Humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.COUNTDOWN_LEFT,
+            translation_id="Countdown left",
+            custom_configs=localtuya_sensor(UnitOfTime.MINUTES),
+            icon="mdi:timer",
         ),
     ),
     # Soil sensor (Plant monitor)
