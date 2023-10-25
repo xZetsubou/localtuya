@@ -375,7 +375,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     def min_temp(self):
         """Return the minimum temperature."""
         if _min_temp := self._config.get(CONF_MIN_TEMP_DP):
-            return self.dps_conf(CONF_MIN_TEMP_DP)
+            return self.dp_value_conf(CONF_MIN_TEMP_DP)
         # DEFAULT_MIN_TEMP is in C
         if self.temperature_unit == TEMP_FAHRENHEIT:
             return DEFAULT_MIN_TEMP * 1.8 + 32
@@ -386,7 +386,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     def max_temp(self):
         """Return the maximum temperature."""
         if self.has_config(CONF_MAX_TEMP_DP):
-            return self.dps_conf(CONF_MAX_TEMP_DP)
+            return self.dp_value_conf(CONF_MAX_TEMP_DP)
         # DEFAULT_MAX_TEMP is in C
         if self.temperature_unit == TEMP_FAHRENHEIT:
             return DEFAULT_MAX_TEMP * 1.8 + 32
@@ -395,27 +395,27 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
 
     def status_updated(self):
         """Device status was updated."""
-        self._state = self.dps(self._dp_id)
+        self._state = self.dp_value(self._dp_id)
 
         if self.has_config(CONF_TARGET_TEMPERATURE_DP):
             self._target_temperature = (
-                self.dps_conf(CONF_TARGET_TEMPERATURE_DP) * self._target_precision
+                self.dp_value_conf(CONF_TARGET_TEMPERATURE_DP) * self._target_precision
             )
 
         if self.has_config(CONF_CURRENT_TEMPERATURE_DP):
             self._current_temperature = (
-                self.dps_conf(CONF_CURRENT_TEMPERATURE_DP) * self._precision
+                self.dp_value_conf(CONF_CURRENT_TEMPERATURE_DP) * self._precision
             )
 
         if self._has_presets:
             if (
                 self.has_config(CONF_ECO_DP)
-                and self.dps_conf(CONF_ECO_DP) == self._conf_eco_value
+                and self.dp_value_conf(CONF_ECO_DP) == self._conf_eco_value
             ):
                 self._preset_mode = PRESET_ECO
             else:
                 for preset, value in self._conf_preset_set.items():  # todo remove
-                    if self.dps_conf(CONF_PRESET_DP) == value:
+                    if self.dp_value_conf(CONF_PRESET_DP) == value:
                         self._preset_mode = preset
                         break
                 else:
@@ -427,7 +427,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
                 self._hvac_mode = HVACMode.OFF
             else:
                 for mode, value in self._conf_hvac_mode_set.items():
-                    if self.dps_conf(CONF_HVAC_MODE_DP) == value:
+                    if self.dp_value_conf(CONF_HVAC_MODE_DP) == value:
                         self._hvac_mode = mode
                         break
                 else:
@@ -436,7 +436,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
 
         # Update the current action
         for action, value in self._conf_hvac_action_set.items():
-            if self.dps_conf(CONF_HVAC_ACTION_DP) == value:
+            if self.dp_value_conf(CONF_HVAC_ACTION_DP) == value:
                 self._hvac_action = action
 
 

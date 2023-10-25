@@ -46,7 +46,7 @@ DATA_PLATFORMS = {
     Platform.CLIMATE: CLIMATES,
     Platform.COVER: COVERS,
     Platform.FAN: FANS,
-    # Platform.HUMIDIFIER: HUMIDIFIERS,
+    Platform.HUMIDIFIER: HUMIDIFIERS,
     Platform.LIGHT: LIGHTS,
     Platform.NUMBER: NUMBERS,
     Platform.SELECT: SELECTS,

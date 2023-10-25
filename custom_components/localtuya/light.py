@@ -172,15 +172,6 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             if self.has_config(CONF_SCENE_VALUES) and self.has_config(
                 CONF_SCENE_VALUES_FRIENDLY
             ):
-                # temporary warnings
-                if ";" in self._config.get(CONF_SCENE_VALUES):
-                    _LOGGER.warning(
-                        f"{self._config.get(CONF_SCENE_VALUES)} Separate the sence values and friendly by ',' not ';'"
-                    )
-                if ";" in self._config.get(CONF_SCENE_VALUES_FRIENDLY):
-                    _LOGGER.warning(
-                        f"{self._config.get(CONF_SCENE_VALUES_FRIENDLY)} Separate the sence values and friendly by ',' not ';'"
-                    )
                 values_list = [
                     value.strip()
                     for value in self._config.get(CONF_SCENE_VALUES).split(",")
@@ -307,7 +298,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         return color_mode is not None and color_mode == MODE_MUSIC
 
     def __is_color_rgb_encoded(self):
-        return len(self.dps_conf(CONF_COLOR)) > 12
+        return len(self.dp_value_conf(CONF_COLOR)) > 12
 
     def __find_scene_by_scene_data(self, data):
         return next(
@@ -317,14 +308,13 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
 
     def __get_color_mode(self):
         return (
-            self.dps_conf(CONF_COLOR_MODE)
+            self.dp_value_conf(CONF_COLOR_MODE)
             if self.has_config(CONF_COLOR_MODE)
             else MODE_WHITE
         )
 
     async def async_turn_on(self, **kwargs):
         """Turn on or control the light."""
-        _LOGGER.debug(f"This the kwargs {kwargs}")
         states = {}
         if not self.is_on:
             states[self._dp_id] = True
@@ -426,14 +416,14 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
 
     def status_updated(self):
         """Device status was updated."""
-        self._state = self.dps(self._dp_id)
+        self._state = self.dp_value(self._dp_id)
         supported = self.supported_features
         self._effect = None
         if supported & SUPPORT_BRIGHTNESS and self.has_config(CONF_BRIGHTNESS):
-            self._brightness = self.dps_conf(CONF_BRIGHTNESS)
+            self._brightness = self.dp_value_conf(CONF_BRIGHTNESS)
 
         if supported & SUPPORT_COLOR:
-            color = self.dps_conf(CONF_COLOR)
+            color = self.dp_value_conf(CONF_COLOR)
             if color is not None and not self.is_white_mode:
                 if self.__is_color_rgb_encoded():
                     hue = int(color[6:10], 16)
@@ -449,16 +439,16 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                     self._brightness = value
 
         if supported & SUPPORT_COLOR_TEMP:
-            self._color_temp = self.dps_conf(CONF_COLOR_TEMP)
+            self._color_temp = self.dp_value_conf(CONF_COLOR_TEMP)
 
         if self.is_scene_mode and supported & SUPPORT_EFFECT:
-            if self.dps_conf(CONF_COLOR_MODE) != MODE_SCENE:
+            if self.dp_value_conf(CONF_COLOR_MODE) != MODE_SCENE:
                 self._effect = self.__find_scene_by_scene_data(
-                    self.dps_conf(CONF_COLOR_MODE)
+                    self.dp_value_conf(CONF_COLOR_MODE)
                 )
             else:
                 self._effect = self.__find_scene_by_scene_data(
-                    self.dps_conf(CONF_SCENE)
+                    self.dp_value_conf(CONF_SCENE)
                 )
                 if self._effect == SCENE_CUSTOM:
                     if SCENE_CUSTOM not in self._effect_list:

@@ -17,6 +17,7 @@ PLATFORMS = {
     "Climate": Platform.CLIMATE,
     "Cover": Platform.COVER,
     "Fan": Platform.FAN,
+    "Humidifier": Platform.HUMIDIFIER,
     "Light": Platform.LIGHT,
     "Number": Platform.NUMBER,
     "Selector": Platform.SELECT,
