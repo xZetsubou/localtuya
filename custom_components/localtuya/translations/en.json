@@ -228,11 +228,11 @@
                     "is_passive_entity": "Passive entity? (requires integration to send initialisation value)",
                     "entity_category": "Show the entity in this category",
                     "humidifier_available_modes": "(optional) Avaliable modes in device, separate entries by comma ','",
-                    "humidifier_current_humidity_dp": "Current Humidity DP",
+                    "humidifier_current_humidity_dp": "(optional) Current Humidity DP",
                     "humidifier_mode_dp": "(optional) Set mode DP",
                     "humidifier_set_humidity_dp": "Set Humidity DP",
-                    "min_humidity": "set the minimum supported humidity",
-                    "max_humidity": "Set maximum supported humidity"
+                    "min_humidity": "Set the minimum supported humidity",
+                    "max_humidity": "Set the maximum supported humidity"
                 },
                 "data_description": {
                     "device_class": "Find out more about [Device Classes](https://www.home-assistant.io/docs/configuration/customizing-devices/#device-class)",
