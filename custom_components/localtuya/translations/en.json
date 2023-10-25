@@ -230,7 +230,7 @@
                     "humidifier_available_modes": "(optional) Avaliable modes in device, separate entries by comma ','",
                     "humidifier_current_humidity_dp": "(optional) Current Humidity DP",
                     "humidifier_mode_dp": "(optional) Set mode DP",
-                    "humidifier_set_humidity_dp": "Set Humidity DP",
+                    "humidifier_set_humidity_dp": "(optional) Set Humidity DP",
                     "min_humidity": "Set the minimum supported humidity",
                     "max_humidity": "Set the maximum supported humidity"
                 },
