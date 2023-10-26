@@ -939,7 +939,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             )
 
         if not is_cloud:
-            err_msg = f"This feature require cloud setup for now"
+            err_msg = f"This feature requires cloud API setup for now"
         elif not device_data:
             err_msg = f"Couldn't find your device in the cloud account you using"
         elif not category:
