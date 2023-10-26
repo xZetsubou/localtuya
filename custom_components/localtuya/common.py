@@ -218,7 +218,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         return self._node_id and not self._fake_gateway
 
     async def get_gateway(self):
-        """Search for gateway device"""
+        """Return the gateway device of this sub device."""
         if not self._node_id:
             return
         entry_id = self._config_entry.entry_id
@@ -226,11 +226,13 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         devices: dict = self._hass.data[DOMAIN][entry_id][TUYA_DEVICES]
 
         # Sub to gateway.
-        gateway = devices.get(node_host)
-        gateway._sub_devices[self._node_id] = self
-        for dev_ip, device in devices.items():
-            if dev_ip == node_host:
-                return device
+        if gateway := devices.get(node_host):
+            self._gwateway = gateway
+            gateway._sub_devices[self._node_id] = self
+            return gateway
+        else:
+            self.error(f"Couldn't find the gateway for: {self._node_id}")
+        return None
 
     async def async_connect(self):
         """Connect to device if not already connected."""
@@ -251,11 +253,12 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         try:
             if self.is_subdevice:
-                self._gwateway = await self.get_gateway()
-                if not self._gwateway.connected or self._gwateway.is_connecting:
+                await self.get_gateway()
+                gateway = self._gwateway
+                if gateway and not gateway.connected or gateway.is_connecting:
                     self._connect_task = None
                     return
-                self._interface = self._gwateway._interface
+                self._interface = gateway._interface
                 # self.info(f"Connect Sub Device {name} through gateway {host}")
             else:
                 # self.info("Trying to connect to %s...", host)
