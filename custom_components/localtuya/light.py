@@ -298,7 +298,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         return color_mode is not None and color_mode == MODE_MUSIC
 
     def __is_color_rgb_encoded(self):
-        return len(self.dp_value_conf(CONF_COLOR)) > 12
+        return len(self.dp_value(CONF_COLOR)) > 12
 
     def __find_scene_by_scene_data(self, data):
         return next(
@@ -308,7 +308,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
 
     def __get_color_mode(self):
         return (
-            self.dp_value_conf(CONF_COLOR_MODE)
+            self.dp_value(CONF_COLOR_MODE)
             if self.has_config(CONF_COLOR_MODE)
             else MODE_WHITE
         )
@@ -420,10 +420,10 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         supported = self.supported_features
         self._effect = None
         if supported & SUPPORT_BRIGHTNESS and self.has_config(CONF_BRIGHTNESS):
-            self._brightness = self.dp_value_conf(CONF_BRIGHTNESS)
+            self._brightness = self.dp_value(CONF_BRIGHTNESS)
 
         if supported & SUPPORT_COLOR:
-            color = self.dp_value_conf(CONF_COLOR)
+            color = self.dp_value(CONF_COLOR)
             if color is not None and not self.is_white_mode:
                 if self.__is_color_rgb_encoded():
                     hue = int(color[6:10], 16)
@@ -439,16 +439,16 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                     self._brightness = value
 
         if supported & SUPPORT_COLOR_TEMP:
-            self._color_temp = self.dp_value_conf(CONF_COLOR_TEMP)
+            self._color_temp = self.dp_value(CONF_COLOR_TEMP)
 
         if self.is_scene_mode and supported & SUPPORT_EFFECT:
-            if self.dp_value_conf(CONF_COLOR_MODE) != MODE_SCENE:
+            if self.dp_value(CONF_COLOR_MODE) != MODE_SCENE:
                 self._effect = self.__find_scene_by_scene_data(
-                    self.dp_value_conf(CONF_COLOR_MODE)
+                    self.dp_value(CONF_COLOR_MODE)
                 )
             else:
                 self._effect = self.__find_scene_by_scene_data(
-                    self.dp_value_conf(CONF_SCENE)
+                    self.dp_value(CONF_SCENE)
                 )
                 if self._effect == SCENE_CUSTOM:
                     if SCENE_CUSTOM not in self._effect_list:
