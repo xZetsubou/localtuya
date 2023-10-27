@@ -502,6 +502,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     """Representation of a Tuya entity."""
 
     _attr_has_entity_name = True
+    _attr_should_poll = False
 
     def __init__(
         self, device: TuyaDevice, config_entry: dict, dp_id: str, logger, **kwargs
@@ -519,12 +520,8 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         # Default value is available to be provided by Platform entities if required
         self._default_value = self._config.get(CONF_DEFAULT_VALUE)
 
-        # Determine whether is a passive entity
-        self._is_passive_entity = self._config.get(CONF_PASSIVE_ENTITY, False)
-
         """ Restore on connect setting is available to be provided by Platform entities
         if required"""
-        self._restore_on_reconnect = self._config.get(CONF_RESTORE_ON_RECONNECT, False)
         self.set_logger(logger, self._device_config[CONF_DEVICE_ID])
         _LOGGER.debug(f"Initialized {self._config.get(CONF_PLATFORM)} [{self.name}]")
 
@@ -599,19 +596,9 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         return self._config.get(CONF_ICON, None)
 
     @property
-    def should_poll(self):
-        """Return if platform should poll for updates."""
-        return False
-
-    @property
     def unique_id(self):
         """Return unique device identifier."""
         return f"local_{self._device_config[CONF_DEVICE_ID]}_{self._dp_id}"
-
-    def has_config(self, attr):
-        """Return if a config parameter has a valid value."""
-        value = self._config.get(attr, "-1")
-        return value is not None and value != "-1"
 
     @property
     def available(self):
@@ -646,6 +633,11 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     def device_class(self):
         """Return the class of this device."""
         return self._config.get(CONF_DEVICE_CLASS, None)
+
+    def has_config(self, attr):
+        """Return if a config parameter has a valid value."""
+        value = self._config.get(attr, "-1")
+        return value is not None and value != "-1"
 
     def dp_value(self, key):
         """Return cached value for DPS index or Entity Config Key."""
@@ -709,23 +701,17 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         """
         return 0
 
-    @property
-    def restore_on_reconnect(self):
-        """Return whether the last state should be restored on a reconnect.
-
-        Useful where the device loses settings if powered off
-        """
-        return self._restore_on_reconnect
-
     async def restore_state_when_connected(self):
         """Restore if restore_on_reconnect is set, or if no status has been yet found.
 
         Which indicates a DPS that needs to be set before it starts returning
         status.
         """
-        if (not self.restore_on_reconnect) and (
-            (str(self._dp_id) in self._status) or (not self._is_passive_entity)
-        ):
+        restore_on_reconnect = self._config.get(CONF_RESTORE_ON_RECONNECT, False)
+        passive_entity = self._config.get(CONF_PASSIVE_ENTITY, False)
+        dp_id = str(self._dp_id)
+
+        if not restore_on_reconnect and (dp_id in self._status or not passive_entity):
             self.debug(
                 "Entity %s (DP %d) - Not restoring as restore on reconnect is "
                 + "disabled for this entity and the entity has an initial status "
@@ -746,7 +732,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         # If no current or saved state, then use the default value
         if restore_state is None:
-            if self._is_passive_entity:
+            if passive_entity:
                 self.debug("No last restored state - using default")
                 restore_state = self.default_value()
             else:
