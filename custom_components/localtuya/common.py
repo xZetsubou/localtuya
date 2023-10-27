@@ -24,6 +24,7 @@ from homeassistant.const import (
     CONF_ICON,
 )
 from homeassistant.core import callback
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
@@ -573,20 +574,21 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         return attributes
 
     @property
-    def device_info(self):
+    def device_info(self) -> DeviceInfo:
         """Return device information for the device registry."""
         model = self._device_config.get(CONF_MODEL, "Tuya generic")
-        return {
+
+        return DeviceInfo(
             # Serial numbers are unique identifiers within a specific domain
-            "identifiers": {(DOMAIN, f"local_{self._device_config[CONF_DEVICE_ID]}")},
-            "name": self._device_config[CONF_FRIENDLY_NAME],
-            "manufacturer": "Tuya",
-            "model": f"{model} ({self._device_config[CONF_DEVICE_ID]})",
-            "sw_version": self._device_config[CONF_PROTOCOL_VERSION],
-        }
+            identifiers={(DOMAIN, f"local_{self._device_config[CONF_DEVICE_ID]}")},
+            name=self._device_config[CONF_FRIENDLY_NAME],
+            manufacturer="Tuya",
+            model=f"{model} ({self._device_config[CONF_DEVICE_ID]})",
+            sw_version=self._device_config[CONF_PROTOCOL_VERSION],
+        )
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Get name of Tuya entity."""
         return self._config.get(CONF_FRIENDLY_NAME)
 
@@ -596,12 +598,12 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         return self._config.get(CONF_ICON, None)
 
     @property
-    def unique_id(self):
+    def unique_id(self) -> str:
         """Return unique device identifier."""
         return f"local_{self._device_config[CONF_DEVICE_ID]}_{self._dp_id}"
 
     @property
-    def available(self):
+    def available(self) -> bool:
         """Return if device is available or not."""
         return str(self._dp_id) in self._status
 
@@ -626,7 +628,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         """Return the class of this device."""
         return self._config.get(CONF_DEVICE_CLASS, None)
 
-    def has_config(self, attr):
+    def has_config(self, attr) -> bool:
         """Return if a config parameter has a valid value."""
         value = self._config.get(attr, "-1")
         return value is not None and value != "-1"
@@ -648,7 +650,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         return value
 
-    def status_updated(self):
+    def status_updated(self) -> None:
         """Device status was updated.
 
         Override in subclasses and update entity specific state.
@@ -661,7 +663,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         if (state is not None) and (not self._device.is_connecting):
             self._last_state = state
 
-    def status_restored(self, stored_state):
+    def status_restored(self, stored_state) -> None:
         """Device status was restored.
 
         Override in subclasses and update entity specific state.
@@ -693,7 +695,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         """
         return 0
 
-    async def restore_state_when_connected(self):
+    async def restore_state_when_connected(self) -> None:
         """Restore if restore_on_reconnect is set, or if no status has been yet found.
 
         Which indicates a DPS that needs to be set before it starts returning
