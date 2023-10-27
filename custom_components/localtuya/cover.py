@@ -97,7 +97,6 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         self._current_cover_position = 0
         self._current_state_action = STATE_STOPPED  # Default.
         self._set_new_position = int | None
-        _LOGGER.debug("Initialized cover [%s]", self.name)
 
     @property
     def supported_features(self):
@@ -249,7 +248,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             self._stop_cmd = self._stop_cmd.upper()
 
         if self.has_config(CONF_CURRENT_POSITION_DP):
-            curr_pos = self.dp_value_conf(CONF_CURRENT_POSITION_DP)
+            curr_pos = self.dp_value(CONF_CURRENT_POSITION_DP)
             if self._config.get(CONF_POSITION_INVERTED):
                 self._current_cover_position = 100 - curr_pos
             else:
