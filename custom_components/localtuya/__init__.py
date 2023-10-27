@@ -244,12 +244,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         # wait 1 second to make sure possible migration has finished
         await asyncio.sleep(1)
     else:
-        res = await tuya_api.async_get_access_token()
-        if res != "ok":
-            _LOGGER.error("Cloud API connection failed: %s", res)
-        else:
-            _LOGGER.info("Cloud API connection succeeded.")
-            res = await tuya_api.async_get_devices_list()
+        # Set-up cloud api
+        async def _cloud_api():
+            res = await tuya_api.async_get_access_token()
+            if res != "ok":
+                _LOGGER.error("Cloud API connection failed: %s", res)
+            else:
+                _LOGGER.info("Cloud API connection succeeded.")
+                res = await tuya_api.async_get_devices_list()
+
+        entry.async_create_background_task(hass, _cloud_api(), "localtuya-cloudAPI")
+
     hass.data[DOMAIN][entry.entry_id][DATA_CLOUD] = tuya_api
 
     async def setup_entities(devices: dict):
@@ -282,6 +287,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             device.async_connect()
             for device in hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES].values()
         ]
+
         await asyncio.gather(*connect_to_devices)
 
     await setup_entities(entry.data[CONF_DEVICES])
