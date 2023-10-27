@@ -305,23 +305,21 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unloading the Tuya platforms."""
     # Get used platforms.
     platforms = {}
+    disconnect_devices = []
     hass_data = hass.data[DOMAIN][entry.entry_id]
-    for host, dev_entry in entry.data[CONF_DEVICES].items():
-        for entity in dev_entry[CONF_ENTITIES]:
+
+    for host, dev in hass_data[TUYA_DEVICES].items():
+        disconnect_devices.append(dev.close())
+        for entity in dev._device_config[CONF_ENTITIES]:
             platforms[entity[CONF_PLATFORM]] = True
 
     # Unload the platforms.
     await hass.config_entries.async_unload_platforms(entry, platforms)
 
     # Close all connection to the devices.
-    close_devices = [
-        device.close()
-        for device in hass_data[TUYA_DEVICES].values()
-        if device.connected
-    ]
     # Just to prevent the loop get stuck in-case it calls multiples quickly
     try:
-        await asyncio.wait_for(asyncio.gather(*close_devices), 3)
+        await asyncio.wait_for(asyncio.gather(*disconnect_devices), 3)
     except:
         pass
 
@@ -360,8 +358,8 @@ async def async_remove_config_entry_device(
         )
         return True
 
-    host = config_entry.data[CONF_DEVICES][dev_id][CONF_HOST]
-    await hass.data[DOMAIN][config_entry.entry_id][TUYA_DEVICES][host].close()
+    # host = config_entry.data[CONF_DEVICES][dev_id][CONF_HOST]
+    # await hass.data[DOMAIN][config_entry.entry_id][TUYA_DEVICES][host].close()
 
     new_data = config_entry.data.copy()
     new_data[CONF_DEVICES].pop(dev_id)
