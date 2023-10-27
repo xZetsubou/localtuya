@@ -148,7 +148,7 @@ class TuyaCloudApi:
 
         self.device_list = {dev["id"]: dev for dev in r_json["result"]}
 
-        # Pull DPS Data.
+        # Get Devices DPS Data.
         get_functions = [self.get_device_functions(devid) for devid in self.device_list]
         await asyncio.gather(*get_functions)
 
