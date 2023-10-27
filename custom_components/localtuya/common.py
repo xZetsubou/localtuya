@@ -608,19 +608,11 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def entity_category(self) -> str:
         """Return the category of the entity."""
-        if self.has_config(CONF_ENTITY_CATEGORY):
-            category = self._config[CONF_ENTITY_CATEGORY]
-            if EntityCategory.CONFIG in category:
-                category = EntityCategory.CONFIG
-            elif EntityCategory.DIAGNOSTIC in category:
-                category = EntityCategory.DIAGNOSTIC
-            else:
-                category = None
-            return category
+        if category := self._config.get(CONF_ENTITY_CATEGORY):
+            return EntityCategory(category) if category != "None" else None
         else:
             # Set Default values for unconfigured devices.
-            if self.has_config(CONF_PLATFORM):
-                platform = self._config.get(CONF_PLATFORM)
+            if platform := self._config.get(CONF_PLATFORM):
                 # Call default_category from config_flow  to set default values!
                 # This will be removed after a while, this is only made to convert who came from main integration.
                 # new users will be forced to choose category from config_flow.
