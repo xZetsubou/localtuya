@@ -95,12 +95,12 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
         """Discover a new device."""
         if device.get("gwId") not in self.devices:
             self.devices[device.get("gwId")] = device
+            # Sort devices by ip.
             self.devices = {
                 k: v
                 for k, v in sorted(
-                    self.devices.items(), key=lambda i: inet_aton(i[1]["ip"])
+                    self.devices.items(), key=lambda i: inet_aton(i[1].get("ip", "0"))
                 )
-                if "ip" in v
             }
             _LOGGER.debug("Discovered device: %s", device)
         if self._callback:
