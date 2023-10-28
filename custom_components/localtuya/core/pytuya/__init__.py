@@ -55,6 +55,7 @@ from Crypto.Cipher import AES
 
 version_tuple = (10, 0, 0)
 version = version_string = __version__ = "%d.%d.%d" % version_tuple
+__author__ = "rospogrigio"
 
 _LOGGER = logging.getLogger(__name__)
 
