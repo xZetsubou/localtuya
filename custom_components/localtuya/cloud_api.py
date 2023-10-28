@@ -1,4 +1,5 @@
 """Class to perform requests to Tuya Cloud APIs."""
+import asyncio
 import functools
 import hashlib
 import hmac
@@ -37,7 +38,7 @@ class TuyaCloudApi:
         self._secret = secret
         self._user_id = user_id
         self._access_token = ""
-        self._token_expire_time: int = -1
+        self._token_expire_time: int = 0
 
         self.device_list = {}
 
@@ -67,7 +68,8 @@ class TuyaCloudApi:
         """Perform requests."""
         # obtain new token if expired.
         if not self.token_validate and self._token_expire_time != -1:
-            await self.async_get_access_token()
+            if (res := await self.async_get_access_token()) and res != "ok":
+                return _LOGGER.debug(f"Refresh Token failed due to: {res}")
 
         timestamp = str(int(time.time() * 1000))
         payload = self.generate_payload(method, timestamp, url, headers, body)
@@ -114,6 +116,7 @@ class TuyaCloudApi:
         try:
             resp = await self.async_make_request("GET", "/v1.0/token?grant_type=1")
         except requests.exceptions.ConnectionError:
+            self._token_expire_time = 0
             return "Request failed, status ConnectionError"
 
         if not resp.ok:
@@ -124,7 +127,9 @@ class TuyaCloudApi:
             return f"Error {r_json['code']}: {r_json['msg']}"
 
         req_results = r_json["result"]
-        self._token_expire_time = int(time.time()) + int(req_results.get("expire_time"))
+
+        expire_time = int(req_results.get("expire_time", 3600))
+        self._token_expire_time = int(time.time()) + expire_time
         self._access_token = resp.json()["result"]["access_token"]
         return "ok"
 
@@ -146,7 +151,10 @@ class TuyaCloudApi:
             return f"Error {r_json['code']}: {r_json['msg']}"
 
         self.device_list = {dev["id"]: dev for dev in r_json["result"]}
-        # _LOGGER.debug("DEV_LIST: %s", self.device_list)
+
+        # Get Devices DPS Data.
+        get_functions = [self.get_device_functions(devid) for devid in self.device_list]
+        await asyncio.gather(*get_functions)
 
         return "ok"
 
@@ -179,6 +187,25 @@ class TuyaCloudApi:
             return {}, f"Error {r_json['code']}: {r_json['msg']}"
 
         return r_json["result"], "ok"
+
+    async def get_device_functions(self, device_id):
+        """Pull Devices Properties and Specifications to devices_list"""
+        get_data = [
+            self.async_get_device_specifications(device_id),
+            self.async_get_device_query_properties(device_id),
+        ]
+        specs, query_props = await asyncio.gather(*get_data)
+        if query_props[1] == "ok":
+            device_data = {str(p["dp_id"]): p for p in query_props[0].get("properties")}
+        if specs[1] == "ok":
+            for func in specs[0].get("functions"):
+                if str(func["dp_id"]) in device_data:
+                    device_data[str(func["dp_id"])].update(func)
+
+        if device_data:
+            self.device_list[device_id]["dps_data"] = device_data
+
+        return device_data
 
     @property
     def token_validate(self):

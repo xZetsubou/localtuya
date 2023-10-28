@@ -1469,7 +1469,7 @@ async def connect(
         if ex.errno == errno.EHOSTUNREACH:
             raise ValueError(f"The host is unreachable")
     except:
-        raise ValueError(f"Unknown, Maybe port is closed for this host?.")
+        raise ValueError(f"Unknown error See the logs for details.")
 
     await asyncio.wait_for(on_connected, timeout=timeout)
     return protocol

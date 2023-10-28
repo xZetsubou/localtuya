@@ -134,6 +134,7 @@ def devices_schema(
     discovered_devices, cloud_devices_list, add_custom_device=True, extra_infos=None
 ):
     """Create schema for devices step."""
+    known_devices = {}
     devices = {}
     for dev_id, dev_host in discovered_devices.items():
         dev_name = dev_id
@@ -142,10 +143,17 @@ def devices_schema(
             dev_name = extra_infos[dev_id].get(CONF_FRIENDLY_NAME, dev_id)
         elif dev_id in cloud_devices_list.keys():
             dev_name = cloud_devices_list[dev_id][CONF_NAME]
+
+            known_devices[f"{dev_name} ({dev_host})"] = dev_id
+            continue
+
         devices[f"{dev_name} ({dev_host})"] = dev_id
 
     if add_custom_device:
         devices.update(CUSTOM_DEVICE)
+
+    known_devices = {k: v for k, v in sorted(known_devices.items())}
+    devices = {**known_devices, **devices}
     # devices.update(
     #     {
     #         ent.data[CONF_DEVICE_ID]: ent.data[CONF_FRIENDLY_NAME]
@@ -258,8 +266,8 @@ def dps_string_list(dps_data, cloud_dp_codes):
     """Return list of friendly DPS values."""
     strs = []
     for dp, value in dps_data.items():
-        if dp in cloud_dp_codes:
-            strs.append(f"{dp} ( code: {cloud_dp_codes[dp]} , value: {value} )")
+        if (dp_data := cloud_dp_codes.get(dp)) and (code := dp_data.get("code")):
+            strs.append(f"{dp} ( code: {code} , value: {value} )")
         else:
             strs.append(f"{dp} ( value: {value} )")
     return strs
@@ -401,11 +409,12 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
                 await interface.reset(reset_ids, cid=cid)
 
             # Detect any other non-manual DPS strings
+            if not detected_dps:
+                detected_dps = await interface.detect_available_dps(cid=cid)
 
-            detected_dps = await interface.detect_available_dps(cid=cid)
         except ValueError as ex:
             error = ex
-        except Exception as ex:  # pylint: disable=broad-except
+        except Exception as ex:
             _LOGGER.debug(f"No DPS able to be detected {ex}")
             detected_dps = {}
 
@@ -442,21 +451,8 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
     # Get DP descriptions from the cloud, if the device is there.
     cloud_dp_codes = {}
     cloud_data: TuyaCloudApi = hass.data[DOMAIN][entry_id][DATA_CLOUD]
-    if data[CONF_DEVICE_ID] in cloud_data.device_list:
-        cloud_device_specs, res = await cloud_data.async_get_device_query_properties(
-            data[CONF_DEVICE_ID]
-        )
-        if res != "ok":
-            _LOGGER.error("Cloud DP specification request failed: %s", res)
-        else:
-            for key in cloud_device_specs:
-                cloud_dp_codes.update(
-                    {
-                        str(e["dp_id"]): e["code"]
-                        # + (f", name: {e['custom_name']}" if e["custom_name"] else "")
-                        for e in cloud_device_specs[key]
-                    }
-                )
+    if device_cloud_data := cloud_data.device_list.get(data[CONF_DEVICE_ID]):
+        cloud_dp_codes = device_cloud_data.get("dps_data")
 
     return {
         CONF_DPS_STRINGS: dps_string_list(detected_dps, cloud_dp_codes),
@@ -581,6 +577,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         """Manage basic options."""
         self.cloud_data = self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_CLOUD]
+        if not self.config_entry.data.get(CONF_NO_CLOUD):
+            # Refresh devices List data.
+            self.hass.async_create_task(self.cloud_data.async_get_devices_list())
 
         return self.async_show_menu(
             step_id="init",
@@ -1012,16 +1011,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         schema = PICK_TEMPLATE
         return self.async_show_form(step_id="choose_template", data_schema=schema)
 
-    def available_dps_strings(self):
-        """Return list of DPs use by the device's entities."""
-        available_dps = []
-        used_dps = [str(entity[CONF_ID]) for entity in self.entities]
-        for dp_string in self.dps_strings:
-            dp = dp_string.split(" ")[0]
-            if dp not in used_dps:
-                available_dps.append(dp_string)
-        return available_dps
-
     async def async_step_entity(self, user_input=None):
         """Manage entity settings."""
         errors = {}
@@ -1131,6 +1120,16 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         # if user_input is not None:
         #     return self.async_create_entry(title="", data={})
         # return self.async_show_form(step_id="yaml_import")
+
+    def available_dps_strings(self):
+        """Return list of DPs use by the device's entities."""
+        available_dps = []
+        used_dps = [str(entity[CONF_ID]) for entity in self.entities]
+        for dp_string in self.dps_strings:
+            dp = dp_string.split(" ")[0]
+            if dp not in used_dps:
+                available_dps.append(dp_string)
+        return available_dps
 
     @property
     def current_entity(self):
