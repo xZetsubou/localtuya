@@ -125,7 +125,7 @@ PICK_TEMPLATE = vol.Schema(
             default=list(templates.list_templates().values())[0]
             if templates.list_templates()
             else "No templates found.",
-        ): _col_to_select(templates.list_templates())
+        ): _col_to_select(templates.list_templates(), custom_value=True)
     }
 )
 
@@ -149,17 +149,10 @@ def devices_schema(
 
         devices[f"{dev_name} ({dev_host})"] = dev_id
 
-    if add_custom_device:
-        devices.update(CUSTOM_DEVICE)
-
     known_devices = {k: v for k, v in sorted(known_devices.items())}
     devices = {**known_devices, **devices}
-    # devices.update(
-    #     {
-    #         ent.data[CONF_DEVICE_ID]: ent.data[CONF_FRIENDLY_NAME]
-    #         for ent in entries
-    #     }
-    # )
+    if add_custom_device:
+        devices.update(CUSTOM_DEVICE)
     return vol.Schema(
         {
             vol.Required(

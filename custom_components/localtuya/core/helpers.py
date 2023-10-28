@@ -30,8 +30,8 @@ class templates:
         for p, d, f in os.walk(dir):
             for file in sorted(f):
                 if fnmatch(file, "*yaml") or fnmatch(file, "*yml"):
-                    fn = str(file).replace(".yaml", "").replace("_", " ")
-                    files[fn.capitalize()] = file
+                    # fn = str(file).replace(".yaml", "").replace("_", " ")
+                    files[file] = file
         return files
 
     def import_config(filename):
@@ -39,7 +39,7 @@ class templates:
         template_dir = os.path.dirname(templates_dir.__file__)
         template_file = os.path.join(template_dir, filename)
         _config = load_yaml(template_file)
-        entity = []
+        entities = []
         for cfg in _config:
             ent = {}
             for plat, values in cfg.items():
@@ -50,8 +50,10 @@ class templates:
                         else value
                     )
                 ent[CONF_PLATFORM] = plat
-            entity.append(ent)
-        return entity
+            entities.append(ent)
+        if not entities:
+            raise ValueError("No entities found the can be used for localtuya")
+        return entities
 
     @classmethod
     def export_config(cls, config, config_name: str):
@@ -93,7 +95,7 @@ from homeassistant.helpers.selector import (
 )
 
 
-def _col_to_select(opt_list, multi_select=False, is_dps=False):
+def _col_to_select(opt_list, multi_select=False, is_dps=False, custom_value=False):
     """Convert collections to SelectSelectorConfig."""
     if type(opt_list) == dict:
         return SelectSelector(
@@ -102,6 +104,7 @@ def _col_to_select(opt_list, multi_select=False, is_dps=False):
                     SelectOptionDict(value=str(v), label=k) for k, v in opt_list.items()
                 ],
                 mode=SelectSelectorMode.DROPDOWN,
+                custom_value=custom_value,
             )
         )
     elif type(opt_list) == list:
