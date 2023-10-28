@@ -125,7 +125,9 @@ class TuyaCloudApi:
             return f"Error {r_json['code']}: {r_json['msg']}"
 
         req_results = r_json["result"]
-        self._token_expire_time = int(time.time()) + int(req_results.get("expire_time"))
+
+        expire_time = int(req_results.get("expire_time", 3600))
+        self._token_expire_time = int(time.time()) + expire_time
         self._access_token = resp.json()["result"]["access_token"]
         return "ok"
 
