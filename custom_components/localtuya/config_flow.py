@@ -577,6 +577,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         """Manage basic options."""
         self.cloud_data = self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_CLOUD]
+        if not self.config_entry.data.get(CONF_NO_CLOUD):
+            # Refresh devices List data.
+            self.hass.async_create_task(self.cloud_data.async_get_devices_list())
 
         return self.async_show_menu(
             step_id="init",
@@ -1008,16 +1011,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         schema = PICK_TEMPLATE
         return self.async_show_form(step_id="choose_template", data_schema=schema)
 
-    def available_dps_strings(self):
-        """Return list of DPs use by the device's entities."""
-        available_dps = []
-        used_dps = [str(entity[CONF_ID]) for entity in self.entities]
-        for dp_string in self.dps_strings:
-            dp = dp_string.split(" ")[0]
-            if dp not in used_dps:
-                available_dps.append(dp_string)
-        return available_dps
-
     async def async_step_entity(self, user_input=None):
         """Manage entity settings."""
         errors = {}
@@ -1127,6 +1120,16 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         # if user_input is not None:
         #     return self.async_create_entry(title="", data={})
         # return self.async_show_form(step_id="yaml_import")
+
+    def available_dps_strings(self):
+        """Return list of DPs use by the device's entities."""
+        available_dps = []
+        used_dps = [str(entity[CONF_ID]) for entity in self.entities]
+        for dp_string in self.dps_strings:
+            dp = dp_string.split(" ")[0]
+            if dp not in used_dps:
+                available_dps.append(dp_string)
+        return available_dps
 
     @property
     def current_entity(self):
