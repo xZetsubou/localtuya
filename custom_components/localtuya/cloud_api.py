@@ -38,7 +38,7 @@ class TuyaCloudApi:
         self._secret = secret
         self._user_id = user_id
         self._access_token = ""
-        self._token_expire_time: int = -1
+        self._token_expire_time: int = 0
 
         self.device_list = {}
 
