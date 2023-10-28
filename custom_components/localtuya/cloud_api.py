@@ -68,7 +68,8 @@ class TuyaCloudApi:
         """Perform requests."""
         # obtain new token if expired.
         if not self.token_validate and self._token_expire_time != -1:
-            await self.async_get_access_token()
+            if (res := await self.async_get_access_token()) and res != "ok":
+                return _LOGGER.debug(f"Refresh Token failed due to: {res}")
 
         timestamp = str(int(time.time() * 1000))
         payload = self.generate_payload(method, timestamp, url, headers, body)
@@ -115,6 +116,7 @@ class TuyaCloudApi:
         try:
             resp = await self.async_make_request("GET", "/v1.0/token?grant_type=1")
         except requests.exceptions.ConnectionError:
+            self._token_expire_time = 0
             return "Request failed, status ConnectionError"
 
         if not resp.ok:
