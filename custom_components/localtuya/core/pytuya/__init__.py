@@ -871,7 +871,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     def connection_lost(self, exc):
         """Disconnected from device."""
         if exc:
-            self.info(f"Connection Lost due to: {exc}")
+            self.info(f"Lost connection due to: {exc}")
         self.debug("Connection lost: %s", exc)
         self.real_local_key = self.local_key
         try:
