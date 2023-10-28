@@ -149,7 +149,7 @@ def devices_schema(
 
         devices[f"{dev_name} ({dev_host})"] = dev_id
 
-    known_devices = {k: v for k, v in sorted(known_devices.items())}
+    known_devices = dict(sorted(known_devices.items()))
     devices = {**known_devices, **devices}
     if add_custom_device:
         devices.update(CUSTOM_DEVICE)
