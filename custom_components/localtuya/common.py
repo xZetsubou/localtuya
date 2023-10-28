@@ -496,7 +496,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self.warning(f"Disconnected - waiting for discovery broadcast")
             # Try to quickly reconnect.
             self._is_closing = False
-            self._hass.create_task(self.async_connect())
+            self._hass.async_create_task(self.async_connect())
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
