@@ -168,7 +168,6 @@ def mergeDevicesList(localList: dict, cloudList: dict, addSubDevices=True) -> di
     newList = localList.copy()
     for _devID, _devData in cloudList.items():
         try:
-            _LOGGER.debug(f"WTF? {_devID not in localList}: {_devData}")
             is_online = _devData.get("online", None)
             sub_device = _devData.get(CONF_NODE_ID, False)
             # We skip offline devices.
