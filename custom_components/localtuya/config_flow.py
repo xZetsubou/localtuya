@@ -162,43 +162,38 @@ def devices_schema(
     )
 
 
-def mergeDevicesList(devList: dict, cloudList: dict, addSubDevices=True) -> dict:
+def mergeDevicesList(localList: dict, cloudList: dict, addSubDevices=True) -> dict:
     """Merge CloudDevices with Discovered LocalDevices (in specific ways)!"""
     # try Get SubDevices.
-    newList = devList.copy()
-    for _devID in cloudList.keys():
+    newList = localList.copy()
+    for _devID, _devData in cloudList.items():
         try:
-            is_online = cloudList[_devID].get("online", None)
-            sub_device = cloudList[_devID].get(CONF_NODE_ID, False)
+            is_online = _devData.get("online", None)
+            sub_device = _devData.get(CONF_NODE_ID, False)
             # We skip offline devices.
-            if not is_online:
+            if not is_online and _devID not in localList:
                 continue
             # Make sure the device isn't already in localList.
-            if _devID not in devList.values() and sub_device:
-                # Get IP Assuming the LocalKey is the same LocalKey as GateWay!
-                gateway = [
-                    gwID
-                    for gwID in cloudList.values()
-                    if gwID[CONF_ID] != _devID
-                    and not gwID.get(CONF_NODE_ID)
-                    and gwID[CONF_LOCAL_KEY]
-                    == cloudList[_devID].get(CONF_LOCAL_KEY, False)
-                ]
-                if not addSubDevices:
-                    newList[f"Sub Device"] = _devID
-                else:
+            if sub_device:
+                # Get gateway Assuming the LocalKey is the same gateway LocalKey!
+                for dev_id, dev_data in cloudList.items():
+                    if (
+                        dev_id != _devID
+                        and not dev_data.get(CONF_NODE_ID)
+                        and dev_data.get(CONF_LOCAL_KEY) == _devData.get(CONF_LOCAL_KEY)
+                    ):
+                        gateway_id = dev_id
+
+                local_gw = localList.get(gateway_id)
+                if addSubDevices and local_gw:
                     # Create a data for sub_device [cloud and local gateway] to merge it with discovered devices.
-                    if len(gateway) > 0:
-                        local_GW: dict = devList[gateway[0].get(CONF_ID)]
-                    else:  # If we can't find the gateway we will pull data without local "ip"
-                        continue
                     dev_data = {
                         _devID: {
-                            CONF_TUYA_IP: local_GW.get(CONF_TUYA_IP),
+                            CONF_TUYA_IP: local_gw.get(CONF_TUYA_IP),
                             CONF_TUYA_GWID: _devID,
-                            CONF_TUYA_VERSION: local_GW.get(CONF_TUYA_VERSION, "auto"),
-                            CONF_NODE_ID: cloudList[_devID].get(CONF_NODE_ID, None),
-                            CONF_GATEWAY_ID: local_GW.get(CONF_TUYA_GWID),
+                            CONF_TUYA_VERSION: local_gw.get(CONF_TUYA_VERSION, "auto"),
+                            CONF_NODE_ID: _devData.get(CONF_NODE_ID, None),
+                            CONF_GATEWAY_ID: local_gw.get(CONF_TUYA_GWID),
                         }
                     }
                     newList.update(dev_data)
