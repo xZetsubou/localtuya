@@ -5,7 +5,7 @@ import logging
 import time
 from importlib import import_module
 
-from .core.helpers import templates, _col_to_select
+from .core.helpers import templates, _col_to_select, get_gateway_by_deviceid
 
 import homeassistant.helpers.config_validation as cv
 
@@ -168,23 +168,16 @@ def mergeDevicesList(localList: dict, cloudList: dict, addSubDevices=True) -> di
     newList = localList.copy()
     for _devID, _devData in cloudList.items():
         try:
+            _LOGGER.debug(f"WTF? {_devID not in localList}: {_devData}")
             is_online = _devData.get("online", None)
             sub_device = _devData.get(CONF_NODE_ID, False)
             # We skip offline devices.
-            if not is_online and _devID not in localList:
+            if not is_online or _devID in localList:
                 continue
             # Make sure the device isn't already in localList.
             if sub_device:
-                # Get gateway Assuming the LocalKey is the same gateway LocalKey!
-                for dev_id, dev_data in cloudList.items():
-                    if (
-                        dev_id != _devID
-                        and not dev_data.get(CONF_NODE_ID)
-                        and dev_data.get(CONF_LOCAL_KEY) == _devData.get(CONF_LOCAL_KEY)
-                    ):
-                        gateway_id = dev_id
-
-                local_gw = localList.get(gateway_id)
+                gateway = get_gateway_by_deviceid(_devID, cloudList)
+                local_gw = localList.get(gateway.id)
                 if addSubDevices and local_gw:
                     # Create a data for sub_device [cloud and local gateway] to merge it with discovered devices.
                     dev_data = {

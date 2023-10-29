@@ -4,6 +4,7 @@ Helpers functions for HASS-LocalTuya.
 
 from enum import Enum
 from fnmatch import fnmatch
+from typing import NamedTuple
 import logging
 import os.path
 import yaml
@@ -93,6 +94,9 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
     SelectOptionDict,
 )
+from ..const import CONF_LOCAL_KEY, CONF_NODE_ID
+
+GATEWAY = NamedTuple("Gateway", [("id", str), ("data", dict)])
 
 
 def _col_to_select(opt_list, multi_select=False, is_dps=False, custom_value=False):
@@ -122,6 +126,20 @@ def _col_to_select(opt_list, multi_select=False, is_dps=False, custom_value=Fals
                 multiple=True if multi_select else False,
             )
         )
+
+
+def get_gateway_by_deviceid(device_id: str, cloud_data: dict) -> GATEWAY:
+    """Return the gateway (id, data) of the sub-deviceID if existed in cloud_data."""
+
+    if sub_device := cloud_data.get(device_id):
+        for dev_id, dev_data in cloud_data.items():
+            # Get gateway Assuming the LocalKey is the same gateway LocalKey!
+            if (
+                dev_id != device_id
+                and not dev_data.get(CONF_NODE_ID)
+                and dev_data.get(CONF_LOCAL_KEY) == sub_device.get(CONF_LOCAL_KEY)
+            ):
+                return GATEWAY(dev_id, dev_data)
 
 
 ###############################
