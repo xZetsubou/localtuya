@@ -3,8 +3,9 @@ import asyncio
 import logging
 import time
 from datetime import timedelta
+from typing import NamedTuple, Coroutine
 
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, CALLBACK_TYPE, callback
 from homeassistant.config_entries import ConfigEntry
 
 from homeassistant.const import (
@@ -23,15 +24,15 @@ from homeassistant.const import (
     CONF_TYPE,
     CONF_ICON,
 )
-from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
 )
-from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.event import async_track_time_interval, async_call_later
 from homeassistant.helpers.restore_state import RestoreEntity
 
+from .cloud_api import TuyaCloudApi
 from .core import pytuya
 from .const import (
     ATTR_STATE,
@@ -45,9 +46,7 @@ from .const import (
     CONF_PROTOCOL_VERSION,
     CONF_RESET_DPIDS,
     CONF_RESTORE_ON_RECONNECT,
-    DATA_CLOUD,
     DOMAIN,
-    TUYA_DEVICES,
     DEFAULT_CATEGORIES,
     ENTITY_CATEGORY,
     CONF_GATEWAY_ID,
@@ -99,8 +98,7 @@ async def async_setup_entry(
         if entities_to_setup:
             if node_id := dev_entry.get(CONF_NODE_ID):
                 host = f"{host}_{node_id}"
-
-            tuyainterface = hass.data[DOMAIN][config_entry.entry_id][TUYA_DEVICES][host]
+            tuyainterface = hass.data[DOMAIN][config_entry.entry_id].tuya_devices[host]
 
             dps_config_fields = list(get_dps_for_platform(flow_schema))
 
@@ -164,6 +162,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Initialize the cache."""
         super().__init__()
         self._hass = hass
+        self._hass_entry: HassLocalTuyaData = None
         self._config_entry = config_entry
         self._device_config: dict = config_entry.data[CONF_DEVICES][dev_id].copy()
         self._interface = None
@@ -171,7 +170,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._node_id: str = self._device_config.get(CONF_NODE_ID)
         self._fake_gateway = gateway
         self._gwateway: TuyaDevice = None
-        self._sub_devices = {}
+        self._sub_devices: dict[str, TuyaDevice] = {}
 
         self._status = {}
         self.dps_to_request = {}
@@ -222,9 +221,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Return the gateway device of this sub device."""
         if not self._node_id:
             return
-        entry_id = self._config_entry.entry_id
+        gateway: TuyaDevice
         node_host = self._device_config.get(CONF_HOST)
-        devices: dict = self._hass.data[DOMAIN][entry_id][TUYA_DEVICES]
+        devices: dict = self._hass_entry.tuya_devices
 
         # Sub to gateway.
         if gateway := devices.get(node_host):
@@ -235,10 +234,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self.error(f"Couldn't find the gateway for: {self._node_id}")
         return None
 
-    async def async_connect(self):
+    async def async_connect(self, _now=None) -> None:
         """Connect to device if not already connected."""
-        # self.info("async_connect: %d %r %r", self._is_closing, self._connect_task, self._interface)
-        # if not self._is_closing and self._connect_task is None and not self._interface:
+        if not self._hass_entry:
+            self._hass_entry = self._hass.data[DOMAIN][self._config_entry.entry_id]
+
         if not self._is_closing and not self.is_connecting and not self.connected:
             try:
                 await asyncio.wait_for(self._make_connection(), 5)
@@ -299,7 +299,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self.status_updated(status)
 
             except UnicodeDecodeError as e:  # pylint: disable=broad-except
-                self.exception(f"Connect to {host} failed: {type(e)}")
+                self.exception(f"Connect to {host} failed: due to: {type(e)}")
 
                 await self.abort_connect()
 
@@ -361,9 +361,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     async def update_local_key(self):
         """Retrieve updated local_key from Cloud API and update the config_entry."""
         dev_id = self._device_config[CONF_DEVICE_ID]
-        entry_id = self._config_entry.entry_id
-        await self._hass.data[DOMAIN][entry_id][DATA_CLOUD].async_get_devices_list()
-        cloud_devs = self._hass.data[DOMAIN][entry_id][DATA_CLOUD].device_list
+        cloud_api = self._hass_entry.cloud_data
+        await cloud_api.async_get_devices_list()
+        cloud_devs = cloud_api.device_list
         if dev_id in cloud_devs:
             self._local_key = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
             new_data = self._config_entry.data.copy()
@@ -496,7 +496,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self.warning(f"Disconnected - waiting for discovery broadcast")
             # Try to quickly reconnect.
             self._is_closing = False
-            self._hass.async_create_task(self.async_connect())
+            async_call_later(self._hass, 2, self.async_connect)
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
@@ -742,3 +742,11 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         # Manually initialise
         await self._device.set_dp(restore_state, self._dp_id)
+
+
+class HassLocalTuyaData(NamedTuple):
+    """LocalTuya data stored in homeassistant data object."""
+
+    cloud_data: TuyaCloudApi
+    tuya_devices: dict[str, TuyaDevice]
+    unsub_listeners: list[CALLBACK_TYPE,]

@@ -4,7 +4,6 @@ from homeassistant.const import EntityCategory, Platform
 DOMAIN = "localtuya"
 
 DATA_DISCOVERY = "discovery"
-DATA_CLOUD = "cloud_data"
 
 # Order on priority
 SUPPORTED_PROTOCOL_VERSIONS = ["3.3", "3.1", "3.2", "3.4", "3.5"]
@@ -26,7 +25,6 @@ PLATFORMS = {
     "Switch": Platform.SWITCH,
     "Vacuum": Platform.VACUUM,
 }
-TUYA_DEVICES = "tuya_devices"
 
 ATTR_CURRENT = "current"
 ATTR_CURRENT_CONSUMPTION = "current_consumption"

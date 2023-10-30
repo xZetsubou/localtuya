@@ -28,7 +28,7 @@ from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_track_time_interval
 
 from .cloud_api import TuyaCloudApi
-from .common import TuyaDevice, async_config_entry_by_device_id
+from .common import HassLocalTuyaData, TuyaDevice, async_config_entry_by_device_id
 from .config_flow import ENTRIES_VERSION, config_schema
 from .const import (
     ATTR_UPDATED_AT,
@@ -37,10 +37,8 @@ from .const import (
     CONF_NO_CLOUD,
     CONF_PRODUCT_KEY,
     CONF_USER_ID,
-    DATA_CLOUD,
     DATA_DISCOVERY,
     DOMAIN,
-    TUYA_DEVICES,
 )
 from .discovery import TuyaDiscovery
 
@@ -92,7 +90,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
         if not entry.entry_id:
             raise HomeAssistantError("unknown device id")
 
-        device = hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES][dev_id]
+        device: TuyaDevice = hass.data[DOMAIN][entry.entry_id].tuya_devices[dev_id]
         if not device.connected:
             raise HomeAssistantError("not connected to device")
 
@@ -154,14 +152,6 @@ async def async_setup(hass: HomeAssistant, config: dict):
             )
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
             hass.config_entries.async_update_entry(entry, data=new_data)
-            # No need to do connect task here, when entry updated, it will reconnect. [elif].
-            # device = hass.data[DOMAIN][TUYA_DEVICES][device_ip]
-            # if not device.connected:
-            #     hass.async_create_task(device.async_connect())
-        # elif device_id in hass.data[DOMAIN][TUYA_DEVICES]:
-        #     device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
-        #     if not device.connected:
-        #         hass.create_task(device.async_connect())
 
     def _shutdown(event):
         """Clean up resources when shutting down."""
@@ -228,8 +218,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             entry.version,
         )
         return
-    hass.data[DOMAIN][entry.entry_id] = {}
-    hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES] = {}
 
     region = entry.data[CONF_REGION]
     client_id = entry.data[CONF_CLIENT_ID]
@@ -244,22 +232,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         # wait 1 second to make sure possible migration has finished
         await asyncio.sleep(1)
     else:
-        # Set-up cloud api
-        async def _cloud_api():
-            res = await tuya_api.async_get_access_token()
-            if res != "ok":
-                _LOGGER.error("Cloud API connection failed: %s", res)
-            else:
-                _LOGGER.info("Cloud API connection succeeded.")
-                res = await tuya_api.async_get_devices_list()
+        entry.async_create_background_task(
+            hass, tuya_api.async_connect(), "localtuya-cloudAPI"
+        )
 
-        entry.async_create_background_task(hass, _cloud_api(), "localtuya-cloudAPI")
-
-    hass.data[DOMAIN][entry.entry_id][DATA_CLOUD] = tuya_api
-
-    async def setup_entities(devices: dict):
+    async def setup_entities(entry_devices: dict):
         platforms = set()
-        for dev_id, config in devices.items():
+        devices: dict[str, TuyaDevice] = {}
+        for dev_id, config in entry_devices.items():
             host = config.get(CONF_HOST)
             entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
             platforms = platforms.union(
@@ -268,33 +248,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
             if node_id := config.get(CONF_NODE_ID):
                 # Setup sub device as gateway if no gateway not exist.
-                if host not in hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES]:
-                    hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES][host] = TuyaDevice(
-                        hass, entry, dev_id, True
-                    )
+                if host not in devices:
+                    devices[host] = TuyaDevice(hass, entry, dev_id, True)
 
                 host = f"{host}_{node_id}"
 
-            hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES][host] = TuyaDevice(
-                hass, entry, dev_id
-            )
+            devices[host] = TuyaDevice(hass, entry, dev_id)
+
+        # Unsub listener: callback to unsub
+        hass_localtuya = HassLocalTuyaData(tuya_api, devices, [])
+        hass.data[DOMAIN][entry.entry_id] = hass_localtuya
 
         await async_remove_orphan_entities(hass, entry)
         await hass.config_entries.async_forward_entry_setups(entry, platforms)
 
         # Connect to tuya devices.
         connect_to_devices = [
-            device.async_connect()
-            for device in hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES].values()
+            device.async_connect() for device in hass_localtuya.tuya_devices.values()
         ]
+        entry_update = entry.add_update_listener(update_listener)
+        hass_localtuya.unsub_listeners.append(entry_update)
 
         await asyncio.gather(*connect_to_devices)
 
     await setup_entities(entry.data[CONF_DEVICES])
-
-    # Unsub listener: callback to unsub
-    unsub_listener = entry.add_update_listener(update_listener)
-    hass.data[DOMAIN][entry.entry_id].update({UNSUB_LISTENER: unsub_listener})
 
     # Add reconnect task.
     reconnectTask(hass, entry)
@@ -306,9 +283,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Get used platforms.
     platforms = {}
     disconnect_devices = []
-    hass_data = hass.data[DOMAIN][entry.entry_id]
+    hass_data: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
 
-    for host, dev in hass_data[TUYA_DEVICES].items():
+    for dev in hass_data.tuya_devices.values():
         disconnect_devices.append(dev.close())
         for entity in dev._device_config[CONF_ENTITIES]:
             platforms[entity[CONF_PLATFORM]] = True
@@ -324,8 +301,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         pass
 
     # Unsub events.
-    hass_data[RECONNECT_TASK]()
-    hass_data[UNSUB_LISTENER]()
+    [unsub() for unsub in hass_data.unsub_listeners]
 
     hass.data[DOMAIN].pop(entry.entry_id)
 
@@ -359,7 +335,7 @@ async def async_remove_config_entry_device(
         return True
 
     # host = config_entry.data[CONF_DEVICES][dev_id][CONF_HOST]
-    # await hass.data[DOMAIN][config_entry.entry_id][TUYA_DEVICES][host].close()
+    # await hass.data[DOMAIN][config_entry.entry_id].tuya_devices[host].close()
 
     new_data = config_entry.data.copy()
     new_data[CONF_DEVICES].pop(dev_id)
@@ -377,15 +353,17 @@ async def async_remove_config_entry_device(
 
 def reconnectTask(hass: HomeAssistant, entry: ConfigEntry):
     """Add a task to reconnect to the devices if is not connected [interval: RECONNECT_INTERVAL]"""
+    hass_localtuya: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
 
     async def _async_reconnect(now):
         """Try connecting to devices not already connected to."""
-        for host, dev in hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES].items():
+        for dev in hass_localtuya.tuya_devices.values():
             if not dev.connected:
                 hass.async_create_task(dev.async_connect())
 
-    hass.data[DOMAIN][entry.entry_id][RECONNECT_TASK] = async_track_time_interval(
-        hass, _async_reconnect, RECONNECT_INTERVAL
+    # Add unsub callbeack in unsub_listeners object.
+    hass_localtuya.unsub_listeners.append(
+        async_track_time_interval(hass, _async_reconnect, RECONNECT_INTERVAL)
     )
 
 
