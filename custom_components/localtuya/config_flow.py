@@ -56,14 +56,12 @@ from .const import (
     CONF_TUYA_IP,
     CONF_TUYA_VERSION,
     CONF_USER_ID,
-    DATA_CLOUD,
     DATA_DISCOVERY,
     DEFAULT_CATEGORIES,
     DOMAIN,
     ENTITY_CATEGORY,
     PLATFORMS,
     SUPPORTED_PROTOCOL_VERSIONS,
-    TUYA_DEVICES,
 )
 from .discovery import discover
 
@@ -332,7 +330,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
     close = True
 
     cid = data.get(CONF_NODE_ID, None)
-    localtuya_devices = hass.data[DOMAIN][entry_id][TUYA_DEVICES]
+    localtuya_devices = hass.data[DOMAIN][entry_id].tuya_devices
     try:
         conf_protocol = data[CONF_PROTOCOL_VERSION]
         auto_protocol = conf_protocol == "auto"
@@ -430,7 +428,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
     _LOGGER.debug("Total DPS: %s", detected_dps)
     # Get DP descriptions from the cloud, if the device is there.
     cloud_dp_codes = {}
-    cloud_data: TuyaCloudApi = hass.data[DOMAIN][entry_id][DATA_CLOUD]
+    cloud_data: TuyaCloudApi = hass.data[DOMAIN][entry_id].cloud_data
     if device_cloud_data := cloud_data.device_list.get(data[CONF_DEVICE_ID]):
         cloud_dp_codes = device_cloud_data.get("dps_data")
 
@@ -450,16 +448,10 @@ async def attempt_cloud_connection(hass, user_input):
         user_input.get(CONF_USER_ID),
     )
 
-    res = await cloud_api.async_get_access_token()
-    if res != "ok":
-        _LOGGER.error("Cloud API connection failed: %s", res)
-        return cloud_api, {"reason": "authentication_failed", "msg": res}
+    msg, res = await cloud_api.async_connect()
 
-    res = await cloud_api.async_get_devices_list()
     if res != "ok":
-        _LOGGER.error("Cloud API get_devices_list failed: %s", res)
-        return cloud_api, {"reason": "device_list_failed", "msg": res}
-    _LOGGER.info("Cloud API connection succeeded.")
+        return cloud_api, {"reason": msg, "msg": res}
 
     return cloud_api, {}
 
@@ -556,7 +548,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input=None):
         """Manage basic options."""
-        self.cloud_data = self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_CLOUD]
+        self.cloud_data = self.hass.data[DOMAIN][self.config_entry.entry_id].cloud_data
         if not self.config_entry.data.get(CONF_NO_CLOUD):
             # Refresh devices List data.
             self.hass.async_create_task(self.cloud_data.async_get_devices_list())
@@ -898,10 +890,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         dev_id = self.selected_device
         category = None
         node_id = self.nodeID
-        cloud_data: TuyaCloudApi = self.cloud_data
-        device_data = dev_id in cloud_data.device_list
+        device_data = dev_id in self.cloud_data.device_list
         if device_data:
-            category = cloud_data.device_list[dev_id].get("category", "")
+            category = self.cloud_data.device_list[dev_id].get("category", "")
 
         localtuya_data = {
             CONF_FRIENDLY_NAME: self.device_data.get(CONF_FRIENDLY_NAME),

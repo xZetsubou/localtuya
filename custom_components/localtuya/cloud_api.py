@@ -107,7 +107,7 @@ class TuyaCloudApi:
         # r = json.dumps(r.json(), indent=2, ensure_ascii=False) # Beautify the format
         return resp
 
-    async def async_get_access_token(self):
+    async def async_get_access_token(self) -> str | None:
         """Obtain a valid access token."""
         # Reset access token
         self._token_expire_time = -1
@@ -133,7 +133,7 @@ class TuyaCloudApi:
         self._access_token = resp.json()["result"]["access_token"]
         return "ok"
 
-    async def async_get_devices_list(self):
+    async def async_get_devices_list(self) -> str | None:
         """Obtain the list of devices associated to a user."""
         resp = await self.async_make_request(
             "GET", url=f"/v1.0/users/{self._user_id}/devices"
@@ -158,7 +158,7 @@ class TuyaCloudApi:
 
         return "ok"
 
-    async def async_get_device_specifications(self, device_id):
+    async def async_get_device_specifications(self, device_id) -> dict[str, dict]:
         """Obtain the DP ID mappings for a device."""
         resp = await self.async_make_request(
             "GET", url=f"/v1.1/devices/{device_id}/specifications"
@@ -173,7 +173,7 @@ class TuyaCloudApi:
 
         return r_json["result"], "ok"
 
-    async def async_get_device_query_properties(self, device_id):
+    async def async_get_device_query_properties(self, device_id) -> dict[dict, str]:
         """Obtain the DP ID mappings for a device correctly!."""
         resp = await self.async_make_request(
             "GET", url=f"/v2.0/cloud/thing/{device_id}/shadow/properties"
@@ -188,7 +188,7 @@ class TuyaCloudApi:
 
         return r_json["result"], "ok"
 
-    async def get_device_functions(self, device_id):
+    async def get_device_functions(self, device_id) -> dict[str, dict]:
         """Pull Devices Properties and Specifications to devices_list"""
         get_data = [
             self.async_get_device_specifications(device_id),
@@ -206,6 +206,19 @@ class TuyaCloudApi:
             self.device_list[device_id]["dps_data"] = device_data
 
         return device_data
+
+    async def async_connect(self):
+        """Connect to cloudAPI"""
+        if (res := await self.async_get_access_token()) and res != "ok":
+            _LOGGER.error("Cloud API connection failed: %s", res)
+            return "authentication_failed", res
+
+        if (res := await self.async_get_devices_list()) and res != "ok":
+            _LOGGER.error("Cloud API connection failed: %s", res)
+            return "device_list_failed", res
+
+        _LOGGER.info("Cloud API connection succeeded.")
+        return True, res
 
     @property
     def token_validate(self):
