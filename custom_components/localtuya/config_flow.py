@@ -548,15 +548,17 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input=None):
         """Manage basic options."""
+        configure_menu = CONFIGURE_MENU.copy()
+        # Remove Reconfigure existing device if there is no existed devices.
+        if not self.config_entry.data[CONF_DEVICES]:
+            configure_menu.pop(configure_menu.index(CONF_EDIT_DEVICE))
+
         self.cloud_data = self.hass.data[DOMAIN][self.config_entry.entry_id].cloud_data
         if not self.config_entry.data.get(CONF_NO_CLOUD):
             # Refresh devices List data.
             self.hass.async_create_task(self.cloud_data.async_get_devices_list())
 
-        return self.async_show_menu(
-            step_id="init",
-            menu_options=CONFIGURE_MENU,
-        )
+        return self.async_show_menu(step_id="init", menu_options=configure_menu)
 
     async def async_step_device_setup_method(self, user_input=None):
         """Manage basic options."""
