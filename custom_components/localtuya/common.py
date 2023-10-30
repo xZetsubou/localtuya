@@ -157,7 +157,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         hass: HomeAssistant,
         config_entry: ConfigEntry,
         dev_id: str,
-        fake_gateway=False,
+        gateway=False,
     ):
         """Initialize the cache."""
         super().__init__()
@@ -168,9 +168,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._interface = None
         # For SubDevices
         self._node_id: str = self._device_config.get(CONF_NODE_ID)
-        self._fake_gateway = fake_gateway
+        self._fake_gateway = gateway
         self._gwateway: TuyaDevice = None
-        self._sub_devices = {}
+        self._sub_devices: dict[str, TuyaDevice] = {}
 
         self._status = {}
         self.dps_to_request = {}
@@ -221,7 +221,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Return the gateway device of this sub device."""
         if not self._node_id:
             return
-        entry_id = self._config_entry.entry_id
+        gateway: TuyaDevice
         node_host = self._device_config.get(CONF_HOST)
         devices: dict = self._hass_entry.tuya_devices
 
@@ -234,12 +234,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self.error(f"Couldn't find the gateway for: {self._node_id}")
         return None
 
-    async def async_connect(self):
+    async def async_connect(self, _now=None) -> None:
         """Connect to device if not already connected."""
         if not self._hass_entry:
             self._hass_entry = self._hass.data[DOMAIN][self._config_entry.entry_id]
-        # self.info("async_connect: %d %r %r", self._is_closing, self._connect_task, self._interface)
-        # if not self._is_closing and self._connect_task is None and not self._interface:
+
         if not self._is_closing and not self.is_connecting and not self.connected:
             try:
                 await asyncio.wait_for(self._make_connection(), 5)
