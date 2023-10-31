@@ -157,7 +157,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         hass: HomeAssistant,
         config_entry: ConfigEntry,
         dev_id: str,
-        gateway=False,
+        fake_gateway=False,
     ):
         """Initialize the cache."""
         super().__init__()
@@ -168,7 +168,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._interface = None
         # For SubDevices
         self._node_id: str = self._device_config.get(CONF_NODE_ID)
-        self._fake_gateway = gateway
+        self._fake_gateway = fake_gateway
         self._gwateway: TuyaDevice = None
         self._sub_devices: dict[str, TuyaDevice] = {}
 
