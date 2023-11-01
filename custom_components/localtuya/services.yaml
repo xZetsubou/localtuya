@@ -23,7 +23,7 @@ set_dp:
           mode: box
     value:
       name: "Value"
-      description: New value to set
+      description: "New value to set or list of dp: value, If value is list target dp will be ignored"
       required: true
       example: "true"
       selector:
