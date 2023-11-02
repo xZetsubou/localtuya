@@ -16,7 +16,7 @@ set_dp:
     dp:
       name: "DP"
       description: Target DP, Datapoint index
-      required: true
+      required: false
       example: 1
       selector:
         number:
@@ -25,6 +25,6 @@ set_dp:
       name: "Value"
       description: "New value to set or list of dp: value, If value is list target dp will be ignored"
       required: true
-      example: "true"
+      example: '{ "1": True, "2": True }'
       selector:
         object:
