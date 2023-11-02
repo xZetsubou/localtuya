@@ -95,9 +95,8 @@ async def async_setup(hass: HomeAssistant, config: dict):
         if not device.connected:
             raise HomeAssistantError("not connected to device")
         value = event.data[CONF_VALUE]
-        if isinstance(value, list):
-            data = {k: v for d in value for k, v in d.items()}
-            await device.set_dps(data)
+        if isinstance(value, dict):
+            await device.set_dps(value)
         else:
             await device.set_dp(value, event.data[CONF_DP])
 
