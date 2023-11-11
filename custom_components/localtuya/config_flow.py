@@ -245,7 +245,7 @@ def dps_string_list(dps_data: dict[str, dict], cloud_dp_codes: dict[str, dict]) 
     strs = []
 
     # Merge DPs that found through cloud with local.
-    # These DPs probably doesn't have local states, so we assume there functions are buttons.
+    # These DPs probably doesn't have local states, so we assume these functions are buttons.
     for dp, func in cloud_dp_codes.items():
         if dp not in dps_data and str(func.get("value")).lower() in ["false", "true"]:
             dps_data[dp] = f"{func.get('value')}, tip: button entity"
@@ -725,7 +725,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             try:
                 self.device_data = user_input.copy()
-                self.nodeID = self.nodeID or user_input.get(CONF_NODE_ID, None)
+                self.selected_device: str = dev_id or user_input.get(CONF_DEVICE_ID)
+                self.nodeID: str = self.nodeID or user_input.get(CONF_NODE_ID, None)
                 if dev_id is not None:
                     cloud_devs = self.cloud_data.device_list
                     if dev_id in cloud_devs:
