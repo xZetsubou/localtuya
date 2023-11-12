@@ -722,13 +722,13 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         errors = {}
         placeholders = {}
         dev_id = self.selected_device
+        cloud_devs = self.cloud_data.device_list
         if user_input is not None:
             try:
                 self.device_data = user_input.copy()
                 self.selected_device: str = dev_id or user_input.get(CONF_DEVICE_ID)
                 self.nodeID: str = self.nodeID or user_input.get(CONF_NODE_ID, None)
                 if dev_id is not None:
-                    cloud_devs = self.cloud_data.device_list
                     if dev_id in cloud_devs:
                         self.device_data[CONF_MODEL] = cloud_devs[dev_id].get(
                             CONF_PRODUCT_NAME
@@ -817,8 +817,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["base"] = "invalid_auth"
             except ValueError as ex:
                 placeholders["ex"] = str(ex)
-                errors["base"] = "value_error"
-                _LOGGER.debug("Value Error: %s", ex)
+                errors["base"] = f"unknown"
             except EmptyDpsList:
                 errors["base"] = "empty_dps"
             except Exception as ex:
@@ -836,7 +835,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             )
 
             self.nodeID = defaults.get(CONF_NODE_ID, None)
-            cloud_devs = self.cloud_data.device_list
             placeholders["for_device"] = f" for device `{dev_id}`"
             if self.nodeID:
                 placeholders.update(
@@ -860,24 +858,30 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             defaults[CONF_ENABLE_ADD_ENTITIES] = False
             schema = schema_defaults(options_schema(self.entities), **defaults)
         else:
-            defaults[CONF_PROTOCOL_VERSION] = "auto"
-            defaults[CONF_HOST] = ""
-            defaults[CONF_DEVICE_ID] = ""
-            defaults[CONF_LOCAL_KEY] = ""
-            defaults[CONF_FRIENDLY_NAME] = ""
-            defaults[CONF_NODE_ID] = ""
-            if dev_id is not None:
+            # user_in will restore input if an error occurred instead of clears all fields.
+            user_in = user_input or {}
+            defaults[CONF_PROTOCOL_VERSION] = user_in.get(CONF_PROTOCOL_VERSION, "auto")
+            defaults[CONF_HOST] = user_in.get(CONF_HOST, "")
+            defaults[CONF_DEVICE_ID] = user_in.get(CONF_DEVICE_ID, "")
+            defaults[CONF_LOCAL_KEY] = user_in.get(CONF_LOCAL_KEY, "")
+            defaults[CONF_FRIENDLY_NAME] = user_in.get(CONF_FRIENDLY_NAME, "")
+            defaults[CONF_NODE_ID] = user_in.get(CONF_NODE_ID, "")
+
+            if defaults[CONF_DEVICE_ID] in [cloud_devs, self.selected_device]:
+                dev_id = defaults[CONF_DEVICE_ID]
+
+            if dev_id is not None and dev_id in self.discovered_devices:
                 # Insert default values from discovery and cloud if present
-                cloud_devs = self.cloud_data.device_list
-                device = self.discovered_devices[dev_id]
+                device = self.discovered_devices.get(dev_id, {})
                 defaults[CONF_HOST] = device.get(CONF_TUYA_IP)
                 defaults[CONF_DEVICE_ID] = device.get(CONF_TUYA_GWID)
                 defaults[CONF_PROTOCOL_VERSION] = device.get(CONF_TUYA_VERSION)
                 defaults[CONF_NODE_ID] = device.get(CONF_NODE_ID, None)
 
-                if dev_id in cloud_devs:
-                    defaults[CONF_LOCAL_KEY] = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
-                    defaults[CONF_FRIENDLY_NAME] = cloud_devs[dev_id].get(CONF_NAME)
+            if dev_id in cloud_devs:
+                defaults[CONF_LOCAL_KEY] = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
+                defaults[CONF_FRIENDLY_NAME] = cloud_devs[dev_id].get(CONF_NAME)
+
             schema = schema_defaults(DEVICE_SCHEMA, **defaults)
 
             placeholders["for_device"] = ""
