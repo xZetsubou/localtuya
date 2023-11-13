@@ -16,7 +16,7 @@ LocalTuya is an [HomeAssistant](https://www.home-assistant.io/) integration that
 [:simple-homeassistantcommunitystore: Add repository to HACS](https://my.home-assistant.io/redirect/hacs_repository/?category=integration&repository=hass-localtuya&owner=xZetsubou){ target=_blank .md-button }
 
 ## Features
-- [Cloud API](/cloud_api) 
+- [Cloud API](/cloud_api) `Optional - Only used to assist in the devices setup process`
 - Supported protocols: `3.1`, `3.2`, `3.3`, `3.4`, and `3.5`
 - Supported Sub-devices: `Devices that function through gateways`
 - Auto-configure devices - *`Requires a cloud API setup`*

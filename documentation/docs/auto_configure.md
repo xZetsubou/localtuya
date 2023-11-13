@@ -31,10 +31,10 @@ Look for the `category` modify if it existed then add the missing `entity`.
 
 1. e.g `COVERS or SWITCHES`
 
-Using `LocalTuyaEntity class` we pass entity parameters and `DP Fields names` DP Keys has to be supported by `localtuya` (1)
+Using `LocalTuyaEntity class` we pass entity parameters `DPs Config name as keys and DPCode as values` Config names has to be supported by `localtuya` (1)
 {.annotate}
 
-1. All entities has `id` key. but some has mode dp fields <br> For example: `cover platforms` has config keys for `current_position_dp` and  `set_position_dp`<br> 
+1. All entities platforms has `id` config name. but some has more dp configs<br> For example: `cover platforms` has config names for `current_position_dp` and  `set_position_dp`<br> 
 
 <!-- ???+ info "LocalTuyaClass Parameters"
     | Parameter                 |Required   | type          | Description
