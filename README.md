@@ -5,13 +5,7 @@ A Home Assistant custom Integration for local handling of Tuya-based devices.
 
 Usage and setup [Documentation](https://xzetsubou.github.io/hass-localtuya/)
 
-
-# Installation
-
-The easiest way and the best, Is using [HACS](https://hacs.xyz/), <br>
-
-<details><summary>HACS installation</summary>
-<p>
+<br>
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?category=integration&repository=hass-localtuya&owner=xZetsubou)
 
@@ -42,7 +36,7 @@ Then, edit the device that is showing problems and check the "Enable debugging f
 * The integration also supports the Tuya IoT Cloud APIs, for the retrieval of info and of the local_keys of the devices. 
 The Cloud API account configuration is not mandatory (LocalTuya can work also without it) but is strongly suggested for easy retrieval (and auto-update after re-pairing a device) of local_keys. Cloud API calls are performed only at startup, and when a local_key update is needed. -->
 
-<details><summary> <h2> Credits </h2> </summary>
+<details><summary> <h4> Credits </h4> </summary>
 <p>
     
 ##### Credits:
