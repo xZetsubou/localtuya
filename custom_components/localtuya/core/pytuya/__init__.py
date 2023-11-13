@@ -1154,7 +1154,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                     raise DecodeError("payload was not a string: %s" % ex)
                     # return self.error_json(ERR_JSON, payload)
 
-            if "data unvalid" in payload:
+            if "data unvalid" in payload and self.version <= 3.3:
                 self.dev_type = "type_0d"
                 self.debug(
                     "'data unvalid' error detected: switching to dev_type %r",
