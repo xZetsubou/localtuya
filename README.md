@@ -46,7 +46,7 @@ Then, edit the device that is showing problems and check the "Enable debugging f
 * The integration also supports the Tuya IoT Cloud APIs, for the retrieval of info and of the local_keys of the devices. 
 The Cloud API account configuration is not mandatory (LocalTuya can work also without it) but is strongly suggested for easy retrieval (and auto-update after re-pairing a device) of local_keys. Cloud API calls are performed only at startup, and when a local_key update is needed. -->
 
-<details><summary> Cʀᴇᴅɪᴛs </summary>
+<details><summary> 𝐂𝐫𝐞𝐝𝐢𝐭𝐬 </summary>
 <p>
     
 [Rospogrigio](https://github.com/rospogrigio), originally maintained LocalTuya. This fork was created when the upstream version was at `v5.2.1`.
