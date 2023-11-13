@@ -20,7 +20,7 @@ A Home Assistant custom Integration for local handling of Tuya-based devices.
 
 <br>
 
-<details><summary>Reporting an issue</summary>
+<details><summary> 𝐑𝐞𝐩𝐨𝐫𝐭𝐢𝐧𝐠 𝐚𝐧 𝐢𝐬𝐬𝐮𝐞 </summary>
 <p>
 
 Whenever you write a bug report, it helps tremendously if you include debug logs directly (otherwise we will just ask for them and it will take longer). So please enable debug logs like this and include them in your issue:
