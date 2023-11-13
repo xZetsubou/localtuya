@@ -49,7 +49,7 @@ The Cloud API account configuration is not mandatory (LocalTuya can work also wi
 <details><summary> Cʀᴇᴅɪᴛs </summary>
 <p>
     
-[Rospogrigio](https://github.com/rospogrigio), original maintenance of LocalTuya led to this fork, which was created when the upstream version was at `v5.2.1`
+[Rospogrigio](https://github.com/rospogrigio), originally maintained LocalTuya. This fork was created when the upstream version was at `v5.2.1`.
 
 [NameLessJedi](https://github.com/NameLessJedi/localtuya-homeassistant) and [mileperhour](https://github.com/mileperhour/localtuya-homeassistant) being the major sources of inspiration, and whose code for switches is substantially unchanged.
 
