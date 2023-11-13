@@ -249,18 +249,18 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     async def _make_connection(self):
         """Subscribe localtuya entity events."""
         self._connect_task = True
-        host = self._device_config.get(CONF_HOST)
         name = self._device_config.get(CONF_FRIENDLY_NAME)
+        host = name if self.is_subdevice else self._device_config.get(CONF_HOST)
 
         try:
             if self.is_subdevice:
+                # self.info(f"Connect Sub Device {name} through gateway {host}")
                 await self.get_gateway()
                 gateway = self._gwateway
                 if gateway and not gateway.connected or gateway.is_connecting:
                     self._connect_task = None
                     return
                 self._interface = gateway._interface
-                # self.info(f"Connect Sub Device {name} through gateway {host}")
             else:
                 # self.info("Trying to connect to %s...", host)
                 self._interface = await pytuya.connect(
@@ -294,23 +294,28 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 status = await self._interface.status(cid=self._node_id)
                 if status is None:
                     raise Exception("Failed to retrieve status")
-                if not self.is_subdevice:
+                if not self._interface.heartbeater:
                     self._interface.start_heartbeat()
                 self.status_updated(status)
 
             except UnicodeDecodeError as e:  # pylint: disable=broad-except
                 self.exception(f"Connect to {host} failed: due to: {type(e)}")
-
                 await self.abort_connect()
-
             except Exception as e:  # pylint: disable=broad-except
-                self.warning(f"Connect to {host} failed: {e}")
+                # If node_id not found we will, we won't abort connection so it won't reconnect.
+                if self.is_subdevice and "Not found" in str(e):
+                    self.warning(f"Connect to {host} failed: NodeID Not found.")
+                    return
+                if not (self._fake_gateway and "Not found" in str(e)):
+                    self.warning(f"Connect to {host} failed: {e}")
+                    await self.abort_connect()
                 if "json.decode" in str(type(e)):
-                    self.warning(f"Initial state update failed {e}, trying key update")
+                    self.info(f"Initial state update failed {e}, trying key update")
                     await self.update_local_key()
-                await self.abort_connect()
-            finally:
-                pass
+            except:
+                if self._fake_gateway:
+                    self.warning(f"Failed to use {name} as gateway.")
+                    await self.abort_connect()
 
         if self._interface is not None:
             # Attempt to restore status for all entities that need to first set
@@ -338,7 +343,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 )
 
             self._is_closing = False
-            self.info(f"Success: connected to {name if self.is_subdevice else host}")
+            self.info(f"Success: connected to {host}")
             if self._sub_devices:
                 connect_sub_devices = [
                     device.async_connect() for device in self._sub_devices.values()
@@ -351,6 +356,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     async def abort_connect(self):
         """Abort the connect process to the interface[device]"""
         if self.is_subdevice:
+            self._is_closing = True
             self._interface = None
 
         if self._interface is not None:
