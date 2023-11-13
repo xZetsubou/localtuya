@@ -1154,12 +1154,13 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                     raise DecodeError("payload was not a string: %s" % ex)
                     # return self.error_json(ERR_JSON, payload)
 
-            if "data unvalid" in payload and self.version <= 3.3:
-                self.dev_type = "type_0d"
-                self.debug(
-                    "'data unvalid' error detected: switching to dev_type %r",
-                    self.dev_type,
-                )
+            if "data unvalid" in payload:
+                if self.version <= 3.3:
+                    self.dev_type = "type_0d"
+                    self.debug(
+                        "'data unvalid' error detected: switching to dev_type %r",
+                        self.dev_type,
+                    )
                 return None
         elif not payload.startswith(b"{"):
             self.debug("Unexpected payload=%r", payload)
@@ -1171,13 +1172,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         try:
             json_payload = json.loads(payload)
         except Exception as ex:
-            if len(payload) == 0:  # No respones probably worng Local_Key
-                raise ValueError("Connected but no respones localkey is incorrect?")
             if "devid not" in payload:  # DeviceID Not found.
                 raise ValueError("DeviceID Not found")
             else:
                 raise DecodeError(
-                    "could not decrypt data: wrong local_key? (exception: %s)" % ex
+                    f"could not decrypt data: wrong local_key? (exception: {ex}, payload: {payload})"
                 )
             # json_payload = self.error_json(ERR_JSON, payload)
 
