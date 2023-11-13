@@ -9,8 +9,7 @@ Usage and setup [Documentation](https://xzetsubou.github.io/hass-localtuya/)
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?category=integration&repository=hass-localtuya&owner=xZetsubou)
 
-### Debugging
-<details><summary>Debugging</summary>
+<details><summary>When reports an issue</summary>
 <p>
 
 Whenever you write a bug report, it helps tremendously if you include debug logs directly (otherwise we will just ask for them and it will take longer). So please enable debug logs like this and include them in your issue:
