@@ -24,7 +24,11 @@ A Home Assistant custom Integration for local handling of Tuya-based devices.
 <details><summary> 𝐑𝐞𝐩𝐨𝐫𝐭𝐢𝐧𝐠 𝐚𝐧 𝐢𝐬𝐬𝐮𝐞 </summary>
 <p>
 
-Whenever you write a bug report, it helps tremendously if you include debug logs directly (otherwise we will just ask for them and it will take longer). So please enable debug logs like this and include them in your issue:
+Whenever you write a bug report, it's incredibly helpful to include debug logs directly. Otherwise, we'll need to request them separately, prolonging the process. Please enable debug logs as shown and include them in your issue:
+
+<details><summary> Via UI </summary>
+![](https://github.com/xZetsubou/hass-localtuya/assets/46300268/2515cf9d-fffb-46a9-b2c2-e776e20c5eb3)
+</details>
 
 ```yaml
 logger:
