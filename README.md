@@ -10,12 +10,13 @@ A Home Assistant custom Integration for local handling of Tuya-based devices.
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?category=integration&repository=hass-localtuya&owner=xZetsubou)
 
 ## __𝐅𝐞𝐚𝐭𝐮𝐫𝐞𝐬__
-- [Cloud API](/cloud_api) 
 - Supported protocols: `3.1`, `3.2`, `3.3`, `3.4`, and `3.5`
 - Supported Sub-devices: `Devices that function through gateways`
-- Auto-configure devices - *`Requires a cloud API setup`*
-- Automatic insertion - *`Requires a cloud API setup`*
-- Devices discovery - *`Discovers Tuya devices on your network`* 
+- Auto-configure devices - `Requires a cloud API setup`
+- Automatic insertion - `Requires a cloud API setup`
+- Devices discovery - `Discovers Tuya devices on your network`
+- Cloud API - `Only to help you on setup devices, can works without it.`
+
 
 
 <br>
