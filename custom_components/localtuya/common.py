@@ -315,7 +315,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             except:
                 if self._fake_gateway:
                     self.warning(f"Failed to use {name} as gateway.")
-                    await self.abort_connect()
+                await self.abort_connect()
 
         if self._interface is not None:
             # Attempt to restore status for all entities that need to first set
