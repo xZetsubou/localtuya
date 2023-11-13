@@ -18,7 +18,7 @@ A Home Assistant custom Integration for local handling of Tuya-based devices.
 - Devices discovery - *`Discovers Tuya devices on your network`* 
 
 
-<details><summary>When reports an issue</summary>
+<details><summary>Reporting an issue</summary>
 <p>
 
 Whenever you write a bug report, it helps tremendously if you include debug logs directly (otherwise we will just ask for them and it will take longer). So please enable debug logs like this and include them in your issue:
@@ -44,7 +44,7 @@ Then, edit the device that is showing problems and check the "Enable debugging f
 * The integration also supports the Tuya IoT Cloud APIs, for the retrieval of info and of the local_keys of the devices. 
 The Cloud API account configuration is not mandatory (LocalTuya can work also without it) but is strongly suggested for easy retrieval (and auto-update after re-pairing a device) of local_keys. Cloud API calls are performed only at startup, and when a local_key update is needed. -->
 
-<details><summary> <span style="font-size:larger;">Credits</span> </summary>
+<details><summary> <h5">Credits</h5> </summary>
 <p>
     
 [Rospogrigio](https://github.com/rospogrigio), original maintenance of LocalTuya led to this fork, which was created when the upstream version was at `v5.2.1`
