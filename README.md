@@ -3,7 +3,7 @@
 
 A Home Assistant custom Integration for local handling of Tuya-based devices.
 
-Usage and setup [Documentation](https://xzetsubou.github.io/hass-localtuya/)
+### Usage and setup [Documentation](https://xzetsubou.github.io/hass-localtuya/)
 
 <br>
 
