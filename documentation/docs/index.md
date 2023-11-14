@@ -4,10 +4,9 @@ LocalTuya is an [HomeAssistant](https://www.home-assistant.io/){target="_blank"}
 [Usage](installation)
 
 
-!!! info annotate "LocalTuya is a Hub"
-    `LocalTuya` serves as a hub. After setup, whether using `cloud` or `no cloud`, you can manage your devices from the entry configuration UI by clicking on `configure` (1)
-
-1. `Settings -> Devices -> LocalTuya` <br><br> ![](images/configure.png)
+!!! info "LocalTuya is a Hub "
+    `LocalTuya` serves as a hub. After setup, whether using `cloud` or `no cloud`, you can manage your devices from the entry configuration UI from `hub configure`,
+    <!-- `Each Tuya account can be add on it's own` -->
 
 
 !!! info "Cloud API"
