@@ -1,7 +1,17 @@
 # Install Integration
-Assuming you've added the repository and installed the Integration from the [Overview](index.md).
 
-## Installation
+If you haven't added the repository to your HACS, click on the button below to add it.
+
+[:simple-homeassistantcommunitystore: Add repository to HACS](https://my.home-assistant.io/redirect/hacs_repository/?category=integration&repository=hass-localtuya&owner=xZetsubou){ target=_blank .md-button }
+
+<!-- ??? note "Add Repository Manually"
+    1. Go to `HACS` and navigate to Integrations Section
+    2. Click on :material-dots-vertical: in the top right corner and click on Custom repositories
+    3. Paste `https://github.com/xZetsubou/localtuya` into the input field and select Integration from the category dropdown then click ADD
+    4. Now the integration should be added search in for it and install it!. -->
+
+<Br>
+
 #### Add HUB
 1. Adding hub options:
 
