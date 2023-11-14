@@ -1,13 +1,14 @@
 # Overview
 
 LocalTuya is an [HomeAssistant](https://www.home-assistant.io/){target="_blank"} integration that enables you to control your Tuya-based smart devices directly within your local network. 
-[Usage](/installation)
+[Usage](installation)
+
 
 !!! info annotate "LocalTuya is a Hub"
     `LocalTuya` serves as a hub. After setup, whether using `cloud` or `no cloud`, you can manage your devices from the entry configuration UI by clicking on `configure` (1)
-
 1. ![](images/configure.png)
- 
+
+
 !!! info "Cloud API"
     LocalTuya uses the cloud solely to obtain device data and pre-fill the required fields for you.
 
@@ -20,7 +21,7 @@ LocalTuya is an [HomeAssistant](https://www.home-assistant.io/){target="_blank"}
 
 ## Features
 <!-- - Supported protocols: `3.1`, `3.2`, `3.3`, `3.4`, and `3.5` -->
-- [Cloud API](/cloud_api) `Optional - Only used to assist in the devices setup process`
+- [Cloud API](cloud_api) `Optional - Only used to assist in the devices setup process`
 - Supported Sub-devices: `Devices that function through gateways`
 - Auto-configure devices - *`Requires a cloud API setup`*
 - Automatic insertion - *`Requires a cloud API setup`*
