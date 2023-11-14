@@ -1,6 +1,6 @@
 site_name: Localtuya
 repo_url: https://github.com/xZetsubou/hass-localtuya/
-edit_uri: blob/master/docs/
+edit_uri: blob/master/documentation/docs/
 copyright: Copyright © Bander xZetsubou 
 
 theme:
