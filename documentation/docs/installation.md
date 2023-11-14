@@ -1,6 +1,6 @@
 # Install Integration
 
-If you haven't added the repository to your HACS, click on the button below to add it.
+If you haven't added the repository to `HACS`.
 
 [:simple-homeassistantcommunitystore: Add repository to HACS](https://my.home-assistant.io/redirect/hacs_repository/?category=integration&repository=hass-localtuya&owner=xZetsubou){ target=_blank .md-button }
 
