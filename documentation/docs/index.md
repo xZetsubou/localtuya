@@ -1,5 +1,5 @@
 # Overview
-LocalTuya is an [HomeAssistant](https://www.home-assistant.io/) integration that enables you to control your Tuya-based smart devices directly within your local network. 
+LocalTuya is an [HomeAssistant](https://www.home-assistant.io/){target="_blank"} integration that enables you to control your Tuya-based smart devices directly within your local network. 
 
 !!! info annotate "LocalTuya as a Hub"
     `LocalTuya` serves as a hub. After setup, whether using `cloud` or `no cloud`, you can manage your devices via the entry configuration UI by clicking on `configure` (1)
