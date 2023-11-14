@@ -7,7 +7,7 @@ __A Home Assistant custom Integration for local handling of Tuya-based devices._
 
 <br>
 
-[<img src="https://my.home-assistant.io/badges/hacs_repository.svg" width="310" >](https://my.home-assistant.io/redirect/hacs_repository/?category=integration&repository=hass-localtuya&owner=xZetsubou)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?category=integration&repository=hass-localtuya&owner=xZetsubou)
 
 
 
