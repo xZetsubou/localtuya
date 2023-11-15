@@ -3,9 +3,9 @@ name: "MkDocs"
 on:
   push:
     paths:
-      - .github/workflows/mkdocs.y*ml
+      - .github/workflows/mkdocs.yml
       - documentation/**
-      - documentation/mkdocs.y*ml
+      - documentation/mkdocs.yml
   workflow_dispatch:
 
 env:
