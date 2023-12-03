@@ -182,11 +182,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._local_key = self._device_config[CONF_LOCAL_KEY]
         self._default_reset_dpids = None
         if reset_dps := self._device_config.get(CONF_RESET_DPIDS):
-            reset_ids_str = reset_dps.split(",")
-
-            self._default_reset_dpids = []
-            for reset_id in reset_ids_str:
-                self._default_reset_dpids.append(int(reset_id.strip()))
+            self._default_reset_dpids = [int(id.strip()) for id in reset_dps.split(",")]
 
         self.set_logger(
             _LOGGER,
@@ -253,7 +249,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         host = name if self.is_subdevice else self._device_config.get(CONF_HOST)
 
         try:
-            # self.info("Trying to connect to %s...", host)
+            # self.debug(f"Trying to connect to {host}...", )
             if self.is_subdevice:
                 await self.get_gateway()
                 gateway = self._gwateway
@@ -301,6 +297,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 await self.abort_connect()
             except pytuya.DecodeError as derror:
                 self.info(f"Initial update state failed {derror}, trying key update")
+                await self.abort_connect()
                 await self.update_local_key()
             except Exception as e:
                 if not (self._fake_gateway and "Not found" in str(e)):
@@ -490,10 +487,10 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         # If it's disconnect by unexpected error.
         if self._is_closing is not True and not self.is_subdevice:
-            self.info(f"Disconnected - waiting for discovery broadcast")
+            self.debug(f"Disconnected - waiting for discovery broadcast")
             # Try to quickly reconnect.
             self._is_closing = False
-            async_call_later(self._hass, 2, self.async_connect)
+            async_call_later(self._hass, 4, self.async_connect)
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
@@ -603,9 +600,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def available(self) -> bool:
         """Return if device is available or not."""
-        if (platform := self._config.get(CONF_PLATFORM)) and platform == "button":
-            return True if self._status else False
-        return str(self._dp_id) in self._status
+        return len(self._status) > 0
 
     @property
     def entity_category(self) -> str:
@@ -645,8 +640,8 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
             if value := self._status.get(conf_key):
                 return value
 
-        if value is None and self._config.get(CONF_PLATFORM) != "button":
-            self.warning(f"{self.entity_id}: is requesting unknown DP Value {key}")
+        if value is None:
+            self.debug(f"{self.entity_id}: is requesting unknown DP Value {key}")
 
         return value
 
