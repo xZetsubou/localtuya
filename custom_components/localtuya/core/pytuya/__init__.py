@@ -269,9 +269,9 @@ class ContextualLogger:
         self._enable_debug = enable_debug
         self._logger = TuyaLoggingAdapter(logger, {"device_id": device_id})
 
-    def debug(self, msg, *args):
-        """Debug level log."""
-        if not self._enable_debug:
+    def debug(self, msg, *args, force=False):
+        """Debug level log for device. force will ignore device debug check."""
+        if not self._enable_debug and not force:
             return
         return self._logger.log(logging.DEBUG, msg, *args)
 

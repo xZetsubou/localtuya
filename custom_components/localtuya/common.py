@@ -249,7 +249,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         host = name if self.is_subdevice else self._device_config.get(CONF_HOST)
 
         try:
-            # self.debug(f"Trying to connect to {host}...", )
+            self.debug(f"Trying to connect to {host}...", force=True)
             if self.is_subdevice:
                 await self.get_gateway()
                 gateway = self._gwateway
@@ -316,7 +316,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 await entity.restore_state_when_connected()
 
             def _new_entity_handler(entity_id):
-                self.debug("New entity %s was added to %s", entity_id, host)
+                self.debug(f"New entity {entity_id} was added to {host}")
                 self._dispatch_status()
 
             signal = f"localtuya_entity_{self._device_config[CONF_DEVICE_ID]}"
@@ -335,7 +335,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 )
 
             self._is_closing = False
-            self.info(f"Success: connected to {host}", clear_warning=True)
+            self.debug(f"Success: connected to {host}", force=True)
             if self._sub_devices:
                 connect_sub_devices = [
                     device.async_connect() for device in self._sub_devices.values()
@@ -370,7 +370,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self._config_entry,
                 data=new_data,
             )
-            self.info("local_key updated for device %s.", dev_id)
+            self.info(f"local_key updated for device {dev_id}.")
 
     async def _async_refresh(self, _now):
         if self._interface is not None:
@@ -389,7 +389,10 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self._interface = None
         if self._disconnect_task is not None:
             self._disconnect_task()
-        self.info(f"Closed connection with {self._device_config[CONF_FRIENDLY_NAME]}")
+        self.debug(
+            f"Closed connection with {self._device_config[CONF_FRIENDLY_NAME]}",
+            force=True,
+        )
 
     async def set_dp(self, state, dp_index):
         """Change value of a DP of the Tuya device."""
@@ -397,10 +400,10 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             try:
                 await self._interface.set_dp(state, dp_index, cid=self._node_id)
             except Exception:  # pylint: disable=broad-except
-                self.debug("Failed to set DP %d to %s", dp_index, str(state))
+                self.debug(f"Failed to set DP {dp_index} to {str(state)}", force=True)
         else:
             self.error(
-                "Not connected to device %s", self._device_config[CONF_FRIENDLY_NAME]
+                f"Not connected to device {self._device_config[CONF_FRIENDLY_NAME]}"
             )
 
     async def set_dps(self, states):
@@ -409,10 +412,10 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             try:
                 await self._interface.set_dps(states, cid=self._node_id)
             except Exception:  # pylint: disable=broad-except
-                self.debug("Failed to set DPs %r", states)
+                self.debug(f"Failed to set DPs {states}")
         else:
             self.error(
-                "Not connected to device %s", self._device_config[CONF_FRIENDLY_NAME]
+                f"Not connected to device {self._device_config[CONF_FRIENDLY_NAME]}"
             )
 
     @callback
@@ -525,7 +528,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         """Subscribe localtuya events."""
         await super().async_added_to_hass()
 
-        self.debug("Adding %s with configuration: %s", self.entity_id, self._config)
+        self.debug(f"Adding {self.entity_id} with configuration: {self._config}")
 
         state = await self.async_get_last_state()
         if state:
@@ -565,7 +568,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         elif self._last_state is not None:
             attributes[ATTR_STATE] = self._last_state
 
-        self.debug("Entity %s - Additional attributes: %s", self.name, attributes)
+        self.debug(f"Entity {self.name} - Additional attributes: {attributes}")
         return attributes
 
     @property
@@ -641,7 +644,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
                 return value
 
         if value is None:
-            self.debug(f"{self.entity_id}: is requesting unknown DP Value {key}")
+            self.debug(f"{self.name}: is requesting unknown DP Value {key}", force=True)
 
         return value
 
@@ -667,9 +670,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         if raw_state is not None:
             self._last_state = raw_state
             self.debug(
-                "Restoring state for entity: %s - state: %s",
-                self.name,
-                str(self._last_state),
+                f"Restoring state for entity: {self.name} - state: {str(self._last_state)}"
             )
 
     def default_value(self):
@@ -702,15 +703,13 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         if not restore_on_reconnect and (dp_id in self._status or not passive_entity):
             self.debug(
-                "Entity %s (DP %d) - Not restoring as restore on reconnect is "
+                f"Entity {self.name} (DP {self._dp_id}) - Not restoring as restore on reconnect is "
                 + "disabled for this entity and the entity has an initial status "
-                + "or it is not a passive entity",
-                self.name,
-                self._dp_id,
+                + "or it is not a passive entity"
             )
             return
 
-        self.debug("Attempting to restore state for entity: %s", self.name)
+        self.debug(f"Attempting to restore state for entity: {self.name}")
         # Attempt to restore the current state - in case reset.
         restore_state = self._state
 
@@ -729,10 +728,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
                 return
 
         self.debug(
-            "Entity %s (DP %d) - Restoring state: %s",
-            self.name,
-            self._dp_id,
-            str(restore_state),
+            f"Entity {self.name} (DP {self._dp_id}) - Restoring state: {str(restore_state)}"
         )
 
         # Manually initialise
