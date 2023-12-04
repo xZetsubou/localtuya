@@ -490,7 +490,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         # If it's disconnect by unexpected error.
         if self._is_closing is not True and not self.is_subdevice:
-            self.debug(f"Disconnected - waiting for discovery broadcast")
+            self.debug(f"Disconnected - waiting for discovery broadcast", force=True)
             # Try to quickly reconnect.
             self._is_closing = False
             async_call_later(self._hass, 4, self.async_connect)
