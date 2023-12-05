@@ -5,7 +5,12 @@ import logging
 import time
 from importlib import import_module
 
-from .core.helpers import templates, _col_to_select, get_gateway_by_deviceid
+from .core.helpers import (
+    templates,
+    _col_to_select,
+    get_gateway_by_deviceid,
+    generate_tuya_device,
+)
 
 import homeassistant.helpers.config_validation as cv
 
@@ -76,8 +81,6 @@ NO_ADDITIONAL_ENTITIES = "no_additional_entities"
 SELECTED_DEVICE = "selected_device"
 EXPORT_CONFIG = "export_config"
 
-CUSTOM_DEVICE = {"Add Device Manually": "..."}
-
 # Using list method so we can translate options.
 CONFIGURE_MENU = [CONF_ADD_DEVICE, CONF_EDIT_DEVICE, CONF_CONFIGURE_CLOUD]
 
@@ -93,7 +96,6 @@ CLOUD_CONFIGURE_SCHEMA = vol.Schema(
         vol.Required(CONF_NO_CLOUD, default=False): bool,
     }
 )
-
 
 DEVICE_SCHEMA = vol.Schema(
     {
@@ -127,9 +129,13 @@ PICK_TEMPLATE = vol.Schema(
     }
 )
 
+CONF_MASS_CONFIGURE = "mass_configure"
+MASS_CONFIGURE_SCHEMA = {vol.Optional(CONF_MASS_CONFIGURE, default=False): bool}
+CUSTOM_DEVICE = {"Add Device Manually": "..."}
+
 
 def devices_schema(
-    discovered_devices, cloud_devices_list, add_custom_device=True, extra_infos=None
+    discovered_devices, cloud_devices_list, add_custom_device=True, existed_devices=None
 ):
     """Create schema for devices step."""
     known_devices = {}
@@ -137,8 +143,8 @@ def devices_schema(
     for dev_id, dev_host in discovered_devices.items():
         dev_name = dev_id
         # when editing devices get INFOS from stored!.
-        if not add_custom_device and dev_id in extra_infos.keys():
-            dev_name = extra_infos[dev_id].get(CONF_FRIENDLY_NAME, dev_id)
+        if not add_custom_device and dev_id in existed_devices.keys():
+            dev_name = existed_devices[dev_id].get(CONF_FRIENDLY_NAME, dev_id)
         elif dev_id in cloud_devices_list.keys():
             dev_name = cloud_devices_list[dev_id][CONF_NAME]
 
@@ -151,13 +157,14 @@ def devices_schema(
     devices = {**known_devices, **devices}
     if add_custom_device:
         devices.update(CUSTOM_DEVICE)
-    return vol.Schema(
+
+    schema = vol.Schema(
         {
-            vol.Required(
-                SELECTED_DEVICE, default=list(devices.values())[0]
-            ): _col_to_select(devices)
+            vol.Required(SELECTED_DEVICE): _col_to_select(devices),
         }
     )
+
+    return schema.extend(MASS_CONFIGURE_SCHEMA) if known_devices else schema
 
 
 def mergeDevicesList(localList: dict, cloudList: dict, addSubDevices=True) -> dict:
@@ -168,14 +175,14 @@ def mergeDevicesList(localList: dict, cloudList: dict, addSubDevices=True) -> di
         try:
             is_online = _devData.get("online", None)
             sub_device = _devData.get(CONF_NODE_ID, False)
-            # We skip offline devices.
+            # We skip offline devices and already merged devices.
             if not is_online or _devID in localList:
                 continue
             # Make sure the device isn't already in localList.
-            if sub_device:
+            if addSubDevices and sub_device:
                 gateway = get_gateway_by_deviceid(_devID, cloudList)
                 local_gw = localList.get(gateway.id)
-                if addSubDevices and local_gw:
+                if local_gw:
                     # Create a data for sub_device [cloud and local gateway] to merge it with discovered devices.
                     dev_data = {
                         _devID: {
@@ -377,7 +384,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
                         conf_protocol = version
                         break
                 # If connection to host is failed raise wrong address.
-                except ValueError as ex:
+                except (ValueError, pytuya.DecodeError) as ex:
                     raise ValueError(ex)
                 except:
                     continue
@@ -403,7 +410,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
             if not detected_dps:
                 detected_dps = await interface.detect_available_dps(cid=cid)
 
-        except ValueError as ex:
+        except (ValueError, pytuya.DecodeError) as ex:
             error = ex
         except Exception as ex:
             _LOGGER.debug(f"No DPS able to be detected {ex}")
@@ -425,7 +432,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
 
     except (ConnectionRefusedError, ConnectionResetError) as ex:
         raise CannotConnect from ex
-    except ValueError as ex:
+    except (ValueError, pytuya.DecodeError) as ex:
         error = ex
     finally:
         if interface and close:
@@ -544,46 +551,35 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry):
         """Initialize localtuya options flow."""
         self.config_entry = config_entry
-        # self.dps_strings = config_entry.data.get(CONF_DPS_STRINGS, gen_dps_strings())
-        # self.entities = config_entry.data[CONF_ENTITIES]
+        self._entry_id = config_entry.entry_id
+
         self.selected_device = None
+        self.nodeID = None
+
         self.editing_device: bool = False
         self.device_data: dict = None
-        self.dps_strings: list = []
+        self.dps_strings = []
         self.selected_platform = None
         self.discovered_devices = {}
         self.entities = []
         self.use_template = False
         self.template_device = None
-        self.nodeID = None
 
         self.cloud_data: TuyaCloudApi
 
     async def async_step_init(self, user_input=None):
         """Manage basic options."""
         configure_menu = CONFIGURE_MENU.copy()
-        # Remove Reconfigure existing device if there is no existed devices.
+        # Remove Reconfigure existing device option if there is no existed devices.
         if not self.config_entry.data[CONF_DEVICES]:
             configure_menu.pop(configure_menu.index(CONF_EDIT_DEVICE))
 
-        self.cloud_data = self.hass.data[DOMAIN][self.config_entry.entry_id].cloud_data
+        self.cloud_data = self.hass.data[DOMAIN][self._entry_id].cloud_data
         if not self.config_entry.data.get(CONF_NO_CLOUD):
             # Refresh devices List data.
             self.hass.async_create_task(self.cloud_data.async_get_devices_list())
 
         return self.async_show_menu(step_id="init", menu_options=configure_menu)
-
-    async def async_step_device_setup_method(self, user_input=None):
-        """Manage basic options."""
-        DEVICE_SETUP_METHOD = [
-            "auto_configure_device",
-            "pick_entity_type",
-            "choose_template",
-        ]
-        return self.async_show_menu(
-            step_id="device_setup_method",
-            menu_options=DEVICE_SETUP_METHOD,
-        )
 
     async def async_step_configure_cloud(self, user_input=None):
         """Handle the initial step."""
@@ -645,6 +641,17 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             if user_input[SELECTED_DEVICE] != CUSTOM_DEVICE["Add Device Manually"]:
                 self.selected_device = user_input[SELECTED_DEVICE]
+
+            if user_input[CONF_MASS_CONFIGURE]:
+                devices, fails = await setup_localtuya_devices(
+                    self.hass,
+                    self.config_entry.entry_id,
+                    self.discovered_devices,
+                    self.cloud_data.device_list,
+                    log_fails=True,
+                )
+                if devices:
+                    return self.update_entry({CONF_DEVICES: devices})
 
             return await self.async_step_configure_device()
 
@@ -720,6 +727,18 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 self.config_entry.data[CONF_DEVICES],
             ),
             errors=errors,
+        )
+
+    async def async_step_device_setup_method(self, user_input=None):
+        """Manage basic options."""
+        DEVICE_SETUP_METHOD = [
+            "auto_configure_device",
+            "pick_entity_type",
+            "choose_template",
+        ]
+        return self.async_show_menu(
+            step_id="device_setup_method",
+            menu_options=DEVICE_SETUP_METHOD,
         )
 
     async def async_step_configure_device(self, user_input=None):
@@ -820,7 +839,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
-            except ValueError as ex:
+            except (ValueError, pytuya.DecodeError) as ex:
                 placeholders["ex"] = str(ex)
                 errors["base"] = f"unknown"
             except EmptyDpsList:
@@ -900,7 +919,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_auto_configure_device(self, user_input=None):
         """Handle asking which templates to use"""
-        from .core.helpers import generate_tuya_device
 
         errors = {}
         placeholders = {}
@@ -1104,14 +1122,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             description_placeholders=placeholders,
         )
 
-    async def async_step_yaml_import(self, user_input=None):
-        """Manage YAML imports."""
-        _LOGGER.error(
-            "Configuration via YAML file is no longer supported by this integration."
-        )
-        # if user_input is not None:
-        #     return self.async_create_entry(title="", data={})
-        # return self.async_show_form(step_id="yaml_import")
 
     def available_dps_strings(self):
         """Return list of DPs use by the device's entities."""
@@ -1127,6 +1137,88 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
     def current_entity(self):
         """Existing configuration for entity currently being edited."""
         return self.entities[len(self.device_data[CONF_ENTITIES])]
+
+
+async def setup_localtuya_devices(
+    hass: config_entries.HomeAssistant,
+    entry_id: str,
+    discovered_devices: dict,
+    devices_cloud_data: dict,
+    log_fails=False,
+):
+    """Return a dict of configured devices ready to import into devices data."""
+    # Store devices data
+    devices_cfg = []
+    devices = {}
+    fails = {}
+
+    def update_fails(dev_id: str, reason: str, msg: str = None):
+        name = devices_cloud_data[dev_id].get(CONF_NAME, dev_id)
+        fails.update({dev_id: {"name": name, "reason": reason, "msg": msg}})
+        if log_fails:
+            log_msg = f"[ name: {name} — id: {dev_id} — reason: {reason or repr(reason)} — more: {msg} ]"
+            _LOGGER.warning(f"Failed to configure device: {log_msg}")
+
+    # To avoid duplicated entities we will get all devices in every hub.
+    entries = hass.config_entries.async_entries(DOMAIN)
+    configured_Devices = []
+    for entry in entries:
+        for devID in entry.data[CONF_DEVICES].keys():
+            configured_Devices.append(devID)
+
+    for dev_id, data in discovered_devices.items():
+        # Skip configured devices.
+        if dev_id in configured_Devices:
+            continue
+        if dev_cloud_data := devices_cloud_data.get(dev_id):
+            # Create localtuya devices data and store them into devices_config.
+            device_data = {
+                CONF_FRIENDLY_NAME: dev_cloud_data.get(CONF_NAME, dev_id),
+                CONF_DEVICE_ID: dev_id,
+                CONF_HOST: data[CONF_TUYA_IP],
+                CONF_LOCAL_KEY: dev_cloud_data.get(CONF_LOCAL_KEY),
+                CONF_PROTOCOL_VERSION: data[CONF_TUYA_VERSION],
+                CONF_ENABLE_DEBUG: False,
+                CONF_NODE_ID: dev_cloud_data.get(CONF_NODE_ID),
+                CONF_MODEL: dev_cloud_data.get(CONF_MODEL),
+                CONF_PRODUCT_KEY: data.get("productKey"),
+            }
+            # If device is sub and has Gateway ID store gatewayID
+            if sub_gwid := data.get(CONF_GATEWAY_ID):
+                device_data.update({CONF_GATEWAY_ID: sub_gwid})
+
+            # Store device to device_data.
+            devices_cfg.append(device_data)
+
+    # Connect to the devices to ensure the are usable.
+    validate_devices = [validate_input(hass, entry_id, dev) for dev in devices_cfg]
+    results = await asyncio.gather(*validate_devices, return_exceptions=True)
+
+    # Merge test results with devices config
+    for i in range(len(results)):
+        dev_id = devices_cfg[i].get(CONF_DEVICE_ID)
+        if not isinstance(results[i], dict):
+            update_fails(dev_id, results[i])
+            continue
+
+        devices.update({dev_id: {**devices_cfg[i], **results[i]}})
+
+    # Configure entities.
+    for dev_id, dev_data in devices.copy().items():
+        category = devices_cloud_data[dev_id].get("category")
+        if category and (dps_strings := dev_data.get(CONF_DPS_STRINGS, False)):
+            dev_entites = generate_tuya_device(dev_data, category)
+
+        # Configure entities fails
+        if not dev_entites:
+            devices.pop(dev_id)
+            update_fails(dev_id, f"no configured entities: {dev_entites}", category)
+            continue
+
+        # Add configured entiteis
+        devices[dev_id].update({CONF_ENTITIES: dev_entites})
+
+    return devices, fails
 
 
 class CannotConnect(exceptions.HomeAssistantError):

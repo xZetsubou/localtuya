@@ -65,7 +65,8 @@
                 "title": "Choose device to configure",
                 "description": "Compatible Tuya devices on your local network are discovered automatically once they have been set-up in the Tuya app. If you can't see the device you expected, choose `Add device manually` from the dropdown.",
                 "data": {
-                    "selected_device": "Discovered devices"
+                    "selected_device": "Discovered devices",
+                    "mass_configure": "Configure all recognized devices automatically"
                 }
             },
             "edit_device": {
@@ -83,7 +84,7 @@
                     "client_id": "Client ID",
                     "client_secret": "Client Secret",
                     "user_id": "User ID",
-                    "user_name": "Username",
+                    "username": "Username",
                     "no_cloud": "Disable Cloud API?"
                 }
             },
