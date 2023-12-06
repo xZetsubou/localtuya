@@ -53,8 +53,6 @@ from hashlib import md5, sha256
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-# from Crypto.Cipher import AES
-
 version_tuple = (10, 0, 0)
 version = version_string = __version__ = "%d.%d.%d" % version_tuple
 __author__ = "rospogrigio"

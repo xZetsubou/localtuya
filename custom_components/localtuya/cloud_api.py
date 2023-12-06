@@ -179,7 +179,7 @@ class TuyaCloudApi:
         return r_json["result"], "ok"
 
     async def async_get_device_query_properties(self, device_id) -> dict[dict, str]:
-        """Obtain the DP ID mappings for a device correctly! Note: This will stops woking if subscription expired."""
+        """Obtain the DP ID mappings for a device correctly! Note: This won't works if the subscription expired."""
         resp = await self.async_make_request(
             "GET", url=f"/v2.0/cloud/thing/{device_id}/shadow/properties"
         )
