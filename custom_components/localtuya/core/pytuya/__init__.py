@@ -52,7 +52,8 @@ from hashlib import md5, sha256
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from Crypto.Cipher import AES
+
+# from Crypto.Cipher import AES
 
 version_tuple = (10, 0, 0)
 version = version_string = __version__ = "%d.%d.%d" % version_tuple
@@ -505,20 +506,17 @@ class AESCipher:
 
     def encrypt(self, raw, use_base64=True, pad=True, iv=False, header=None):
         """Encrypt data to be sent to device."""
-        encryptor = self.cipher.encryptor()
         if iv:
             if iv is True:
                 if _LOGGER.isEnabledFor(logging.DEBUG):
                     iv = b"0123456789ab"
                 else:
                     iv = str(time.time() * 10)[:12].encode("utf8")
-            cipher = AES.new(self.key, mode=AES.MODE_GCM, nonce=iv)
-            # cipher = Cipher(algorithms.AES(key), modes.ECB(), default_backend())
-            # cipher = AES.new(self.key, mode=AES.MODE_GCM, nonce=iv)
+            encryptor = Cipher(algorithms.AES(self.key), modes.GCM(iv)).encryptor()
             if header:
-                cipher.update(header)
-            crypted_text, tag = cipher.encrypt_and_digest(raw)
-            crypted_text = cipher.nonce + crypted_text + tag
+                encryptor.authenticate_additional_data(header)
+            crypted_text = encryptor.update(raw) + encryptor.finalize()
+            crypted_text = iv + crypted_text + encryptor.tag
         else:
             encryptor = self.cipher.encryptor()
             if pad:
@@ -538,16 +536,21 @@ class AESCipher:
             if iv is True:
                 iv = enc[:12]
                 enc = enc[12:]
-            cipher = AES.new(self.key, AES.MODE_GCM, nonce=iv)
-            if header:
-                cipher.update(header)
-            if tag:
-                raw = cipher.decrypt_and_verify(enc, tag)
+            if tag is None:
+                decryptor = Cipher(
+                    algorithms.AES(self.key), modes.CTR(iv + b"\x00\x00\x00\x02")
+                ).decryptor()
             else:
-                raw = cipher.decrypt(enc)
+                decryptor = Cipher(
+                    algorithms.AES(self.key), modes.GCM(iv, tag)
+                ).decryptor()
+            if header and (tag is not None):
+                decryptor.authenticate_additional_data(header)
+            raw = decryptor.update(enc) + decryptor.finalize()
         else:
             decryptor = self.cipher.decryptor()
-            raw = self._unpad(decryptor.update(enc) + decryptor.finalize())
+            raw = decryptor.update(enc) + decryptor.finalize()
+            raw = self._unpad(raw)
 
         return raw.decode("utf-8") if decode_text else raw
 
