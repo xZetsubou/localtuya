@@ -591,13 +591,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 new_data.update(user_input)
                 for i in [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID]:
                     new_data[i] = ""
-                self.hass.config_entries.async_update_entry(
-                    self.config_entry,
-                    data=new_data,
-                )
-                return self.async_create_entry(
-                    title=new_data.get(CONF_USERNAME), data={}
-                )
+
+                return self._update_entry(new_data, new_data.get(CONF_USERNAME))
 
             cloud_api, res = await attempt_cloud_connection(self.hass, user_input)
 
@@ -609,15 +604,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     if CONF_MODEL not in dev and dev_id in cloud_devs:
                         model = cloud_devs[dev_id].get(CONF_PRODUCT_NAME)
                         new_data[CONF_DEVICES][dev_id][CONF_MODEL] = model
-                new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
+                return self._update_entry(new_data, new_data.get(CONF_USERNAME))
 
-                self.hass.config_entries.async_update_entry(
-                    self.config_entry,
-                    data=new_data,
-                )
-                return self.async_create_entry(
-                    title=new_data.get(CONF_USERNAME), data={}
-                )
             errors["base"] = res["reason"]
             placeholders = {"msg": res["msg"]}
 
@@ -651,7 +639,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     log_fails=True,
                 )
                 if devices:
-                    return self.update_entry({CONF_DEVICES: devices})
+                    return self._update_entry({CONF_DEVICES: devices})
 
             return await self.async_step_configure_device()
 
@@ -661,16 +649,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         if data and DATA_DISCOVERY in data:
             self.discovered_devices = data[DATA_DISCOVERY].devices
         else:
-            try:
-                self.discovered_devices = await discover()
-            except OSError as ex:
-                if ex.errno == errno.EADDRINUSE:
-                    errors["base"] = "address_in_use"
-                else:
-                    errors["base"] = "discovery_failed"
-            except Exception as ex:
-                _LOGGER.exception("discovery failed: %s", ex)
-                errors["base"] = "discovery_failed"
+            self.discovered_devices, errors = await discover_devices()
 
         allDevices = mergeDevicesList(
             self.discovered_devices, self.cloud_data.device_list
@@ -678,7 +657,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
         self.discovered_devices = allDevices
         devices = {}
-
         # To avoid duplicated entities we will get all devices in every hub.
         entries = self.hass.config_entries.async_entries(DOMAIN)
         configured_Devices = []
@@ -977,14 +955,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 dev_id = self.device_data.get(CONF_DEVICE_ID)
 
                 new_data = self.config_entry.data.copy()
-                new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
                 new_data[CONF_DEVICES].update({dev_id: config})
-
-                self.hass.config_entries.async_update_entry(
-                    self.config_entry,
-                    data=new_data,
-                )
-                return self.async_create_entry(title="", data={})
+                return self._update_entry(new_data)
 
             if user_input.get(USE_TEMPLATE):
                 return await self.async_step_choose_template()
@@ -1030,12 +1002,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             entity[CONF_PLATFORM] = self.current_entity[CONF_PLATFORM]
             self.device_data[CONF_ENTITIES].append(entity)
             if len(self.entities) == len(self.device_data[CONF_ENTITIES]):
-                self.hass.config_entries.async_update_entry(
-                    self.config_entry,
-                    title=self.device_data[CONF_FRIENDLY_NAME],
-                    data=self.device_data,
-                )
-                return self.async_create_entry(title="", data={})
+                return self._update_entry(self.device_data)
 
         schema = platform_schema(
             self.current_entity[CONF_PLATFORM], self.dps_strings, allow_id=False
@@ -1083,12 +1050,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         ent_reg.async_remove(entity_id)
 
                     new_data[CONF_DEVICES][dev_id] = self.device_data
-                    new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
-                    self.hass.config_entries.async_update_entry(
-                        self.config_entry,
-                        data=new_data,
-                    )
-                    return self.async_create_entry(title="", data={})
+                    self._update_entry(new_data)
             else:
                 user_input[CONF_PLATFORM] = self.selected_platform
                 self.entities.append(strip_dps_values(user_input, self.dps_strings))
@@ -1219,6 +1181,23 @@ async def setup_localtuya_devices(
         devices[dev_id].update({CONF_ENTITIES: dev_entites})
 
     return devices, fails
+
+
+async def discover_devices() -> tuple[dict[str, dict], dict[str, str]]:
+    """Start discovering Tuya devices within the network"""
+    errors = {}
+    discovered_devices = {}
+    try:
+        discovered_devices = await discover()
+    except OSError as ex:
+        if ex.errno == errno.EADDRINUSE:
+            errors["base"] = "address_in_use"
+        else:
+            errors["base"] = "discovery_failed"
+    except Exception as ex:
+        _LOGGER.exception("discovery failed: %s", ex)
+        errors["base"] = "discovery_failed"
+    return discovered_devices, errors
 
 
 class CannotConnect(exceptions.HomeAssistantError):
