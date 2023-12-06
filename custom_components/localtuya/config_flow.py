@@ -1051,7 +1051,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         ent_reg.async_remove(entity_id)
 
                     new_data[CONF_DEVICES][dev_id] = self.device_data
-                    self._update_entry(new_data)
+                    return self._update_entry(new_data)
             else:
                 user_input[CONF_PLATFORM] = self.selected_platform
                 self.entities.append(strip_dps_values(user_input, self.dps_strings))
@@ -1085,14 +1085,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             description_placeholders=placeholders,
         )
 
-    def _update_entry(self, new_data, new_title=""):
-        """Update entry data and save etnry,"""
-        _data = self.config_entry.data.copy()
-        _data.update(new_data)
-        _data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
-
-        self.hass.config_entries.async_update_entry(self.config_entry, data=_data)
-        return self.async_create_entry(title=new_title, data={})
 
     def available_dps_strings(self):
         """Return list of DPs use by the device's entities."""
