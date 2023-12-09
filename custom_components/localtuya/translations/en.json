@@ -88,6 +88,10 @@
                     "no_cloud": "Disable Cloud API?"
                 }
             },
+            "confirm": {
+                "title": "Confirmation",
+                "description": "{message}"
+            },
             "configure_device": {
                 "title": "Configure device connectivity",
                 "description": "Configure any device details{for_device} that are empty (if any) to allow LocalTuya to connect to the device.",

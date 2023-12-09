@@ -4,6 +4,9 @@ import errno
 import logging
 import time
 from importlib import import_module
+from functools import partial
+from collections.abc import Coroutine
+from typing import Any
 
 from .core.helpers import (
     templates,
@@ -640,7 +643,19 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     log_fails=True,
                 )
                 if devices:
-                    return self._update_entry({CONF_DEVICES: devices})
+                    devices_sucessed, devices_fails = "", ""
+                    for sucess_dev in devices.values():
+                        devices_sucessed += f"\n{sucess_dev[CONF_FRIENDLY_NAME]}"
+                    for fail_dev in fails.values():
+                        devices_fails += f"\n{fail_dev['name']}: {fail_dev['reason']}"
+
+                    msg = f"Devices sucessed: ``{len(devices)}``\n ```{devices_sucessed}\n```\n Failed Devices: ``{len(fails)}``\n ```{devices_fails}\n```"
+
+                    return await self.async_step_confirm(
+                        msg=msg,
+                        confirm_callback=self._update_entry,
+                        callback_args=(devices, CONF_DEVICES),
+                    )
 
             return await self.async_step_configure_device()
 
@@ -730,7 +745,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             try:
                 self.device_data = user_input.copy()
                 self.selected_device: str = dev_id or user_input.get(CONF_DEVICE_ID)
-                self.nodeID: str = self.nodeID or user_input.get(CONF_NODE_ID, None)
+                self.nodeID: str = self.nodeID or user_input.get(CONF_NODE_ID)
                 if dev_id is not None:
                     if dev_id in cloud_devs:
                         self.device_data[CONF_MODEL] = cloud_devs[dev_id].get(
@@ -782,15 +797,14 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                             CONF_ENTITIES: [],
                         }
                     )
+
                     if len(user_input[CONF_ENTITIES]) == 0:
-                        return self.async_abort(
-                            reason="no_entities",
-                            description_placeholders={},
-                        )
+                        # If user unchecked all entities.
+                        return self.async_abort(reason="no_entities")
+
                     if user_input[CONF_ENTITIES]:
                         entity_ids = [
-                            int(entity.split(":")[0])
-                            for entity in user_input[CONF_ENTITIES]
+                            int(e.split(":")[0]) for e in user_input[CONF_ENTITIES]
                         ]
                         if self.use_template:
                             device_config = self.template_device
@@ -818,12 +832,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
-            except (ValueError, pytuya.DecodeError) as ex:
-                placeholders["ex"] = str(ex)
-                errors["base"] = f"unknown"
             except EmptyDpsList:
                 errors["base"] = "empty_dps"
-            except Exception as ex:
+            except (Exception, ValueError, pytuya.DecodeError) as ex:
                 _LOGGER.debug("Unexpected exception: %s", ex)
                 placeholders["ex"] = str(ex)
                 errors["base"] = "unknown"
@@ -1085,10 +1096,42 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             description_placeholders=placeholders,
         )
 
-    def _update_entry(self, new_data, new_title=""):
+    async def async_step_confirm(
+        self,
+        msg: str,
+        confirm_callback: Coroutine = None,
+        callback_args: tuple[Any, ...] | None = None,
+    ):
+        """Create a confirmation config flow page. If submitted, the `confirm_callback` will be called."""
+        if confirm_callback:
+            if callback_args:
+                self._confirm_callback = partial(confirm_callback, *callback_args)
+            else:
+                self._confirm_callback = confirm_callback
+
+        placeholders = {}
+        placeholders["message"] = msg
+
+        if not msg:
+            return self._confirm_callback()
+
+        return self.async_show_form(
+            step_id="confirm", description_placeholders=placeholders
+        )
+
+        # menu = ["confirm", "init"]
+        # return self.async_show_menu(
+        #     step_id="confirm", menu_options=menu, description_placeholders=placeholders
+        # )
+
+    @callback
+    def _update_entry(self, new_data, target_obj="", new_title=""):
         """Update entry data and save etnry,"""
         _data = self.config_entry.data.copy()
-        _data.update(new_data)
+        if target_obj:
+            _data[target_obj].update(new_data)
+        else:
+            _data.update(new_data)
         _data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
 
         self.hass.config_entries.async_update_entry(self.config_entry, data=_data)
@@ -1125,10 +1168,10 @@ async def setup_localtuya_devices(
 
     def update_fails(dev_id: str, reason: str, msg: str = None):
         name = devices_cloud_data[dev_id].get(CONF_NAME, dev_id)
-        fails.update({dev_id: {"name": name, "reason": reason, "msg": msg}})
+        fails.update({dev_id: {"name": name, "reason": reason}})
         if log_fails:
-            log_msg = f"[ name: {name} — id: {dev_id} — reason: {reason or repr(reason)} — more: {msg} ]"
-            _LOGGER.warning(f"Failed to configure device: {log_msg}")
+            msg = f"[ name: {name} — id: {dev_id} — reason: {reason or repr(reason)}]"
+            _LOGGER.warning(f"Failed to configure device: {msg}")
 
     # To avoid duplicated entities we will get all devices in every hub.
     entries = hass.config_entries.async_entries(DOMAIN)
@@ -1183,7 +1226,7 @@ async def setup_localtuya_devices(
         # Configure entities fails
         if not dev_entites:
             devices.pop(dev_id)
-            update_fails(dev_id, f"no configured entities: {dev_entites}", category)
+            update_fails(dev_id, f"no configured entities: {dev_entites} - {category}")
             continue
 
         # Add configured entiteis
