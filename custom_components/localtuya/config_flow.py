@@ -649,7 +649,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     for fail_dev in fails.values():
                         devices_fails += f"\n{fail_dev['name']}: {fail_dev['reason']}"
 
-                    msg = f"Devices sucessed: ``{len(devices)}``\n ```{devices_sucessed}\n```\n Failed Devices: ``{len(fails)}``\n ```{devices_fails}\n```"
+                    msg = f"Sucessed devices: ``{len(devices)}``\n ```{devices_sucessed}\n```"
+                    if fails:
+                        msg += f" \n Failed devices: ``{len(fails)}``\n ```{devices_fails}\n```"
 
                     return await self.async_step_confirm(
                         msg=msg,
