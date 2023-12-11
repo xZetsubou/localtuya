@@ -166,6 +166,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._config_entry = config_entry
         self._device_config: dict = config_entry.data[CONF_DEVICES][dev_id].copy()
         self._interface = None
+        self._connect_max_tries = 2
         # For SubDevices
         self._node_id: str = self._device_config.get(CONF_NODE_ID)
         self._fake_gateway = fake_gateway
@@ -175,8 +176,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._status = {}
         self.dps_to_request = {}
         self._is_closing = False
-        self._connect_task = None
-        self._disconnect_task = None
+        self._connect_task: asyncio.Task = None
+        self._disconnect_task: asyncio.Task = None
         self._unsub_interval = None
         self._entities = []
         self._local_key = self._device_config[CONF_LOCAL_KEY]
@@ -247,29 +248,34 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._connect_task = True
         name = self._device_config.get(CONF_FRIENDLY_NAME)
         host = name if self.is_subdevice else self._device_config.get(CONF_HOST)
-
-        try:
-            self.debug(f"Trying to connect to {host}...", force=True)
-            if self.is_subdevice:
-                await self.get_gateway()
-                gateway = self._gwateway
-                if gateway and not gateway.connected or gateway.is_connecting:
-                    self._connect_task = None
-                    return
-                self._interface = gateway._interface
-            else:
-                self._interface = await pytuya.connect(
-                    self._device_config[CONF_HOST],
-                    self._device_config[CONF_DEVICE_ID],
-                    self._local_key,
-                    float(self._device_config[CONF_PROTOCOL_VERSION]),
-                    self._device_config.get(CONF_ENABLE_DEBUG, False),
-                    self,
-                )
-            self._interface.add_dps_to_request(self.dps_to_request)
-        except Exception as ex:  # pylint: disable=broad-except
-            self.warning(f"Failed to connect to {host}: {ex}")
-            await self.abort_connect()
+        retry = 0
+        while retry < self._connect_max_tries:
+            retry += 1
+            try:
+                self.debug(f"Trying to connect to {host}...", force=True)
+                if self.is_subdevice:
+                    await self.get_gateway()
+                    gateway = self._gwateway
+                    if gateway and not gateway.connected or gateway.is_connecting:
+                        self._connect_task = None
+                        return
+                    self._interface = gateway._interface
+                else:
+                    self._interface = await pytuya.connect(
+                        self._device_config[CONF_HOST],
+                        self._device_config[CONF_DEVICE_ID],
+                        self._local_key,
+                        float(self._device_config[CONF_PROTOCOL_VERSION]),
+                        self._device_config.get(CONF_ENABLE_DEBUG, False),
+                        self,
+                    )
+                self._interface.add_dps_to_request(self.dps_to_request)
+                _LOGGER.debug(f"KAPPA: {retry}")
+                break
+            except Exception as ex:  # pylint: disable=broad-except
+                if not retry < self._connect_max_tries:
+                    self.warning(f"Failed to connect to {host}: {str(ex)}")
+                await self.abort_connect()
 
         if self._interface is not None:
             try:
@@ -324,14 +330,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self._hass, signal, _new_entity_handler
             )
 
-            if (
-                CONF_SCAN_INTERVAL in self._device_config
-                and int(self._device_config[CONF_SCAN_INTERVAL]) > 0
-            ):
+            if (scan_inv := int(self._device_config.get(CONF_SCAN_INTERVAL, 0))) > 0:
                 self._unsub_interval = async_track_time_interval(
-                    self._hass,
-                    self._async_refresh,
-                    timedelta(seconds=int(self._device_config[CONF_SCAN_INTERVAL])),
+                    self._hass, self._async_refresh, timedelta(seconds=scan_inv)
                 )
 
             self._is_closing = False
@@ -493,7 +494,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self.debug(f"Disconnected - waiting for discovery broadcast", force=True)
             # Try to quickly reconnect.
             self._is_closing = False
-            async_call_later(self._hass, 4, self.async_connect)
+            async_call_later(self._hass, 1, self.async_connect)
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
