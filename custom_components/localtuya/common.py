@@ -270,8 +270,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                         self,
                     )
                 self._interface.add_dps_to_request(self.dps_to_request)
-                _LOGGER.debug(f"KAPPA: {retry}")
-                break
+                break  # Succeed break while loop
             except Exception as ex:  # pylint: disable=broad-except
                 if not retry < self._connect_max_tries:
                     self.warning(f"Failed to connect to {host}: {str(ex)}")
