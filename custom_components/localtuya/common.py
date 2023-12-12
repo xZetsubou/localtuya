@@ -3,7 +3,7 @@ import asyncio
 import logging
 import time
 from datetime import timedelta
-from typing import NamedTuple, Coroutine
+from typing import NamedTuple, Coroutine, Callable
 
 from homeassistant.core import HomeAssistant, CALLBACK_TYPE, callback
 from homeassistant.config_entries import ConfigEntry
@@ -176,12 +176,12 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._status = {}
         self.dps_to_request = {}
         self._is_closing = False
-        self._connect_task: asyncio.Task = None
-        self._disconnect_task: asyncio.Task = None
-        self._unsub_interval = None
+        self._connect_task: bool | None = None
+        self._disconnect_task: Callable[[], None] | None = None
+        self._unsub_interval: Callable[[], None] = None
         self._entities = []
-        self._local_key = self._device_config[CONF_LOCAL_KEY]
-        self._default_reset_dpids = None
+        self._local_key: str = self._device_config[CONF_LOCAL_KEY]
+        self._default_reset_dpids: list | None = None
         if reset_dps := self._device_config.get(CONF_RESET_DPIDS):
             self._default_reset_dpids = [int(id.strip()) for id in reset_dps.split(",")]
 
