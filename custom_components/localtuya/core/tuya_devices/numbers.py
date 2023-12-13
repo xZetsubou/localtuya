@@ -9,12 +9,12 @@ from homeassistant.components.number import NumberDeviceClass
 from homeassistant.const import PERCENTAGE, UnitOfTime, CONF_UNIT_OF_MEASUREMENT
 
 from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
-from ...const import CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEPSIZE_VALUE
+from ...const import CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEPSIZE
 
 
 def localtuya_numbers(_min, _max, _step=1, native_unit=None) -> dict:
     """Will return dict with CONF MIN AND CONF MAX"""
-    data = {CONF_MIN_VALUE: _min, CONF_MAX_VALUE: _max, CONF_STEPSIZE_VALUE: _step}
+    data = {CONF_MIN_VALUE: _min, CONF_MAX_VALUE: _max, CONF_STEPSIZE: _step}
 
     if native_unit:
         data.update({CONF_UNIT_OF_MEASUREMENT: native_unit})
@@ -22,7 +22,7 @@ def localtuya_numbers(_min, _max, _step=1, native_unit=None) -> dict:
     return data
 
 
-NUMBERS: dict[LocalTuyaEntity] = {
+NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # Multi-functional Sensor
     # https://developer.tuya.com/en/docs/iot/categorydgnbj?id=Kaiuz3yorvzg3
     "dgnbj": (

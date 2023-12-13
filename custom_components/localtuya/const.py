@@ -142,7 +142,7 @@ CONF_STOP_STATUS = "stop_status"
 # number
 CONF_MIN_VALUE = "min_value"
 CONF_MAX_VALUE = "max_value"
-CONF_STEPSIZE_VALUE = "step_size"
+CONF_STEPSIZE = "step_size"
 
 # select
 CONF_OPTIONS = "select_options"

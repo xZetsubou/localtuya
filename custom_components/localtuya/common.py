@@ -3,7 +3,7 @@ import asyncio
 import logging
 import time
 from datetime import timedelta
-from typing import NamedTuple, Coroutine, Callable
+from typing import Callable, Coroutine, NamedTuple
 
 from homeassistant.core import HomeAssistant, CALLBACK_TYPE, callback
 from homeassistant.config_entries import ConfigEntry
@@ -50,6 +50,7 @@ from .const import (
     DEFAULT_CATEGORIES,
     ENTITY_CATEGORY,
     CONF_GATEWAY_ID,
+    CONF_SCALING,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -690,6 +691,14 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         Override in subclasses to specify the default value for the entity.
         """
         return 0
+
+    def scale(self, value):
+        """Return the scaled factor of the value, else same value."""
+        scale_factor = self._config.get(CONF_SCALING)
+        if scale_factor is not None and isinstance(value, (int, float)):
+            value = round(value * scale_factor, 2)
+
+        return value
 
     async def restore_state_when_connected(self) -> None:
         """Restore if restore_on_reconnect is set, or if no status has been yet found.
