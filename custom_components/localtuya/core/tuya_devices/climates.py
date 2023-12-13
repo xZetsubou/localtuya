@@ -80,7 +80,7 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
                 values_precsion=0.1,
                 target_precision=0.1,
             ),
-        )
+        ),
     ),
     # Heater
     # https://developer.tuya.com/en/docs/iot/f?id=K9gf46epy4j82
@@ -98,7 +98,7 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
                 target_precision=0.1,
                 preset_set="auto/smart",
             ),
-        )
+        ),
     ),
     # Heater
     # https://developer.tuya.com/en/docs/iot/categoryrs?id=Kaiuz0nfferyx
