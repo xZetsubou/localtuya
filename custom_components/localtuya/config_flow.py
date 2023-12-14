@@ -138,7 +138,7 @@ CUSTOM_DEVICE = {"Add Device Manually": "..."}
 
 
 def devices_schema(
-    discovered_devices, cloud_devices_list, add_custom_device=True, existed_devices=None
+    discovered_devices, cloud_devices_list, add_custom_device=True, existed_devices={}
 ):
     """Create schema for devices step."""
     known_devices = {}
@@ -160,6 +160,8 @@ def devices_schema(
     devices = {**known_devices, **devices}
     if add_custom_device:
         devices.update(CUSTOM_DEVICE)
+    else:  # Sort devices in edit mode.
+        devices = dict(sorted(devices.items()))
 
     schema = vol.Schema(
         {
