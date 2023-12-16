@@ -143,7 +143,7 @@
                     "templates": "Choose template"
                 },
                 "data_description": {
-                    "templates": "You can enter the file name manually if it didn't shows up.\nTemplates can be found and shared with others on GitHub ([More Info](https://github.com/xZetsubou/hass-localtuya/discussions/13))."
+                    "templates": "You can enter the file name manually if it doesn't show up.\nTemplates can be shared with others ([More Info](https://github.com/xZetsubou/hass-localtuya/discussions/13))."
                 }
             },
             "configure_entity": {
@@ -211,13 +211,14 @@
                     "current_temperature_dp": "Current Temperature",
                     "target_temperature_dp": "Target Temperature",
                     "temperature_step": "(Optional) Temperature Step",
-                    "min_temperature_dp": "(Optional) Min Temperature DP",
-                    "max_temperature_dp": "(Optional) Max Temperature DP",
+                    "min_temperature": "Min Temperature",
+                    "max_temperature": "Max Temperature",
                     "precision": "Precision (optional, for DPs values)",
                     "target_precision": "Target Precision (optional, for DP values)",
                     "temperature_unit": "(Optional) Temperature Unit",
                     "hvac_mode_dp": "(Optional) HVAC Mode DP",
                     "hvac_mode_set": "(Optional) HVAC Mode Set",
+                    "hvac_add_off": "(Optional) Include `OFF` in HVAC Modes",
                     "hvac_action_dp": "(Optional) HVAC Current Action DP",
                     "hvac_action_set": "(Optional) HVAC Current Action Set",
                     "preset_dp": "(Optional) Presets DP",

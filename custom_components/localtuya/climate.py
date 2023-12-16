@@ -20,9 +20,7 @@ from homeassistant.components.climate.const import (
     PRESET_ECO,
     PRESET_HOME,
     PRESET_NONE,
-    SUPPORT_PRESET_MODE,
-    SUPPORT_TARGET_TEMPERATURE,
-    SUPPORT_TARGET_TEMPERATURE_RANGE,
+    ClimateEntityFeature,
 )
 from homeassistant.const import (
     ATTR_TEMPERATURE,
@@ -30,8 +28,7 @@ from homeassistant.const import (
     PRECISION_HALVES,
     PRECISION_TENTHS,
     PRECISION_WHOLE,
-    TEMP_CELSIUS,
-    TEMP_FAHRENHEIT,
+    UnitOfTemperature,
 )
 
 from .common import LocalTuyaEntity, async_setup_entry
@@ -50,8 +47,9 @@ from .const import (
     CONF_TARGET_PRECISION,
     CONF_TARGET_TEMPERATURE_DP,
     CONF_TEMPERATURE_STEP,
-    CONF_MIN_TEMP_DP,
-    CONF_MAX_TEMP_DP,
+    CONF_MIN_TEMP,
+    CONF_MAX_TEMP,
+    CONF_HVAC_ADD_OFF,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -155,8 +153,8 @@ def flow_schema(dps):
         vol.Optional(CONF_TEMPERATURE_STEP): _col_to_select(
             [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
-        vol.Optional(CONF_MIN_TEMP_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_MAX_TEMP_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_MIN_TEMP, default=DEFAULT_MIN_TEMP): vol.Coerce(float),
+        vol.Optional(CONF_MAX_TEMP, default=DEFAULT_MAX_TEMP): vol.Coerce(float),
         vol.Optional(CONF_PRECISION): _col_to_select(
             [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
@@ -176,6 +174,7 @@ def flow_schema(dps):
         vol.Optional(CONF_TARGET_PRECISION): _col_to_select(
             [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
+        vol.Optional(CONF_HVAC_ADD_OFF, default=True): bool,
         vol.Optional(CONF_HEURISTIC_ACTION): bool,
     }
 
@@ -223,11 +222,9 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         """Flag supported features."""
         supported_features = 0
         if self.has_config(CONF_TARGET_TEMPERATURE_DP):
-            supported_features = supported_features | SUPPORT_TARGET_TEMPERATURE
-        if self.has_config(CONF_MAX_TEMP_DP):
-            supported_features = supported_features | SUPPORT_TARGET_TEMPERATURE_RANGE
+            supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
         if self.has_config(CONF_PRESET_DP) or self.has_config(CONF_ECO_DP):
-            supported_features = supported_features | SUPPORT_PRESET_MODE
+            supported_features |= ClimateEntityFeature.PRESET_MODE
         return supported_features
 
     @property
@@ -243,12 +240,22 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def temperature_unit(self):
         """Return the unit of measurement used by the platform."""
-        if (
-            self._config.get(CONF_TEMPERATURE_UNIT, DEFAULT_TEMPERATURE_UNIT)
-            == TEMPERATURE_FAHRENHEIT
-        ):
-            return TEMP_FAHRENHEIT
-        return TEMP_CELSIUS
+        # Unit may rely on self.hass.config.units.temperature_unit [System Unit]
+        if self._config.get(CONF_TEMPERATURE_UNIT) == TEMPERATURE_FAHRENHEIT:
+            return UnitOfTemperature.FAHRENHEIT
+        return UnitOfTemperature.CELSIUS
+
+    @property
+    def min_temp(self):
+        """Return the minimum temperature."""
+        # DEFAULT_MIN_TEMP is in C
+        return self._config.get(CONF_MIN_TEMP, DEFAULT_MIN_TEMP)
+
+    @property
+    def max_temp(self):
+        """Return the maximum temperature."""
+        # DEFAULT_MAX_TEMP is in C
+        return self._config.get(CONF_MAX_TEMP, DEFAULT_MAX_TEMP)
 
     @property
     def hvac_mode(self):
@@ -260,7 +267,10 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         """Return the list of available operation modes."""
         if not self.has_config(CONF_HVAC_MODE_DP):
             return None
-        return list(self._conf_hvac_mode_set) + [HVACMode.OFF]
+        modes = list(self._conf_hvac_mode_set)
+        if self._config.get(CONF_HVAC_ADD_OFF, True):
+            modes.append(HVACMode.OFF)
+        return modes
 
     @property
     def hvac_action(self):
@@ -369,28 +379,6 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         await self._device.set_dp(
             self._conf_preset_set[preset_mode], self._conf_preset_dp
         )
-
-    @property
-    def min_temp(self):
-        """Return the minimum temperature."""
-        if _min_temp := self._config.get(CONF_MIN_TEMP_DP):
-            return self.dp_value(CONF_MIN_TEMP_DP)
-        # DEFAULT_MIN_TEMP is in C
-        if self.temperature_unit == TEMP_FAHRENHEIT:
-            return DEFAULT_MIN_TEMP * 1.8 + 32
-        else:
-            return DEFAULT_MIN_TEMP
-
-    @property
-    def max_temp(self):
-        """Return the maximum temperature."""
-        if self.has_config(CONF_MAX_TEMP_DP):
-            return self.dp_value(CONF_MAX_TEMP_DP)
-        # DEFAULT_MAX_TEMP is in C
-        if self.temperature_unit == TEMP_FAHRENHEIT:
-            return DEFAULT_MAX_TEMP * 1.8 + 32
-        else:
-            return DEFAULT_MAX_TEMP
 
     def status_updated(self):
         """Device status was updated."""
