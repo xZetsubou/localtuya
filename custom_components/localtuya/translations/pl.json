@@ -218,6 +218,7 @@
                     "temperature_unit": "(opcjonalnie) Jednostka temperatury",
                     "hvac_mode_dp": "(opcjonalnie) DP trybu HVAC",
                     "hvac_mode_set": "(opcjonalnie) Ustawiony tryb HVAC",
+                    "hvac_add_off": "(Opcjonalnie) Dodaj `OFF` do trybów HVAC",
                     "hvac_action_dp": "(opcjonalnie) Bieżące działanie HVAC DP",
                     "hvac_action_set": "(opcjonalnie) Zestaw bieżących działań HVAC",
                     "preset_dp": "(opcjonalnie) DP ustawień wstępnych",

@@ -214,6 +214,7 @@
           "temperature_unit": "Temperature Unit (optional)",
           "hvac_mode_dp": "HVAC Mode DP (optional)",
           "hvac_mode_set": "HVAC Mode Set (optional)",
+          "hvac_add_off": "(Optional) Include `OFF` in HVAC Modes",
           "hvac_action_dp": "HVAC Current Action DP (optional)",
           "hvac_action_set": "HVAC Current Action Set (optional)",
           "preset_dp": "Presets DP (optional)",
