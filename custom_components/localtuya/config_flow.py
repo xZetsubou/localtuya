@@ -12,7 +12,7 @@ from .core.helpers import (
     templates,
     _col_to_select,
     get_gateway_by_deviceid,
-    generate_tuya_device,
+    gen_localtuya_entities,
 )
 
 import homeassistant.helpers.config_validation as cv
@@ -932,7 +932,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             CONF_FRIENDLY_NAME: self.device_data.get(CONF_FRIENDLY_NAME),
         }
 
-        dev_data = generate_tuya_device(localtuya_data, category)
+        dev_data = gen_localtuya_entities(localtuya_data, category)
 
         # Process to add the device to localtuya HA Config.
         if dev_data:
@@ -1225,7 +1225,7 @@ async def setup_localtuya_devices(
     for dev_id, dev_data in devices.copy().items():
         category = devices_cloud_data[dev_id].get("category")
         if category and (dps_strings := dev_data.get(CONF_DPS_STRINGS, False)):
-            dev_entites = generate_tuya_device(dev_data, category)
+            dev_entites = gen_localtuya_entities(dev_data, category)
 
         # Configure entities fails
         if not dev_entites:

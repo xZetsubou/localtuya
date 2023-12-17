@@ -57,7 +57,7 @@ class templates:
         return entities
 
     @classmethod
-    def export_config(cls, config, config_name: str):
+    def export_config(cls, config: dict, config_name: str):
         """Create a yaml config file for localtuya."""
         export_config = []
         for cfg in config[CONF_ENTITIES]:
@@ -86,7 +86,7 @@ class templates:
 
 
 ################################
-## Global config config flows ##
+##       config flows         ##
 ################################
 from homeassistant.helpers.selector import (
     SelectSelector,
@@ -145,4 +145,4 @@ def get_gateway_by_deviceid(device_id: str, cloud_data: dict) -> GATEWAY:
 ###############################
 #    Auto configure device    #
 ###############################
-from .tuya_devices import generate_tuya_device
+from .tuya_devices import gen_localtuya_entities

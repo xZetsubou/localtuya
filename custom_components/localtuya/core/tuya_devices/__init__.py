@@ -1,17 +1,26 @@
-"""Tuya Devices
-    This works similar to HA Tuya, is get the category and search for the categories 
-    categories data has been modified to works with localtuya
+"""
+    Tuya Devices: https://xzetsubou.github.io/hass-localtuya/auto_configure/
 
-    How to add your device?:
-    e.g. Cover device:
-        1. make sure your device category isn't exists if you will create new one. you can modifiy existed categories
-        2. This configs are main "id" repaired, "icon" opt, "device_class" opt, "state_class" opt, "name" prefer.
-        in order to add device you need  to device the localtuya config and the code value:
-            example: "3 ( code: percent_state , value: 0 )" <- Download diagnostics from HA Device page.
-                current_state_dp=DPCode.PERCENT_STATE < This will map and "percent_state" code to current_state_dp config.
+    This functionality is similar to HA Tuya, as it retrieves the category and searches for the corresponding categories. 
+    The categories data has been improved & modified to work seamlessly with localtuya
 
-            if the config is not DPS then this will be inserted through "custom_configs" < this used to inject any config into entity config
-                example: custom_configs={"positioning_mode": "position"} I hope you got the idea :D
+    Device Data: You can obtain all the data for your device from Home Assistant by directly downloading the diagnostics or using entry diagnostics.
+        Alternative: Use Tuya IoT.
+
+    Add a new device or modify an existing one:
+        1. Make sure the device category doesn't already exist. If you are creating a new one, you can modify existing categories.
+        2. In order to add a device, you need to specify the category of the device you want to add inside the entity type dictionary.
+    
+    Add entities to devices:
+        1. Open the file with the name of the entity type on which you want to make changes [e.g. switches.py] and search for your device category.
+        2. You can add entities inside the tuple value of the dictionary by including LocalTuyaEntity and passing the parameters for the entity configurations.
+        3. These configurations include "id" (required), "icon" (optional), "device_class" (optional), "state_class" (optional), and "name" (optional) [Using COVERS as an example]
+            Example: "3 ( code: percent_state , value: 0 )" - Refer to the Device Data section above for more details.
+                current_state_dp = DPCode.PERCENT_STATE < This maps the "percent_state" code DP to the current_state_dp configuration.
+
+            If the configuration is not DPS, it will be inserted through "custom_configs". This is used to inject any configuration into the entity configuration
+                Example: custom_configs={"positioning_mode": "position"}. I hope that clarifies the concept
+        Check for more details at the URL above
 """
 
 
@@ -37,7 +46,6 @@ from .sirens import SIRENS
 from .switches import SWITCHES
 from .vacuums import VACUUMS
 
-
 # The supported PLATFORMS [ Platform: Data ]
 DATA_PLATFORMS = {
     # Platform.ALARM_CONTROL_PANEL: ALARMS,
@@ -59,17 +67,15 @@ DATA_PLATFORMS = {
 _LOGGER = logging.getLogger(__name__)
 
 
-def generate_tuya_device(localtuya_data: dict, tuya_category: str) -> dict | list:
-    """Create localtuya configs using the data that provided from TUYA"""
+def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dict]:
+    """Return localtuya entities using the data that provided from TUYA"""
     detected_dps: list = localtuya_data.get(CONF_DPS_STRINGS)
     device_name: str = localtuya_data.get(CONF_FRIENDLY_NAME).strip()
-    device_cloud_data: dict = localtuya_data.get("device_cloud_data")
-    ent_data: LocalTuyaEntity
+    device_cloud_data: dict = localtuya_data.get("device_cloud_data", {})
+    dps_data = device_cloud_data.get("dps_data", {})
 
     if not tuya_category or not detected_dps:
         return
-    # if dps_data := device_cloud_data.get("dps_data"):
-    #     detected_dps = merge_local_cloud_dps(detected_dps, dps_data)
 
     entities = {}
 
@@ -130,6 +136,7 @@ def generate_tuya_device(localtuya_data: dict, tuya_category: str) -> dict | lis
     # convert to list of configs
     list_entities = [entities.get(id) for id in sorted_ids]
 
+    # return []
     return list_entities
 
 
@@ -143,15 +150,5 @@ def parse_enum(dp_code):
     return parsed_dp_code
 
 
-def merge_local_cloud_dps(dps_strings: list, cloud_dps_data: dict[str, dict]):
-    """Merge founded dps_string with dps_data in cloud data"""
-    merged_list = dps_strings
-    dps_strings_dict = {dp.split(" ", 1)[0]: dp.split(" ", 1)[1] for dp in dps_strings}
-
-    for dp, value in cloud_dps_data.items():
-        if dp not in dps_strings_dict:
-            merged_list.append(
-                f"{dp} ( code: {value.get('code')} , value: {value.get('value')} )"
-            )
-
-    return sorted(merged_list, key=lambda i: int(i.split()[0]))
+def get_dp_value(dp, dps_data):
+    ...
