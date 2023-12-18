@@ -167,7 +167,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._config_entry = config_entry
         self._device_config: dict = config_entry.data[CONF_DEVICES][dev_id].copy()
         self._interface = None
-        self._connect_max_tries = 2
+        self._connect_max_tries = 3
         # For SubDevices
         self._node_id: str = self._device_config.get(CONF_NODE_ID)
         self._fake_gateway = fake_gateway
@@ -460,7 +460,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         # Device triggered event.
         if old_status and new_status is not None:
             event = device_triggered
-            data = {"states": new_status}
+            data = {"states": old_status.update(new_status)}
             fire_event(event, data)
 
             if self._interface is not None:
@@ -494,7 +494,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self.debug(f"Disconnected - waiting for discovery broadcast", force=True)
             # Try to quickly reconnect.
             self._is_closing = False
-            async_call_later(self._hass, 1, self.async_connect)
+            self._config_entry.async_create_task(self._hass, self.async_connect())
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
