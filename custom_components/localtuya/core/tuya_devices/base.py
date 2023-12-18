@@ -1,4 +1,5 @@
 from enum import StrEnum
+from typing import Any, NamedTuple
 
 from homeassistant.const import (
     CONF_FRIENDLY_NAME,
@@ -8,6 +9,12 @@ from homeassistant.const import (
     Platform,
     EntityCategory,
 )
+
+# Obtain value from cloud data.
+CLOUD_VALUE = NamedTuple(
+    "dp_values", [("default_value", str), ("dp_config", str), ("value_key", str)]
+)
+
 from ...const import CONF_CLEAN_AREA_DP, CONF_DPS_STRINGS, CONF_STATE_CLASS
 
 
@@ -20,8 +27,8 @@ def update_dict(dict: dict, new_data: dict):
 
 class LocalTuyaEntity:
     """
-    A data for of devices to feed localtuya with the device config.
-    Each platform needs to give the requirments for platform to setups.
+    Localtuya entity config.
+    Each platform has unique custom_configs to give the required data to validate entity setups.
     e.g. Switch req( Friendly_Name and DP(Code) )
     """
 
@@ -32,7 +39,7 @@ class LocalTuyaEntity:
         entity_category="None",
         device_class=None,
         state_class=None,
-        custom_configs: dict = None,
+        custom_configs: dict[str, Any | tuple[Any, CLOUD_VALUE]] = {},
         condition_contains_any: list = None,
         **kwargs,
     ):
@@ -53,8 +60,7 @@ class LocalTuyaEntity:
         if state_class:
             self.data[CONF_STATE_CLASS] = state_class
 
-        if custom_configs and type(custom_configs) == dict:
-            self.data.update(custom_configs)
+        self.entity_configs = custom_configs
 
         self.contains_any = condition_contains_any
 
@@ -64,6 +70,17 @@ class LocalTuyaEntity:
         # e.g.e CONF_ID etc..
 
         self.localtuya_conf = kwargs
+
+
+class DPType(StrEnum):
+    """Data point types."""
+
+    BOOLEAN = "Boolean"
+    ENUM = "Enum"
+    INTEGER = "Integer"
+    JSON = "Json"
+    RAW = "Raw"
+    STRING = "String"
 
 
 class DPCode(StrEnum):
