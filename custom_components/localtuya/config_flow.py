@@ -635,7 +635,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             if user_input[SELECTED_DEVICE] != CUSTOM_DEVICE["Add Device Manually"]:
                 self.selected_device = user_input[SELECTED_DEVICE]
 
-            if user_input[CONF_MASS_CONFIGURE]:
+            if user_input.pop(CONF_MASS_CONFIGURE, False):
                 devices, fails = await setup_localtuya_devices(
                     self.hass,
                     self.config_entry.entry_id,
