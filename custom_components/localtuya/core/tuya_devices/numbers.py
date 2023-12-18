@@ -9,15 +9,16 @@ from homeassistant.components.number import NumberDeviceClass
 from homeassistant.const import PERCENTAGE, UnitOfTime, CONF_UNIT_OF_MEASUREMENT
 
 from .base import DPCode, LocalTuyaEntity, EntityCategory, CLOUD_VALUE
-from ...const import CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEPSIZE
+from ...const import CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEPSIZE, CONF_SCALING
 
 
-def localtuya_numbers(_min, _max, _step=1, native_unit=None) -> dict:
+def localtuya_numbers(_min, _max, _step=1, _scale=0, native_unit=None) -> dict:
     """Will return dict with CONF MIN AND CONF MAX"""
     data = {
         CONF_MIN_VALUE: CLOUD_VALUE(_min, "id", "min"),
         CONF_MAX_VALUE: CLOUD_VALUE(_max, "id", "max"),
         CONF_STEPSIZE: CLOUD_VALUE(_step, "id", "step"),
+        CONF_SCALING: CLOUD_VALUE(_scale, "id", "scale"),
     }
 
     if native_unit:

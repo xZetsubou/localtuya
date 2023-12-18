@@ -187,6 +187,7 @@ def get_dp_values(dp, dps_data):
         dp_values["min"] = scale(dp_values.get("min"), val_scale)
         dp_values["max"] = scale(dp_values.get("max"), val_scale)
         dp_values["step"] = scale(dp_values.get("step"), val_scale, float)
+        dp_values["scale"] = scale(1, val_scale, float)
         return dp_values
 
 
