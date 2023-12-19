@@ -24,6 +24,7 @@ from ...const import (
     CONF_PRESET_SET,
     CONF_TARGET_PRECISION,
     CONF_TEMPERATURE_STEP,
+    CONF_HVAC_ADD_OFF,
 )
 
 
@@ -40,6 +41,7 @@ def localtuya_climate(
     unit=None,
     values_precsion=0.1,
     target_precision=None,
+    includes_off_mode=True,
 ) -> dict:
     """Create localtuya climate configs"""
     data = {ATTR_MIN_TEMP: DEFAULT_MIN_TEMP, ATTR_MAX_TEMP: DEFAULT_MAX_TEMP}
@@ -52,6 +54,7 @@ def localtuya_climate(
         CONF_TEMPERATURE_UNIT: unit,
         CONF_PRECISION: values_precsion,
         CONF_TARGET_PRECISION: target_precision,
+        CONF_HVAC_ADD_OFF: includes_off_mode,
     }.items():
         if conf:
             data.update({key: conf})
