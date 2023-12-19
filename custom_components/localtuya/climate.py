@@ -63,6 +63,11 @@ HVAC_MODE_SETS = {
         HVACMode.HEAT: "Manual",
         HVACMode.AUTO: "Program",
     },
+    "freeze/manual/auto": {
+        HVACMode.COOL: "freeze",
+        HVACMode.HEAT: "manual",
+        HVACMode.AUTO: "auto",
+    },
     "auto/cold/hot/wet": {
         HVACMode.AUTO: "auto",
         HVACMode.COOL: "cold",
@@ -268,7 +273,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         if not self.has_config(CONF_HVAC_MODE_DP):
             return None
         modes = list(self._conf_hvac_mode_set)
-        if self._config.get(CONF_HVAC_ADD_OFF, True):
+        if self._config.get(CONF_HVAC_ADD_OFF, True) and HVACMode.OFF not in modes:
             modes.append(HVACMode.OFF)
         return modes
 
