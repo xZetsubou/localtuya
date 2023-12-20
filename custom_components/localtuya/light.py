@@ -220,6 +220,8 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def color_temp(self):
         """Return the color_temp of the light."""
+        if not self._color_temp:
+            return
         if self.has_config(CONF_COLOR_TEMP) and self.is_white_mode:
             color_temp_value = (
                 self._upper_color_temp - self._color_temp
