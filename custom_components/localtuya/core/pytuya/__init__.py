@@ -1359,27 +1359,34 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         """
         json_data = command_override = None
 
-        if command in payload_dict[self.dev_type]:
-            if "command" in payload_dict[self.dev_type][command]:
-                json_data = payload_dict[self.dev_type][command]["command"].copy()
-            if "command_override" in payload_dict[self.dev_type][command]:
-                command_override = payload_dict[self.dev_type][command][
-                    "command_override"
-                ]
+        # Create a deep copy of payload_dict. otherwise, the original references will be overwritten
+        def deepcopy_dict(_dict: dict):
+            output = _dict.copy()
+            for key, value in output.items():
+                output[key] = deepcopy_dict(value) if isinstance(value, dict) else value
+            return output
+
+        payloads = deepcopy_dict(payload_dict)
+
+        if command in payloads[self.dev_type]:
+            if "command" in payloads[self.dev_type][command]:
+                json_data = payloads[self.dev_type][command]["command"].copy()
+            if "command_override" in payloads[self.dev_type][command]:
+                command_override = payloads[self.dev_type][command]["command_override"]
 
         if self.dev_type != "type_0a":
             if (
                 json_data is None
-                and command in payload_dict["type_0a"]
-                and "command" in payload_dict["type_0a"][command]
+                and command in payloads["type_0a"]
+                and "command" in payloads["type_0a"][command]
             ):
-                json_data = payload_dict["type_0a"][command]["command"].copy()
+                json_data = payloads["type_0a"][command]["command"].copy()
             if (
                 command_override is None
-                and command in payload_dict["type_0a"]
-                and "command_override" in payload_dict["type_0a"][command]
+                and command in payloads["type_0a"]
+                and "command_override" in payloads["type_0a"][command]
             ):
-                command_override = payload_dict["type_0a"][command]["command_override"]
+                command_override = payloads["type_0a"][command]["command_override"]
 
         if command_override is None:
             command_override = command
