@@ -80,6 +80,15 @@ BATTERY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = (
 # end up being a sensor.
 # https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
 SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
+    # Smart panel with switches and zigbee hub ?
+    # Not documented
+    "dgnzk": (
+        LocalTuyaEntity(
+            id=DPCode.PLAY_INFO,
+            name="Playing",
+            icon="mdi:playlist-play",
+        ),
+    ),
     # Multi-functional Sensor
     # https://developer.tuya.com/en/docs/iot/categorydgnbj?id=Kaiuz3yorvzg3
     "dgnbj": (

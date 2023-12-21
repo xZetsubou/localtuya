@@ -115,6 +115,7 @@ class DPCode(StrEnum):
     BASIC_OSD = "basic_osd"
     BASIC_PRIVATE = "basic_private"
     BASIC_WDR = "basic_wdr"
+    BASS_CONTROL = "bass_control"
     BATTERY = "battery"
     BATTERY_PERCENTAGE = "battery_percentage"  # Battery percentage
     BATTERY_STATE = "battery_state"  # Battery state
@@ -267,6 +268,7 @@ class DPCode(StrEnum):
     MOTOR_MODE = "motor_mode"
     MOVEMENT_DETECT_PIC = "movement_detect_pic"
     MUFFLING = "muffling"  # Muffling
+    MUTE = "mute"
     NEAR_DETECTION = "near_detection"
     NORMAL_OPEN_SWITCH = "normal_open_switch"
     OPPOSITE = "opposite"
@@ -288,6 +290,9 @@ class DPCode(StrEnum):
     PHOTO_MODE = "photo_mode"
     PIR = "pir"  # Motion sensor
     PIR_SENSITIVITY = "pir_sensitivity"
+    PLAY_INFO = "play_info"
+    PLAY_MODE = "play_mode"
+    PLAY_TIME = "play_time"
     PM1 = "pm1"
     PM10 = "pm10"
     PM100_STATE = "pm100_state"
@@ -338,7 +343,9 @@ class DPCode(StrEnum):
     SMOKE_SENSOR_VALUE = "smoke_sensor_value"
     SOS = "sos"  # Emergency State
     SOS_STATE = "sos_state"  # Emergency mode
+    SOUND_EFFECTS = "sound_effects"
     SOUND_MODE = "sound_mode"
+    SOURCE = "source"
     SPEED = "speed"  # Speed level
     SPRAY_MODE = "spray_mode"  # Spraying mode
     SPRAY_VOLUME = "spray_volume"  # Dehumidifier
@@ -348,6 +355,14 @@ class DPCode(StrEnum):
     SUCTION = "suction"
     SWING = "swing"  # Swing mode
     SWITCH = "switch"  # Switch
+    SWITCH1 = "switch1"  # Switch 1 no underscore
+    SWITCH2 = "switch2"  # Switch 2 no underscore
+    SWITCH3 = "switch3"  # Switch 3 no underscore
+    SWITCH4 = "switch4"  # Switch 4 no underscore
+    SWITCH5 = "switch5"  # Switch 5 no underscore
+    SWITCH6 = "switch6"  # Switch 6 no underscore
+    SWITCH7 = "switch7"  # Switch 7 no underscore
+    SWITCH8 = "switch8"  # Switch 8 no underscore
     SWITCH_1 = "switch_1"  # Switch 1
     SWITCH_2 = "switch_2"  # Switch 2
     SWITCH_3 = "switch_3"  # Switch 3
@@ -380,6 +395,7 @@ class DPCode(StrEnum):
     SWITCH_USB6 = "switch_usb6"  # USB 6
     SWITCH_VERTICAL = "switch_vertical"  # Vertical swing flap switch
     SWITCH_VOICE = "switch_voice"  # Voice switch
+    SWITCH_WELCOME = "switch_welcome"
     TEMP = "temp"  # Temperature setting
     TEMPACTIVATE = "tempactivate"
     TEMPCOMP = "tempcomp"
@@ -404,6 +420,7 @@ class DPCode(StrEnum):
     TOTAL_FORWARD_ENERGY = "total_forward_energy"
     TOTAL_PM = "total_pm"
     TOTAL_TIME = "total_time"
+    TREBLE_CONTROL = "treble_control"
     TVOC = "tvoc"
     UNLOCK_APP = "unlock_app"
     UNLOCK_BLE = "unlock_ble"
@@ -434,8 +451,12 @@ class DPCode(StrEnum):
     VA_TEMPERATURE = "va_temperature"
     VOC_STATE = "voc_state"
     VOC_VALUE = "voc_value"
+    VOICE_BT_PLAY = "voice_bt_play"
+    VOICE_MIC = "voice_mic"
+    VOICE_PLAY = "voice_play"
     VOICE_SWITCH = "voice_switch"
     VOICE_TIMES = "voice_times"
+    VOICE_VOL = "voice_vol"
     VOLUME_SET = "volume_set"
     WARM = "warm"  # Heat preservation
     WARM_TIME = "warm_time"  # Heat preservation time

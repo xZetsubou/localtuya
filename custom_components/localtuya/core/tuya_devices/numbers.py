@@ -28,6 +28,38 @@ def localtuya_numbers(_min, _max, _step=1, _scale=0, native_unit=None) -> dict:
 
 
 NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
+    # Smart panel with switches and zigbee hub ?
+    # Not documented
+    "dgnzk": (
+        LocalTuyaEntity(
+            id=DPCode.VOICE_VOL,
+            name="Volume",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(0, 100),
+            icon="mdi:volume-equal",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.PLAY_TIME,
+            name="Play time",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(0, 7200),
+            icon="mdi:motion-play-outline",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.BASS_CONTROL,
+            name="Bass",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(0, 15),
+            icon="mdi:speaker",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TREBLE_CONTROL,
+            name="Treble",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(0, 15),
+            icon="mdi:music-clef-treble",
+        ),
+    ),
     # Multi-functional Sensor
     # https://developer.tuya.com/en/docs/iot/categorydgnbj?id=Kaiuz3yorvzg3
     "dgnbj": (
