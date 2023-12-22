@@ -85,14 +85,14 @@ async def async_setup_entry(
     entity_class with functools.partial.
     """
     entities = []
-    entry_data: HassLocalTuyaData = hass.data[DOMAIN][config_entry.entry_id]
+    hass_entry_data: HassLocalTuyaData = hass.data[DOMAIN][config_entry.entry_id]
 
     for dev_id in config_entry.data[CONF_DEVICES]:
         dev_entry: dict = config_entry.data[CONF_DEVICES][dev_id]
 
         host = dev_entry.get(CONF_HOST)
         node_id = dev_entry.get(CONF_NODE_ID)
-        device = f"{host}_{node_id}" if node_id else host
+        device_key = f"{host}_{node_id}" if node_id else host
 
         entities_to_setup = [
             entity
@@ -101,24 +101,24 @@ async def async_setup_entry(
         ]
 
         if entities_to_setup:
-            tuyainterface: TuyaDevice = entry_data.tuya_devices[device]
+            device: TuyaDevice = hass_entry_data.tuya_devices[device_key]
             dps_config_fields = list(get_dps_for_platform(flow_schema))
 
             for entity_config in entities_to_setup:
                 # Add DPS used by this platform to the request list
                 for dp_conf in dps_config_fields:
                     if dp_conf in entity_config:
-                        tuyainterface.dps_to_request[entity_config[dp_conf]] = None
+                        device.dps_to_request[entity_config[dp_conf]] = None
 
                 entities.append(
                     entity_class(
-                        tuyainterface,
+                        device,
                         dev_entry,
                         entity_config[CONF_ID],
                     )
                 )
     # Once the entities have been created, add to the TuyaDevice instance
-    tuyainterface.add_entities(entities)
+    device.add_entities(entities)
     async_add_entities(entities)
 
 
@@ -506,13 +506,13 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     _attr_should_poll = False
 
     def __init__(
-        self, device: TuyaDevice, config_entry: dict, dp_id: str, logger, **kwargs
+        self, device: TuyaDevice, device_config: dict, dp_id: str, logger, **kwargs
     ):
         """Initialize the Tuya entity."""
         super().__init__()
         self._device = device
-        self._device_config = config_entry
-        self._config = get_entity_config(config_entry, dp_id)
+        self._device_config = device_config
+        self._config = get_entity_config(device_config, dp_id)
         self._dp_id = dp_id
         self._status = {}
         self._state = None
