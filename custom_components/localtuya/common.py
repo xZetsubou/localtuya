@@ -85,10 +85,14 @@ async def async_setup_entry(
     entity_class with functools.partial.
     """
     entities = []
+    entry_data: HassLocalTuyaData = hass.data[DOMAIN][config_entry.entry_id]
 
     for dev_id in config_entry.data[CONF_DEVICES]:
         dev_entry: dict = config_entry.data[CONF_DEVICES][dev_id]
+
         host = dev_entry.get(CONF_HOST)
+        node_id = dev_entry.get(CONF_NODE_ID)
+        device = f"{host}_{node_id}" if node_id else host
 
         entities_to_setup = [
             entity
@@ -97,10 +101,7 @@ async def async_setup_entry(
         ]
 
         if entities_to_setup:
-            if node_id := dev_entry.get(CONF_NODE_ID):
-                host = f"{host}_{node_id}"
-            tuyainterface = hass.data[DOMAIN][config_entry.entry_id].tuya_devices[host]
-
+            tuyainterface: TuyaDevice = entry_data.tuya_devices[device]
             dps_config_fields = list(get_dps_for_platform(flow_schema))
 
             for entity_config in entities_to_setup:
