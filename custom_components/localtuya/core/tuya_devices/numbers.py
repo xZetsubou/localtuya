@@ -12,8 +12,8 @@ from .base import DPCode, LocalTuyaEntity, EntityCategory, CLOUD_VALUE
 from ...const import CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEPSIZE, CONF_SCALING
 
 
-def localtuya_numbers(_min, _max, _step=1, _scale=0, native_unit=None) -> dict:
-    """Will return dict with CONF MIN AND CONF MAX"""
+def localtuya_numbers(_min, _max, _step=1, _scale=1, unit=None) -> dict:
+    """Will return dict with CONF MIN AND CONF MAX, scale 1 is default, 1=1"""
     data = {
         CONF_MIN_VALUE: CLOUD_VALUE(_min, "id", "min"),
         CONF_MAX_VALUE: CLOUD_VALUE(_max, "id", "max"),
@@ -21,8 +21,8 @@ def localtuya_numbers(_min, _max, _step=1, _scale=0, native_unit=None) -> dict:
         CONF_SCALING: CLOUD_VALUE(_scale, "id", "scale"),
     }
 
-    if native_unit:
-        data.update({CONF_UNIT_OF_MEASUREMENT: native_unit})
+    if unit:
+        data.update({CONF_UNIT_OF_MEASUREMENT: unit})
 
     return data
 
@@ -42,7 +42,7 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.PLAY_TIME,
             name="Play time",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=localtuya_numbers(0, 7200),
+            custom_configs=localtuya_numbers(0, 7200, unit=UnitOfTime.SECONDS),
             icon="mdi:motion-play-outline",
         ),
         LocalTuyaEntity(
@@ -137,28 +137,28 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="Light 1 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_2,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="Light 2 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_3,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="Light 3 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_4,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="Light 4 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
     ),
     # Human Presence Sensor
@@ -225,98 +225,98 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="Switch 1 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_2,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="Switch 2 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_3,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="Switch 3 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_4,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="Switch 4 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_5,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="Switch 5 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_6,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="Switch 6 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_USB1,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="USB1 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_USB2,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="USB2 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_USB3,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="USB3 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_USB4,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="USB4 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_USB5,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="USB5 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_USB6,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="USB6 Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="Switch Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_USB,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
             name="Switch Timer",
-            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
     ),
     # Smart Lock
@@ -332,7 +332,7 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             ),
             name="Temporary Unlock",
             icon="mdi:lock-open",
-            custom_configs=localtuya_numbers(0, 999, 1, UnitOfTime.SECONDS),
+            custom_configs=localtuya_numbers(0, 999, 1, 1, UnitOfTime.SECONDS),
         ),
     ),
     # Sous Vide Cooker
@@ -350,7 +350,7 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Cooking time",
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=localtuya_numbers(0, 360, 1, UnitOfTime.MINUTES),
+            custom_configs=localtuya_numbers(0, 360, 1, 1, UnitOfTime.MINUTES),
         ),
         LocalTuyaEntity(
             id=DPCode.CLOUD_RECIPE_NUMBER,
@@ -502,14 +502,14 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Move Down",
             icon="mdi:arrow-down-bold",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=localtuya_numbers(50, 100, 1, PERCENTAGE),
+            custom_configs=localtuya_numbers(50, 100, 1, 1, PERCENTAGE),
         ),
         LocalTuyaEntity(
             id=DPCode.ARM_UP_PERCENT,
             name="Move UP",
             icon="mdi:arrow-up-bold",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=localtuya_numbers(0, 50, 1, PERCENTAGE),
+            custom_configs=localtuya_numbers(0, 50, 1, 1, PERCENTAGE),
         ),
         LocalTuyaEntity(
             id=DPCode.CLICK_SUSTAIN_TIME,
