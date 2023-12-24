@@ -24,7 +24,7 @@
                     "client_id": "ID client",
                     "client_secret": "Segreto client",
                     "user_id": "ID utente",
-                    "user_name": "Nome utente",
+                    "username": "Nome utente",
                     "no_cloud": "Disabilitare l'API Cloud?"
                 }
             }
@@ -83,7 +83,7 @@
                     "client_id": "ID client",
                     "client_secret": "Segreto client",
                     "user_id": "ID utente",
-                    "user_name": "Nome utente",
+                    "username": "Nome utente",
                     "no_cloud": "Disabilitare l'API Cloud?"
                 }
             },

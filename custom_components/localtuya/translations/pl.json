@@ -143,7 +143,7 @@
                     "templates": "Wybierz szablon"
                 },
                 "data_description": {
-                    "templates": "Możesz wprowadzić nazwę pliku ręcznie, jeśli się nie wyświetli.\nSzablony można znaleźć i udostępnić innym w GitHub ([Więcej informacji](https://github.com/xZetsubou/hass-localtuya/discussions/13))."
+                    "templates": "Szablony można znaleźć i udostępnić innym w GitHub ([Więcej informacji](https://github.com/xZetsubou/hass-localtuya/discussions/13))."
                 }
             },
             "configure_entity": {

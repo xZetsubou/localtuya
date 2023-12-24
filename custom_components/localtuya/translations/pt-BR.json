@@ -83,7 +83,7 @@
                     "client_id": "ID do Cliente",
                     "client_secret": "Segredo do Cliente",
                     "user_id": "ID do Usuário",
-                    "user_name": "Nome de Usuário",
+                    "username": "Nome de Usuário",
                     "no_cloud": "Desativar a API de Nuvem?"
                 }
             },

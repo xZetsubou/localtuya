@@ -143,7 +143,7 @@
                     "templates": "Choose template"
                 },
                 "data_description": {
-                    "templates": "You can enter the file name manually if it didn't shows up.\nTemplates can be found and shared with others on GitHub ([More Info](https://github.com/xZetsubou/hass-localtuya/discussions/13))."
+                    "templates": "Templates can be found and shared with others on GitHub ([More Info](https://github.com/xZetsubou/hass-localtuya/discussions/13))."
                 }
             },
             "configure_entity": {
