@@ -99,7 +99,9 @@ from ..const import CONF_LOCAL_KEY, CONF_NODE_ID
 GATEWAY = NamedTuple("Gateway", [("id", str), ("data", dict)])
 
 
-def _col_to_select(opt_list, multi_select=False, is_dps=False, custom_value=False):
+def _col_to_select(
+    opt_list: dict | list, multi_select=False, is_dps=False, custom_value=False
+) -> SelectSelector:
     """Convert collections to SelectSelectorConfig."""
     if type(opt_list) == dict:
         return SelectSelector(
@@ -109,6 +111,7 @@ def _col_to_select(opt_list, multi_select=False, is_dps=False, custom_value=Fals
                 ],
                 mode=SelectSelectorMode.DROPDOWN,
                 custom_value=custom_value,
+                multiple=True if multi_select else False,
             )
         )
     elif type(opt_list) == list:
@@ -123,6 +126,7 @@ def _col_to_select(opt_list, multi_select=False, is_dps=False, custom_value=Fals
                     for kv in opt_list
                 ],
                 mode=SelectSelectorMode.DROPDOWN,
+                custom_value=custom_value,
                 multiple=True if multi_select else False,
             )
         )

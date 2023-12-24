@@ -121,16 +121,6 @@ PICK_ENTITY_SCHEMA = vol.Schema(
     {vol.Required(PLATFORM_TO_ADD, default="switch"): _col_to_select(PLATFORMS)}
 )
 
-PICK_TEMPLATE = vol.Schema(
-    {
-        vol.Required(
-            TEMPLATES,
-            default=list(templates.list_templates().values())[0]
-            if templates.list_templates()
-            else "No templates found.",
-        ): _col_to_select(templates.list_templates(), custom_value=True)
-    }
-)
 
 CONF_MASS_CONFIGURE = "mass_configure"
 MASS_CONFIGURE_SCHEMA = {vol.Optional(CONF_MASS_CONFIGURE, default=False): bool}
@@ -636,6 +626,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 self.selected_device = user_input[SELECTED_DEVICE]
 
             if user_input.pop(CONF_MASS_CONFIGURE, False):
+                # Handle auto configure all recognized devices.
                 devices, fails = await setup_localtuya_devices(
                     self.hass,
                     self.config_entry.entry_id,
@@ -1005,7 +996,10 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             self.template_device = self.device_data
             self.editing_device = True
             return await self.async_step_configure_device()
-        schema = PICK_TEMPLATE
+        templates_list = templates.list_templates()
+        schema = vol.Schema(
+            {vol.Required(TEMPLATES): _col_to_select(templates_list, custom_value=True)}
+        )
         return self.async_show_form(step_id="choose_template", data_schema=schema)
 
     async def async_step_entity(self, user_input=None):
