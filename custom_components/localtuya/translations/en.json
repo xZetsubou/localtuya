@@ -138,12 +138,9 @@
             },
             "choose_template":{
                 "title": "Import template file",
-                "description": "Template files are located in the `templates` directory.",
+                "description": "Template files are located in the `templates` directory ([More Info](https://github.com/xZetsubou/hass-localtuya/discussions/13)).",
                 "data": {
                     "templates": "Choose template"
-                },
-                "data_description": {
-                    "templates": "Templates can be found and shared with others on GitHub ([More Info](https://github.com/xZetsubou/hass-localtuya/discussions/13))."
                 }
             },
             "configure_entity": {

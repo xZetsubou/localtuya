@@ -138,12 +138,9 @@
             },
             "choose_template":{
                 "title": "Importuj plik szablonu",
-                "description": "Pliki szablonów znajdują się w katalogu `templates`.",
+                "description": "Pliki szablonów znajdują się w katalogu `templates` ([Więcej informacji](https://github.com/xZetsubou/hass-localtuya/discussions/13)).",
                 "data": {
                     "templates": "Wybierz szablon"
-                },
-                "data_description": {
-                    "templates": "Szablony można znaleźć i udostępnić innym w GitHub ([Więcej informacji](https://github.com/xZetsubou/hass-localtuya/discussions/13))."
                 }
             },
             "configure_entity": {
