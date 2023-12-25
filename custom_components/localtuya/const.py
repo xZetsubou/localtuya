@@ -19,7 +19,7 @@ PLATFORMS = {
     "Humidifier": Platform.HUMIDIFIER,
     "Light": Platform.LIGHT,
     "Number": Platform.NUMBER,
-    "Selector": Platform.SELECT,
+    "Select": Platform.SELECT,
     "Sensor": Platform.SENSOR,
     "Siren": Platform.SIREN,
     "Switch": Platform.SWITCH,
