@@ -12,10 +12,8 @@ from homeassistant.components.light import (
     ATTR_EFFECT,
     ATTR_HS_COLOR,
     DOMAIN,
-    SUPPORT_BRIGHTNESS,
-    SUPPORT_COLOR,
-    SUPPORT_COLOR_TEMP,
-    SUPPORT_EFFECT,
+    LightEntityFeature,
+    ColorMode,
     LightEntity,
 )
 from homeassistant.const import CONF_BRIGHTNESS, CONF_COLOR_TEMP, CONF_SCENE
@@ -210,8 +208,8 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         if self.is_color_mode:
             return self._hs
         if (
-            self.supported_features & SUPPORT_COLOR
-            and not self.supported_features & SUPPORT_COLOR_TEMP
+            ColorMode.HS in self.supported_color_modes
+            and not ColorMode.COLOR_TEMP in self.supported_color_modes
         ):
             return [0, 0]
         return None
@@ -261,17 +259,24 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         return None
 
     @property
+    def supported_color_modes(self) -> set[ColorMode] | set[str] | None:
+        """Flag supported color modes."""
+        color_modes: set[ColorMode] = set()
+
+        if self.has_config(CONF_COLOR_TEMP):
+            color_modes.add(ColorMode.COLOR_TEMP)
+        if self.has_config(CONF_COLOR):
+            color_modes.update({ColorMode.HS, ColorMode.BRIGHTNESS})
+        if self.has_config(CONF_BRIGHTNESS):
+            color_modes.add(ColorMode.BRIGHTNESS)
+        return color_modes
+
+    @property
     def supported_features(self):
         """Flag supported features."""
         supports = 0
-        if self.has_config(CONF_BRIGHTNESS):
-            supports |= SUPPORT_BRIGHTNESS
-        if self.has_config(CONF_COLOR_TEMP):
-            supports |= SUPPORT_COLOR_TEMP
-        if self.has_config(CONF_COLOR):
-            supports |= SUPPORT_COLOR | SUPPORT_BRIGHTNESS
         if self.has_config(CONF_SCENE) or self.has_config(CONF_MUSIC_MODE):
-            supports |= SUPPORT_EFFECT
+            supports |= LightEntityFeature.EFFECT
         return supports
 
     @property
@@ -321,7 +326,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             states[self._dp_id] = True
         features = self.supported_features
         brightness = None
-        if ATTR_EFFECT in kwargs and (features & SUPPORT_EFFECT):
+        if ATTR_EFFECT in kwargs and (features & LightEntityFeature.EFFECT):
             scene = self._scenes.get(kwargs[ATTR_EFFECT])
             if scene is not None:
                 if scene.startswith(MODE_SCENE):
@@ -332,7 +337,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             elif kwargs[ATTR_EFFECT] == SCENE_MUSIC:
                 states[self._config.get(CONF_COLOR_MODE)] = MODE_MUSIC
 
-        if ATTR_BRIGHTNESS in kwargs and (features & SUPPORT_BRIGHTNESS):
+        if ATTR_BRIGHTNESS in kwargs and self._brightness:
             brightness = map_range(
                 int(kwargs[ATTR_BRIGHTNESS]),
                 0,
@@ -364,7 +369,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 states[self._config.get(CONF_COLOR)] = color
                 states[self._config.get(CONF_COLOR_MODE)] = MODE_COLOR
 
-        if ATTR_HS_COLOR in kwargs and (features & SUPPORT_COLOR):
+        if ATTR_HS_COLOR in kwargs and self._hs:
             if brightness is None:
                 brightness = self._brightness
             hs = kwargs[ATTR_HS_COLOR]
@@ -391,7 +396,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 states[self._config.get(CONF_COLOR)] = color
                 states[self._config.get(CONF_COLOR_MODE)] = MODE_COLOR
 
-        if ATTR_COLOR_TEMP in kwargs and (features & SUPPORT_COLOR_TEMP):
+        if ATTR_COLOR_TEMP in kwargs and self._color_temp:
             if brightness is None:
                 brightness = self._brightness
             mired = int(kwargs[ATTR_COLOR_TEMP])
@@ -409,6 +414,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             states[self._config.get(CONF_COLOR_MODE)] = MODE_WHITE
             states[self._config.get(CONF_BRIGHTNESS)] = brightness
             states[self._config.get(CONF_COLOR_TEMP)] = color_temp
+
         await self._device.set_dps(states)
 
     async def async_turn_off(self, **kwargs):
@@ -420,12 +426,12 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         self._state = self.dp_value(self._dp_id)
         supported = self.supported_features
         self._effect = None
-        if supported & SUPPORT_BRIGHTNESS and self.has_config(CONF_BRIGHTNESS):
+        if ColorMode.BRIGHTNESS in self.supported_color_modes:
             self._brightness = self.dp_value(CONF_BRIGHTNESS)
 
-        if supported & SUPPORT_COLOR:
+        if ColorMode.HS in self.supported_color_modes:
             color = self.dp_value(CONF_COLOR)
-            if color is not None and not self.is_white_mode:
+            if color is not None:
                 if self.__is_color_rgb_encoded():
                     hue = int(color[6:10], 16)
                     sat = int(color[10:12], 16)
@@ -439,10 +445,10 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                     self._hs = [hue, sat / 10.0]
                     self._brightness = value
 
-        if supported & SUPPORT_COLOR_TEMP:
+        if ColorMode.COLOR_TEMP in self.supported_color_modes:
             self._color_temp = self.dp_value(CONF_COLOR_TEMP)
 
-        if self.is_scene_mode and supported & SUPPORT_EFFECT:
+        if self.is_scene_mode and supported & LightEntityFeature.EFFECT:
             if self.dp_value(CONF_COLOR_MODE) != MODE_SCENE:
                 self._effect = self.__find_scene_by_scene_data(
                     self.dp_value(CONF_COLOR_MODE)
@@ -457,7 +463,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 elif SCENE_CUSTOM in self._effect_list:
                     self._effect_list.remove(SCENE_CUSTOM)
 
-        if self.is_music_mode and supported & SUPPORT_EFFECT:
+        if self.is_music_mode and supported & LightEntityFeature.EFFECT:
             self._effect = SCENE_MUSIC
 
 
