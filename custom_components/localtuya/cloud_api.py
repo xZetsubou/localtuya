@@ -156,8 +156,11 @@ class TuyaCloudApi:
         self.device_list = {dev["id"]: dev for dev in r_json["result"]}
 
         # Get Devices DPS Data.
-        get_functions = [self.get_device_functions(devid) for devid in self.device_list]
-        await asyncio.gather(*get_functions)
+        get_functions = [
+            asyncio.create_task(self.get_device_functions(devid))
+            for devid in self.device_list
+        ]
+        # await asyncio.run(*get_functions)
 
         return "ok"
 
@@ -195,6 +198,25 @@ class TuyaCloudApi:
 
         return r_json["result"], "ok"
 
+    async def async_get_device_query_things_data_model(
+        self, device_id
+    ) -> dict[str, dict]:
+        """Obtain the DP ID mappings for a device."""
+        resp = await self.async_make_request(
+            "GET", url=f"/v2.0/cloud/thing/{device_id}/model"
+        )
+
+        if not resp:
+            return
+        if not resp.ok:
+            return {}, "Request failed, status " + str(resp.status)
+
+        r_json = resp.json()
+        if not r_json["success"]:
+            return {}, f"Error {r_json['code']}: {r_json['msg']}"
+
+        return r_json["result"], "ok"
+
     async def get_device_functions(self, device_id) -> dict[str, dict]:
         """Pull Devices Properties and Specifications to devices_list"""
         cached = device_id in self.cached_device_list
@@ -206,8 +228,9 @@ class TuyaCloudApi:
         get_data = [
             self.async_get_device_specifications(device_id),
             self.async_get_device_query_properties(device_id),
+            self.async_get_device_query_things_data_model(device_id),
         ]
-        specs, query_props = await asyncio.gather(*get_data)
+        specs, query_props, query_model = await asyncio.gather(*get_data)
         if query_props[1] == "ok":
             device_data = {str(p["dp_id"]): p for p in query_props[0].get("properties")}
         if specs[1] == "ok":
@@ -216,6 +239,23 @@ class TuyaCloudApi:
                     device_data[str(func["dp_id"])].update(func)
                 elif dp_id := func.get("dp_id"):
                     device_data[str(dp_id)] = func
+        if query_model[1] == "ok":
+            model_data = json.loads(query_model[0]["model"])
+            services = model_data.get("services", [{}])[0]
+            properties = services.get("properties")
+            for dp_data in properties if properties else {}:
+                refactored = {
+                    "id": dp_data.get("abilityId"),
+                    "code": dp_data.get("code"),
+                    "accessMode": dp_data.get("accessMode"),
+                    # values: json.loads later
+                    "values": str(dp_data.get("typeSpec")).replace("'", '"'),
+                }
+                device_data[str(dp_data["abilityId"])].update(refactored)
+
+        if "28841002" in str(query_props[1]):
+            # No permissions This affect auto configure feature.
+            self.device_list[device_id]["localtuya_note"] = str(query_props[1])
 
         if device_data:
             self.device_list[device_id]["dps_data"] = device_data
