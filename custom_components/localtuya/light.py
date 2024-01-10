@@ -3,6 +3,7 @@ import logging
 import textwrap
 from functools import partial
 from .config_flow import _col_to_select
+from homeassistant.helpers import selector
 
 import homeassistant.util.color as color_util
 import voluptuous as vol
@@ -28,7 +29,6 @@ from .const import (
     CONF_COLOR_TEMP_MIN_KELVIN,
     CONF_COLOR_TEMP_REVERSE,
     CONF_SCENE_VALUES,
-    CONF_SCENE_VALUES_FRIENDLY,
     CONF_MUSIC_MODE,
 )
 
@@ -124,8 +124,7 @@ def flow_schema(dps):
         ),
         vol.Optional(CONF_COLOR_TEMP_REVERSE, default=DEFAULT_COLOR_TEMP_REVERSE): bool,
         vol.Optional(CONF_SCENE): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_SCENE_VALUES): str,
-        vol.Optional(CONF_SCENE_VALUES_FRIENDLY): str,
+        vol.Optional(CONF_SCENE_VALUES): selector.ObjectSelector(),
         vol.Optional(CONF_MUSIC_MODE, default=False): bool,
     }
 
@@ -166,18 +165,10 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         self._effect_list = []
         self._scenes = None
         if self.has_config(CONF_SCENE):
-            if self.has_config(CONF_SCENE_VALUES) and self.has_config(
-                CONF_SCENE_VALUES_FRIENDLY
-            ):
-                values_list = [
-                    value.strip()
-                    for value in self._config.get(CONF_SCENE_VALUES).split(",")
-                ]
-                friendly_values_list = [
-                    value.strip()
-                    for value in self._config.get(CONF_SCENE_VALUES_FRIENDLY).split(",")
-                ]
-                self._scenes = dict(zip(friendly_values_list, values_list))
+            if self.has_config(CONF_SCENE_VALUES):
+                values_list = list(self._config.get(CONF_SCENE_VALUES))
+                values_name = list(self._config.get(CONF_SCENE_VALUES).values())
+                self._scenes = dict(zip(values_name, values_list))
             elif int(self._config.get(CONF_SCENE)) < 20:
                 self._scenes = SCENE_LIST_RGBW_255
             elif self._config.get(CONF_BRIGHTNESS) is None:
