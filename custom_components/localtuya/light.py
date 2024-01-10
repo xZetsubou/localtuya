@@ -316,6 +316,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         if not self.is_on:
             states[self._dp_id] = True
         features = self.supported_features
+        color_modes = self.supported_color_modes
         brightness = None
         if ATTR_EFFECT in kwargs and (features & LightEntityFeature.EFFECT):
             scene = self._scenes.get(kwargs[ATTR_EFFECT])
@@ -328,7 +329,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             elif kwargs[ATTR_EFFECT] == SCENE_MUSIC:
                 states[self._config.get(CONF_COLOR_MODE)] = MODE_MUSIC
 
-        if ATTR_BRIGHTNESS in kwargs and self._brightness:
+        if ATTR_BRIGHTNESS in kwargs and ColorMode.BRIGHTNESS in color_modes:
             brightness = map_range(
                 int(kwargs[ATTR_BRIGHTNESS]),
                 0,
@@ -360,7 +361,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 states[self._config.get(CONF_COLOR)] = color
                 states[self._config.get(CONF_COLOR_MODE)] = MODE_COLOR
 
-        if ATTR_HS_COLOR in kwargs and self._hs:
+        if ATTR_HS_COLOR in kwargs and ColorMode.HS in color_modes:
             if brightness is None:
                 brightness = self._brightness
             hs = kwargs[ATTR_HS_COLOR]
@@ -387,7 +388,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 states[self._config.get(CONF_COLOR)] = color
                 states[self._config.get(CONF_COLOR_MODE)] = MODE_COLOR
 
-        if ATTR_COLOR_TEMP in kwargs and self._color_temp:
+        if ATTR_COLOR_TEMP in kwargs and ColorMode.COLOR_TEMP in color_modes:
             if brightness is None:
                 brightness = self._brightness
             mired = int(kwargs[ATTR_COLOR_TEMP])
@@ -422,7 +423,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
 
         if ColorMode.HS in self.supported_color_modes:
             color = self.dp_value(CONF_COLOR)
-            if color is not None:
+            if color is not None and not self.is_white_mode:
                 if self.__is_color_rgb_encoded():
                     hue = int(color[6:10], 16)
                     sat = int(color[10:12], 16)
@@ -435,6 +436,8 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                     ]
                     self._hs = [hue, sat / 10.0]
                     self._brightness = value
+            elif self._brightness is None:
+                self._brightness = 20
 
         if ColorMode.COLOR_TEMP in self.supported_color_modes:
             self._color_temp = self.dp_value(CONF_COLOR_TEMP)
