@@ -377,9 +377,9 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
         LocalTuyaEntity(
             id=DPCode.TIM,
-            icon="mdi:signal-distance-variant",
+            icon="mdi:timer-10",
             entity_category=EntityCategory.CONFIG,
-            name="Hold Time",
+            name="Timer Duration",
             custom_configs=localtuya_numbers(10, 900, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(
