@@ -84,9 +84,13 @@ class TuyaCloudApi:
         full_url = self._base_url + url
         # _LOGGER.debug("\n" + method + ": [%s]", full_url)
 
+        request_timeout = 3
         if method == "GET":
             func = functools.partial(
-                requests.get, full_url, headers=dict(default_par, **headers)
+                requests.get,
+                full_url,
+                headers=dict(default_par, **headers),
+                timeout=request_timeout,
             )
         elif method == "POST":
             func = functools.partial(
@@ -94,6 +98,7 @@ class TuyaCloudApi:
                 full_url,
                 headers=dict(default_par, **headers),
                 data=json.dumps(body),
+                timeout=request_timeout,
             )
             # _LOGGER.debug("BODY: [%s]", body)
         elif method == "PUT":
@@ -102,9 +107,14 @@ class TuyaCloudApi:
                 full_url,
                 headers=dict(default_par, **headers),
                 data=json.dumps(body),
+                timeout=request_timeout,
             )
 
-        resp = await self._hass.async_add_executor_job(func)
+        try:
+            resp = await self._hass.async_add_executor_job(func)
+        except requests.exceptions.ReadTimeout as ex:
+            _LOGGER.debug(f"Requests read timeout: {ex}")
+            return
         # r = json.dumps(r.json(), indent=2, ensure_ascii=False) # Beautify the format
         return resp
 
@@ -120,6 +130,9 @@ class TuyaCloudApi:
             self._token_expire_time = 0
             return "Request failed, status ConnectionError"
 
+        if not resp:
+            self._token_expire_time = 0
+            return
         if not resp.ok:
             return "Request failed, status " + str(resp.status)
 
@@ -157,7 +170,7 @@ class TuyaCloudApi:
 
         # Get Devices DPS Data.
         get_functions = [
-            asyncio.create_task(self.get_device_functions(devid))
+            self._hass.async_create_task(self.get_device_functions(devid))
             for devid in self.device_list
         ]
         # await asyncio.run(*get_functions)
@@ -272,12 +285,11 @@ class TuyaCloudApi:
         if (res := await self.async_get_access_token()) and res != "ok":
             _LOGGER.error("Cloud API connection failed: %s", res)
             return "authentication_failed", res
-
-        if (res := await self.async_get_devices_list()) and res != "ok":
+        if res and (res := await self.async_get_devices_list()) and res != "ok":
             _LOGGER.error("Cloud API connection failed: %s", res)
             return "device_list_failed", res
-
-        _LOGGER.info("Cloud API connection succeeded.")
+        if res:
+            _LOGGER.info("Cloud API connection succeeded.")
         return True, res
 
     @property
