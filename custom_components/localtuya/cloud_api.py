@@ -246,12 +246,16 @@ class TuyaCloudApi:
             for dp_data in properties if properties else {}:
                 refactored = {
                     "id": dp_data.get("abilityId"),
-                    "code": dp_data.get("code"),
+                    # "code": dp_data.get("code"),
                     "accessMode": dp_data.get("accessMode"),
                     # values: json.loads later
                     "values": str(dp_data.get("typeSpec")).replace("'", '"'),
                 }
-                device_data[str(dp_data["abilityId"])].update(refactored)
+                if str(dp_data["abilityId"]) in device_data:
+                    device_data[str(dp_data["abilityId"])].update(refactored)
+                else:
+                    refactored["code"] = dp_data.get("code")
+                    device_data[str(dp_data["abilityId"])] = refactored
 
         if "28841002" in str(query_props[1]):
             # No permissions This affect auto configure feature.
