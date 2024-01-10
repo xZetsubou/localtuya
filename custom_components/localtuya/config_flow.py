@@ -75,7 +75,7 @@ from .discovery import discover
 
 _LOGGER = logging.getLogger(__name__)
 
-ENTRIES_VERSION = 3
+ENTRIES_VERSION = 4
 
 PLATFORM_TO_ADD = "platform_to_add"
 USE_TEMPLATE = "use_template"
