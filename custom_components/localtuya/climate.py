@@ -65,7 +65,8 @@ RENAME_HVAC_MODE_SETS = {  # Mirgae to 3
 }
 RENAME_ACTION_SETS = {  # Mirgae to 3
     ("open", "opened", "heating", "Heat", "True"): HVACAction.HEATING,
-    ("closed", "no_heating", "ventilation", "Warming", "warming"): HVACAction.IDLE,
+    ("closed", "close", "no_heating"): HVACAction.IDLE,
+    ("Warming", "warming", "False"): HVACAction.IDLE,
     ("cooling"): HVACAction.COOLING,
     ("off"): HVACAction.OFF,
 }

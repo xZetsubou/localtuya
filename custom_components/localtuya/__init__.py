@@ -267,9 +267,9 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
                             for i in hvac_set.split(","):
                                 for k, v in new_values.items():
                                     if i in k:
-                                        climate_to_dict[conf].update(
-                                            {v: True if i == "True" else i}
-                                        )
+                                        new_v = True if i == "True" else i
+                                        new_v = False if i == "False" else new_v
+                                        climate_to_dict[conf].update({v: new_v})
                     new_entity_data = climate_to_dict
                 new_data[CONF_DEVICES][device][CONF_ENTITIES][current_entity].update(
                     new_entity_data
