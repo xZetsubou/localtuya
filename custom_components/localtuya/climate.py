@@ -56,19 +56,19 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-HVAC_OFF = {HVACMode.OFF: "off"}
+HVAC_OFF = {HVACMode.OFF.value: "off"}
 RENAME_HVAC_MODE_SETS = {  # Mirgae to 3
-    ("manual", "Manual", "hot", "m", "True"): HVACMode.HEAT,
-    ("auto", "0", "p", "Program"): HVACMode.AUTO,
-    ("freeze", "cold", "1"): HVACMode.COOL,
-    ("wet"): HVACMode.DRY,
+    ("manual", "Manual", "hot", "m", "True"): HVACMode.HEAT.value,
+    ("auto", "0", "p", "Program"): HVACMode.AUTO.value,
+    ("freeze", "cold", "1"): HVACMode.COOL.value,
+    ("wet"): HVACMode.DRY.value,
 }
 RENAME_ACTION_SETS = {  # Mirgae to 3
-    ("open", "opened", "heating", "Heat", "True"): HVACAction.HEATING,
-    ("closed", "close", "no_heating"): HVACAction.IDLE,
-    ("Warming", "warming", "False"): HVACAction.IDLE,
-    ("cooling"): HVACAction.COOLING,
-    ("off"): HVACAction.OFF,
+    ("open", "opened", "heating", "Heat", "True"): HVACAction.HEATING.value,
+    ("closed", "close", "no_heating"): HVACAction.IDLE.value,
+    ("Warming", "warming", "False"): HVACAction.IDLE.value,
+    ("cooling"): HVACAction.COOLING.value,
+    ("off"): HVACAction.OFF.value,
 }
 RENAME_PRESET_SETS = {
     "Holiday": (PRESET_AWAY),
