@@ -203,18 +203,21 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         # Convert values and friendly name values to dict.
         from .const import (
             Platform,
-            CONF_OPTIONS_FRIENDLY,
             CONF_OPTIONS,
             CONF_HVAC_MODE_SET,
             CONF_HVAC_ACTION_SET,
             CONF_PRESET_SET,
             CONF_SCENE_VALUES,
+            # Deprecated
             CONF_SCENE_VALUES_FRIENDLY,
+            CONF_OPTIONS_FRIENDLY,
+            CONF_HVAC_ADD_OFF,
         )
         from .climate import (
             RENAME_HVAC_MODE_SETS,
             RENAME_ACTION_SETS,
             RENAME_PRESET_SETS,
+            HVAC_OFF,
         )
 
         def convert_str_to_dict(list1: str, list2: str = ""):
@@ -255,6 +258,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
                     ):
                         climate_to_dict[conf] = {}
                         if hvac_set := entity.get(conf, ""):
+                            if entity.get(CONF_HVAC_ADD_OFF, False):
+                                climate_to_dict[CONF_HVAC_MODE_SET].update(HVAC_OFF)
                             if not isinstance(conf, str):
                                 continue
                             hvac_set = hvac_set.replace("/", ",")

@@ -56,6 +56,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
+HVAC_OFF = {HVACMode.OFF: "off"}
 RENAME_HVAC_MODE_SETS = {  # Mirgae to 3
     ("manual", "Manual", "hot", "m", True): HVACMode.HEAT,
     ("auto", "0", "p", "Program"): HVACMode.AUTO,
@@ -133,7 +134,6 @@ def flow_schema(dps):
         vol.Optional(CONF_TEMPERATURE_UNIT): _col_to_select(
             [TEMPERATURE_CELSIUS, TEMPERATURE_FAHRENHEIT]
         ),
-        vol.Optional(CONF_HVAC_ADD_OFF, default=True): bool,
         vol.Optional(CONF_HEURISTIC_ACTION): bool,
     }
 
