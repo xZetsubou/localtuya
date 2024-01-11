@@ -22,13 +22,14 @@ class CLOUD_VALUE:
     `dp_config(str)`: The dp config key that will be used to look for the values into it.\n
     `value_key(str)`: The "key" name of the targeted value.\n
     `prefer_type(dict | str)`: Used for enums to convert the values to [dict or str splitted by comma, default is list].\n
+    `reverse_dict(bool)`: Reverse dict keys, value if prefer_type is dict.\n
     """
 
     default_value: Any
     dp_config: str
     value_key: str
     prefer_type: type = None
-    enable_conditions: bool = False
+    reverse_dict: bool = False
 
 
 class LocalTuyaEntity:

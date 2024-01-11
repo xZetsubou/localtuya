@@ -16,7 +16,7 @@ from homeassistant.components.climate import (
 )
 from homeassistant.const import CONF_TEMPERATURE_UNIT
 
-from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
+from .base import DPCode, LocalTuyaEntity, CLOUD_VALUE
 from ...const import (
     CONF_ECO_VALUE,
     CONF_HVAC_ACTION_SET,
@@ -25,7 +25,11 @@ from ...const import (
     CONF_PRESET_SET,
     CONF_TARGET_PRECISION,
     CONF_TEMPERATURE_STEP,
-    CONF_HVAC_ADD_OFF,
+    CONF_HVAC_ACTION_DP,
+    CONF_HVAC_MODE_DP,
+    CONF_CURRENT_TEMPERATURE_DP,
+    CONF_MAX_TEMP,
+    CONF_MIN_TEMP,
 )
 
 
@@ -40,28 +44,57 @@ def localtuya_climate(
     echo_value=None,
     preset_set=None,
     unit=None,
+    min_temperature=7,
+    max_temperature=35,
     values_precsion=0.1,
     target_precision=0.1,
-    includes_off_mode=True,
 ) -> dict:
     """Create localtuya climate configs"""
     data = {ATTR_MIN_TEMP: DEFAULT_MIN_TEMP, ATTR_MAX_TEMP: DEFAULT_MAX_TEMP}
     for key, conf in {
-        CONF_HVAC_MODE_SET: hvac_mode_set,
+        CONF_HVAC_MODE_SET: CLOUD_VALUE(
+            hvac_mode_set, CONF_HVAC_MODE_DP, "range", dict, True
+        ),
+        CONF_MAX_TEMP: CLOUD_VALUE(min_temperature, CONF_CURRENT_TEMPERATURE_DP, "min"),
+        CONF_MIN_TEMP: CLOUD_VALUE(max_temperature, CONF_CURRENT_TEMPERATURE_DP, "max"),
         CONF_TEMPERATURE_STEP: temp_step,
-        CONF_HVAC_ACTION_SET: actions_set,
+        CONF_HVAC_ACTION_SET: CLOUD_VALUE(
+            actions_set, CONF_HVAC_ACTION_DP, "range", dict, True
+        ),
         CONF_ECO_VALUE: echo_value,
         CONF_PRESET_SET: preset_set,
         CONF_TEMPERATURE_UNIT: unit,
-        CONF_PRECISION: values_precsion,
+        CONF_PRECISION: CLOUD_VALUE(
+            values_precsion, CONF_CURRENT_TEMPERATURE_DP, "scale"
+        ),
         CONF_TARGET_PRECISION: target_precision,
-        CONF_HVAC_ADD_OFF: includes_off_mode,
     }.items():
         if conf:
             data.update({key: conf})
 
     return data
 
+
+# Map used for cloud value obtain.
+MAP_TUYA_TO_HA = {
+    "off": HVACMode.OFF,
+    "auto": HVACMode.AUTO,
+    "cold": HVACMode.COOL,
+    "freeze": HVACMode.COOL,
+    "hot": HVACMode.HEAT,
+    "manual": HVACMode.HEAT_COOL,
+    "wet": HVACMode.DRY,
+    "wind": HVACMode.FAN_ONLY,
+    # Actions
+    "heating": HVACAction.HEATING,
+    "cooling": HVACAction.COOLING,
+    "heating": HVACAction.HEATING,
+    "warming": HVACAction.IDLE,
+    "heating": HVACAction.HEATING,
+    "warming": HVACAction.IDLE,
+    "opened": HVACAction.HEATING,
+    "closed": HVACAction.IDLE,
+}
 
 CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # Air conditioner
