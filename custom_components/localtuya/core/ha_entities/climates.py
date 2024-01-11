@@ -8,6 +8,7 @@
 
 from homeassistant.components.climate import (
     HVACMode,
+    HVACAction,
     DEFAULT_MAX_TEMP,
     DEFAULT_MIN_TEMP,
     ATTR_MAX_TEMP,
@@ -73,9 +74,17 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             hvac_mode_dp=DPCode.MODE,
             hvac_action_dp=(DPCode.WORK_MODE, DPCode.WORK_STATUS, DPCode.WORK_STATE),
             custom_configs=localtuya_climate(
-                hvac_mode_set="auto/cold/hot/wet",
+                hvac_mode_set={
+                    HVACMode.AUTO: "auto",
+                    HVACMode.COOL: "cold",
+                    HVACMode.HEAT: "hot",
+                    HVACMode.DRY: "wet",
+                },
                 temp_step=1,
-                actions_set="heating/cooling",
+                actions_set={
+                    HVACAction.HEATING: "heating",
+                    HVACAction.COOLING: "cooling",
+                },
                 unit=UNIT_C,
                 values_precsion=0.1,
                 target_precision=0.1,
@@ -92,8 +101,15 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             preset_dp=DPCode.MODE,
             hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
             custom_configs=localtuya_climate(
+                hvac_mode_set={
+                    HVACMode.OFF: "off",
+                    HVACMode.HEAT: "hot",
+                },
                 temp_step=1,
-                actions_set="heating/warming",
+                actions_set={
+                    HVACAction.HEATING: "heating",
+                    HVACAction.IDLE: "warming",
+                },
                 values_precsion=0.1,
                 target_precision=0.1,
                 preset_set="auto/smart",
@@ -110,8 +126,15 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             preset_dp=DPCode.MODE,
             hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
             custom_configs=localtuya_climate(
+                hvac_mode_set={
+                    HVACMode.OFF: "off",
+                    HVACMode.HEAT: "hot",
+                },
                 temp_step=1,
-                actions_set="heating/warming",
+                actions_set={
+                    HVACAction.HEATING: "heating",
+                    HVACAction.IDLE: "warming",
+                },
                 unit=UNIT_C,
                 values_precsion=0.1,
                 target_precision=0.1,
@@ -130,9 +153,12 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
             preset_dp=DPCode.MODE,
             custom_configs=localtuya_climate(
-                hvac_mode_set="True/False",
+                hvac_mode_set={HVACMode.HEAT: True, HVACMode.OFF: False},
                 temp_step=1,
-                actions_set="True/False",
+                actions_set={
+                    HVACAction.HEATING: True,
+                    HVACAction.IDLE: False,
+                },
                 unit=UNIT_C,
                 values_precsion=0.1,
                 target_precision=0.1,
@@ -149,9 +175,12 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             hvac_mode_dp=DPCode.MODE,
             hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
             custom_configs=localtuya_climate(
-                hvac_mode_set="manual/auto",
+                hvac_mode_set={
+                    HVACMode.HEAT: "manual",
+                    HVACMode.AUTO: "auto",
+                },
                 temp_step=1,
-                actions_set="opened/closed",
+                actions_set={HVACAction.HEATING: "opened", HVACAction.IDLE: "closed"},
                 unit=UNIT_C,
                 values_precsion=0.1,
                 target_precision=0.1,
