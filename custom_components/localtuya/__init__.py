@@ -259,14 +259,17 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
                         climate_to_dict[conf] = {}
                         if hvac_set := entity.get(conf, ""):
                             if entity.get(CONF_HVAC_ADD_OFF, False):
-                                climate_to_dict[CONF_HVAC_MODE_SET].update(HVAC_OFF)
+                                if conf == CONF_HVAC_MODE_SET:
+                                    climate_to_dict[conf].update(HVAC_OFF)
                             if not isinstance(conf, str):
                                 continue
                             hvac_set = hvac_set.replace("/", ",")
                             for i in hvac_set.split(","):
                                 for k, v in new_values.items():
                                     if i in k:
-                                        climate_to_dict[conf].update({v: i})
+                                        climate_to_dict[conf].update(
+                                            {v: True if i == "True" else i}
+                                        )
                     new_entity_data = climate_to_dict
                 new_data[CONF_DEVICES][device][CONF_ENTITIES][current_entity].update(
                     new_entity_data
