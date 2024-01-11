@@ -53,13 +53,13 @@ def localtuya_climate(
     data = {ATTR_MIN_TEMP: DEFAULT_MIN_TEMP, ATTR_MAX_TEMP: DEFAULT_MAX_TEMP}
     for key, conf in {
         CONF_HVAC_MODE_SET: CLOUD_VALUE(
-            hvac_mode_set, CONF_HVAC_MODE_DP, "range", dict, True
+            hvac_mode_set, CONF_HVAC_MODE_DP, "range", dict, MAP_CLIMATE_MODES, True
         ),
         CONF_MIN_TEMP: CLOUD_VALUE(min_temperature, CONF_CURRENT_TEMPERATURE_DP, "min"),
         CONF_MAX_TEMP: CLOUD_VALUE(max_temperature, CONF_CURRENT_TEMPERATURE_DP, "max"),
         CONF_TEMPERATURE_STEP: temp_step,
         CONF_HVAC_ACTION_SET: CLOUD_VALUE(
-            actions_set, CONF_HVAC_ACTION_DP, "range", dict, True
+            actions_set, CONF_HVAC_ACTION_DP, "range", dict, MAP_CLIMATE_ACTIONS, True
         ),
         CONF_ECO_VALUE: echo_value,
         CONF_PRESET_SET: preset_set,
@@ -76,7 +76,7 @@ def localtuya_climate(
 
 
 # Map used for cloud value obtain.
-MAP_TUYA_TO_HA = {
+MAP_CLIMATE_MODES = {
     "off": HVACMode.OFF,
     "auto": HVACMode.AUTO,
     "cold": HVACMode.COOL,
@@ -85,7 +85,8 @@ MAP_TUYA_TO_HA = {
     "manual": HVACMode.HEAT_COOL,
     "wet": HVACMode.DRY,
     "wind": HVACMode.FAN_ONLY,
-    # Actions
+}
+MAP_CLIMATE_ACTIONS = {
     "heating": HVACAction.HEATING,
     "cooling": HVACAction.COOLING,
     "heating": HVACAction.HEATING,

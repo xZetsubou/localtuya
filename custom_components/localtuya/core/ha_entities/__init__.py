@@ -35,7 +35,7 @@ import logging
 from .alarm_control_panels import ALARMS  # not added yet
 from .binary_sensors import BINARY_SENSORS
 from .buttons import BUTTONS
-from .climates import CLIMATES, MAP_TUYA_TO_HA
+from .climates import CLIMATES
 from .covers import COVERS
 from .fans import FANS
 from .humidifiers import HUMIDIFIERS
@@ -219,15 +219,15 @@ def convert_list(_list: list, req_info: CLOUD_VALUE = str):
         # Return dict {value_1: Value 1, value_2: Value 2, value_3: Value 3}
         to_dict = {}
         for k in _list:
-            k_name = k
+            k_name = k.replace("_", " ").capitalize()  # Default name
             if isinstance(req_info.default_value, dict):
                 k_name = req_info.default_value.get(k, k_name)
+            if remaped_value := req_info.remap_values.get(k):
+                k_name = remaped_value
+
             if req_info.reverse_dict:
-                if tuya_mode_to_ha := MAP_TUYA_TO_HA.get(k):
-                    k_name = tuya_mode_to_ha
                 to_dict.update({k_name: k})
             else:
-                k_name = k.replace("_", " ").capitalize()  # Default name
                 to_dict.update({k: k_name})
         return to_dict
 

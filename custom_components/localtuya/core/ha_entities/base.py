@@ -1,5 +1,5 @@
 from enum import StrEnum
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from homeassistant.const import (
@@ -22,13 +22,15 @@ class CLOUD_VALUE:
     `dp_config(str)`: The dp config key that will be used to look for the values into it.\n
     `value_key(str)`: The "key" name of the targeted value.\n
     `prefer_type(dict | str)`: Used for enums to convert the values to [dict or str splitted by comma, default is list].\n
-    `reverse_dict(bool)`: Reverse dict keys, value if prefer_type is dict.\n
+    `remap_values(dict)`: Used to remap dict values, if prefer_type is dict.\n
+    `reverse_dict(bool)`: Reverse dict keys, value, if prefer_type is dict.\n
     """
 
     default_value: Any
     dp_config: str
     value_key: str
     prefer_type: type = None
+    remap_values: dict[str, Any] = field(default_factory=dict)
     reverse_dict: bool = False
 
 
