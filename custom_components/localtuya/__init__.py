@@ -223,7 +223,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         def convert_str_to_dict(list1: str, list2: str = ""):
             to_dict = {}
             if not isinstance(list1, str):
-                return
+                return list1
             list1, list2 = list1.replace(";", ","), list2.replace(";", ",")
             v, v_fn = list1.split(","), list2.split(",")
             for k in range(len(v)):
