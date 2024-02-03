@@ -58,8 +58,8 @@ _LOGGER = logging.getLogger(__name__)
 
 HVAC_OFF = {HVACMode.OFF.value: "off"}
 RENAME_HVAC_MODE_SETS = {  # Mirgae to 3
-    ("manual", "Manual", "hot", "m", "True"): HVACMode.HEAT.value,
-    ("auto", "0", "p", "Program"): HVACMode.AUTO.value,
+    ("manual", "Manual", "hot", "m", "True", "MANUAL"): HVACMode.HEAT.value,
+    ("auto", "0", "p", "Program", "AUTO"): HVACMode.AUTO.value,
     ("freeze", "cold", "1"): HVACMode.COOL.value,
     ("wet"): HVACMode.DRY.value,
 }
