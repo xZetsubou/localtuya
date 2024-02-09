@@ -803,6 +803,58 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
         ),
     ),
+    # Alarm Host
+    # https://developer.tuya.com/en/docs/iot/categorymal?id=Kaiuz33clqxaf
+    "mal": (
+        LocalTuyaEntity(
+            id=DPCode.SWITCH_ALARM_SOUND,
+            name="Sound",
+            icon="mdi:volume-source",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SWITCH_ALARM_LIGHT,
+            name="Light",
+            icon="mdi:alarm-light-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SWITCH_KB_SOUND,
+            name="Key Tone Sound",
+            icon="mdi:volume-source",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SWITCH_KB_LIGHT,
+            name="Keypad Light",
+            icon="mdi:alarm-light-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SWITCH_ALARM_CALL,
+            name="Call",
+            icon="mdi:phone",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SWITCH_ALARM_SMS,
+            name="SMS",
+            icon="mdi:message",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SWITCH_ALARM_PROPEL,
+            name="Push Notification",
+            icon="mdi:bell-badge-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.MUFFLING,
+            name="Mute",
+            icon="mdi:volume-mute",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
 }
 
 # Scene Switch

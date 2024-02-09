@@ -49,7 +49,7 @@ from .vacuums import VACUUMS
 
 # The supported PLATFORMS [ Platform: Data ]
 DATA_PLATFORMS = {
-    # Platform.ALARM_CONTROL_PANEL: ALARMS,
+    Platform.ALARM_CONTROL_PANEL: ALARMS,
     Platform.BINARY_SENSOR: BINARY_SENSORS,
     Platform.BUTTON: BUTTONS,
     Platform.CLIMATE: CLIMATES,

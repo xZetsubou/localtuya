@@ -233,7 +233,8 @@
                     "humidifier_mode_dp": "(Optional) Set mode DP",
                     "humidifier_set_humidity_dp": "(Optional) Set Humidity DP",
                     "min_humidity": "Set the minimum supported humidity",
-                    "max_humidity": "Set the maximum supported humidity"
+                    "max_humidity": "Set the maximum supported humidity",
+                    "alarm_supported_states": "States supported by the device"
                 },
                 "data_description": {
                     "hvac_mode_set":"Each line represents [ hvac_mode: device_value ] [Supported HVAC Modes](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-modes)",
@@ -241,6 +242,7 @@
                     "preset_set":"Each line represents [ device_value: friendly name ]",
                     "scene_values":"Each line represents [ device_value: friendly name ]",
                     "select_options":"Each line represents [ device_value: friendly name ]",
+                    "alarm_supported_states":"Each line represents [ supported state: device value ] [Supported States](https://developers.home-assistant.io/docs/core/entity/alarm-control-panel/#states)",
                     "humidifier_available_modes":"Each line represents [ device_value: friendly name ]",
                     "device_class": "Find out more about [Device Classes](https://www.home-assistant.io/docs/configuration/customizing-devices/#device-class)",
                     "state_class": "Find out more about [State Classes](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes)"

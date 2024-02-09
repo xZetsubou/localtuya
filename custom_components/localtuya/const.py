@@ -11,6 +11,7 @@ SUPPORTED_PROTOCOL_VERSIONS = ["3.3", "3.1", "3.2", "3.4", "3.5"]
 
 # Platforms in this list must support config flows
 PLATFORMS = {
+    "Alarm Control Panel": Platform.ALARM_CONTROL_PANEL,
     "Binary Sensor": Platform.BINARY_SENSOR,
     "Button": Platform.BUTTON,
     "Climate": Platform.CLIMATE,
@@ -58,6 +59,9 @@ CONF_MANUAL_DPS = "manual_dps_strings"
 CONF_DEFAULT_VALUE = "dps_default_value"
 CONF_RESET_DPIDS = "reset_dpids"
 CONF_PASSIVE_ENTITY = "is_passive_entity"
+
+# ALARM
+CONF_ALARM_SUPPORTED_STATES = "alarm_supported_states"
 
 # Binary_sensor, Siren
 CONF_STATE_ON = "state_on"

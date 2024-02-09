@@ -102,6 +102,7 @@ class DPCode(StrEnum):
     ADD_ELE1 = "add_ele1"
     ADD_ELE2 = "add_ele2"
     AIR_QUALITY = "air_quality"
+    ALARM_DELAY_TIME = "alarm_delay_time"
     ALARM_LOCK = "alarm_lock"
     ALARM_MESSAGE = "alarm_message"
     ALARM_RINGTONE = "alarm_ringtone"
@@ -215,6 +216,7 @@ class DPCode(StrEnum):
     DECIBEL_SWITCH = "decibel_switch"
     DEHUMIDITY_SET_ENUM = "dehumidify_set_enum"
     DEHUMIDITY_SET_VALUE = "dehumidify_set_value"
+    DELAY_SET = "delay_set"
     DEVICE_STATE1 = "device_state1"
     DEVICE_STATE2 = "device_state2"
     DISINFECTION = "disinfection"
@@ -306,6 +308,7 @@ class DPCode(StrEnum):
     NORMAL_OPEN_SWITCH = "normal_open_switch"
     OPPOSITE = "opposite"
     OPTIMUMSTART = "optimumstart"
+    OTHEREVENT = "OtherEvent"
     OVERCHARGE_SWITCH = "overcharge_switch"
     OXYGEN = "oxygen"  # Oxygen bar
     PAUSE = "pause"
@@ -338,6 +341,7 @@ class DPCode(StrEnum):
     POSITION = "position"
     POWDER_SET = "powder_set"  # Powder
     POWER = "power"
+    POWEREVENT = "PowerEvent"
     POWER_GO = "power_go"
     POWER_TYPE = "power_type"
     POWER_TYPE1 = "power_type1"
@@ -418,6 +422,9 @@ class DPCode(StrEnum):
     START = "start"  # Start
     STATUS = "status"
     STERILIZATION = "sterilization"  # Sterilization
+    SUB_CLASS = "sub_class"
+    SUB_STATE = "sub_state"
+    SUB_TYPE = "sub_type"
     SUCTION = "suction"
     SWING = "swing"  # Swing mode
     SWITCH = "switch"  # Switch
@@ -437,6 +444,10 @@ class DPCode(StrEnum):
     SWITCH_6 = "switch_6"  # Switch 6
     SWITCH_7 = "switch_7"  # Switch 7
     SWITCH_8 = "switch_8"  # Switch 8
+    SWITCH_ALARM_CALL = "switch_alarm_call"
+    SWITCH_ALARM_LIGHT = "switch_alarm_light"
+    SWITCH_ALARM_PROPEL = "switch_alarm_propel"
+    SWITCH_ALARM_SMS = "switch_alarm_sms"
     SWITCH_ALARM_SOUND = "switch_alarm_sound"
     SWITCH_BACKLIGHT = "switch_backlight"  # Backlight switch
     SWITCH_CHARGE = "switch_charge"
@@ -444,6 +455,8 @@ class DPCode(StrEnum):
     SWITCH_DISTURB = "switch_disturb"
     SWITCH_FAN = "switch_fan"
     SWITCH_HORIZONTAL = "switch_horizontal"  # Horizontal swing flap switch
+    SWITCH_KB_LIGHT = "switch_kb_light"
+    SWITCH_KB_SOUND = "switch_kb_sound"
     SWITCH_LED = "switch_led"  # Switch
     SWITCH_LED_1 = "switch_led_1"
     SWITCH_LED_2 = "switch_led_2"
@@ -556,3 +569,5 @@ class DPCode(StrEnum):
     WORK_POWER = "work_power"
     WORK_STATE = "work_state"
     WORK_STATUS = "work_status"
+    ZONE_ATTRIBUTE = "zone_attribute"
+    ZONE_NUMBER = "zone_number"

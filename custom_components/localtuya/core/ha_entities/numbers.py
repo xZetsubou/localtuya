@@ -620,6 +620,31 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             custom_configs=localtuya_numbers(1, 9),
         ),
     ),
+    # Alarm Host
+    # https://developer.tuya.com/en/docs/iot/categorymal?id=Kaiuz33clqxaf
+    "mal": (
+        LocalTuyaEntity(
+            id=DPCode.DELAY_SET,
+            name="Delay Setting",
+            custom_configs=localtuya_numbers(0, 65535),
+            icon="mdi:clock-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ALARM_TIME,
+            name="Duration",
+            custom_configs=localtuya_numbers(0, 65535),
+            icon="mdi:alarm",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ALARM_DELAY_TIME,
+            name="Delay Alarm",
+            custom_configs=localtuya_numbers(0, 65535),
+            icon="mdi:history",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
 }
 
 # Wireless Switch  # also can come as knob switch.

@@ -832,6 +832,65 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             ),
         ),
     ),
+    # Alarm Host
+    # https://developer.tuya.com/en/docs/iot/categorymal?id=Kaiuz33clqxaf
+    "mal": (
+        LocalTuyaEntity(
+            id=DPCode.ZONE_ATTRIBUTE,
+            entity_category=EntityCategory.CONFIG,
+            name="Zone Attribute",
+            custom_configs=localtuya_selector(
+                {
+                    "MODE_HOME_ARM": "Home Arm",
+                    "MODE_ARM": "Arm",
+                    "MODE_24": "24H",
+                    "MODE_DOORBELL": "Doorbell",
+                    "MODE_24_SILENT": "Sielnt",
+                    "HOME_ARM_NO_DELAY": "Home, Arm No delay",
+                    "ARM_NO_DELAY": "Arm No delay",
+                }
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.MASTER_STATE,
+            entity_category=EntityCategory.CONFIG,
+            name="Host Status",
+            custom_configs=localtuya_selector({"normal": "Normal", "alarm": "Alarm"}),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SUB_CLASS,
+            entity_category=EntityCategory.CONFIG,
+            name="Sub-device category",
+            custom_configs=localtuya_selector(
+                {
+                    "remote_controller": "Remote Controller",
+                    "detector": "Detector",
+                    "socket": "Socket",
+                }
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SUB_TYPE,
+            entity_category=EntityCategory.CONFIG,
+            name="Sub-device type",
+            custom_configs=localtuya_selector(
+                {
+                    "OTHER": "Other",
+                    "DOOR": "Door",
+                    "PIR": "Pir",
+                    "SOS": "SoS",
+                    "ROOM": "Room",
+                    "WINDOW": "Window",
+                    "BALCONY": "Balcony",
+                    "FENCE": "Fence",
+                    "SMOKE": "Smoke",
+                    "GAS": "Gas",
+                    "CO": "CO",
+                    "WATER": "Water",
+                }
+            ),
+        ),
+    ),
 }
 # Wireless Switch  # also can come as knob switch.
 # https://developer.tuya.com/en/docs/iot/wxkg?id=Kbeo9t3ryuqm5

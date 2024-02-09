@@ -1271,6 +1271,30 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
         *BATTERY_SENSORS,
     ),
+    # Alarm Host
+    # https://developer.tuya.com/en/docs/iot/categorymal?id=Kaiuz33clqxaf
+    "mal": (
+        LocalTuyaEntity(
+            id=DPCode.SUB_STATE,
+            name="Sub-Device State",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.POWEREVENT,
+            name="Power Event",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ZONE_NUMBER,
+            name="Zone Number",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.OTHEREVENT,
+            name="Other Event",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+    ),
 }
 
 # Socket (duplicate of `kg`)
