@@ -2,7 +2,7 @@
 
 from homeassistant.const import EntityCategory, Platform
 
-DOMAIN = "localtuya"
+DOMAIN = "localtuya_custom"
 
 DATA_DISCOVERY = "discovery"
 
