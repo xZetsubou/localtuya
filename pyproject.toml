@@ -1,6 +1,6 @@
 [tool.black]
 target-version = ["py38", "py39"]
-include = 'custom_components/localtuya/.*\.py'
+include = 'custom_components/localtuya_custom/.*\.py'
 
 # pylint config stolen from Home Assistant
 # Use a conservative default here; 2 should speed up most setups and not hurt
