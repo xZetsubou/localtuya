@@ -902,6 +902,13 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
                 {"small": "Low", "middle": "Medium", "large": "High"}
             ),
         ),
+        LocalTuyaEntity(
+            id=DPCode.FAN_SPEED_ENUM,
+            name="Fan Speed",
+            entity_category=EntityCategory.CONFIG,
+            icon="mdi:fan",
+            custom_configs=localtuya_selector({"low": "Low", "high": "High"}),
+        ),
     ),
     # sous vide cookers
     # https://developer.tuya.com/en/docs/iot/f?id=K9r2v9hgmyk3h
