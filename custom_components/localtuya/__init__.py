@@ -335,11 +335,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             if node_id := config.get(CONF_NODE_ID):
                 # Setup sub device as gateway if there is no gateway exist.
                 if host not in devices:
-                    devices[host] = TuyaDevice(hass, entry, dev_id, True)
+                    devices[host] = TuyaDevice(hass, entry, config, True)
 
                 host = f"{host}_{node_id}"
 
-            devices[host] = TuyaDevice(hass, entry, dev_id)
+            devices[host] = TuyaDevice(hass, entry, config)
 
         hass_localtuya = HassLocalTuyaData(tuya_api, devices, [])
         hass.data[DOMAIN][entry.entry_id] = hass_localtuya
@@ -374,7 +374,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     for dev in hass_data.devices.values():
         if dev.connected:
             disconnect_devices.append(dev.close())
-        for entity in dev._device_config[CONF_ENTITIES]:
+        for entity in dev._device_config.entities:
             platforms[entity[CONF_PLATFORM]] = True
 
     # Unload the platforms.
@@ -443,7 +443,7 @@ def reconnectTask(hass: HomeAssistant, entry: ConfigEntry):
         """Try connecting to devices not already connected to."""
         reconnect_devices = []
         for host, dev in hass_localtuya.devices.items():
-            dev_id = dev._device_config[CONF_DEVICE_ID]
+            dev_id = dev._device_config.id
             if check_if_device_disabled(hass, entry, dev_id):
                 return
             if not dev.connected:

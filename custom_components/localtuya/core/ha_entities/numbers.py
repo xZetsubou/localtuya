@@ -851,6 +851,7 @@ NUMBERS["hdmipmtbq"] = NUMBERS["dj"]
 NUMBERS["cjkg"] = NUMBERS["kg"]
 
 NUMBERS["cz"] = NUMBERS["kg"]
+NUMBERS["tdq"] = NUMBERS["kg"]
 NUMBERS["pc"] = NUMBERS["kg"]
 
 # Locker
