@@ -621,7 +621,7 @@ class MessageDispatcher(ContextualLogger):
         """Add new data to the buffer and try to parse messages."""
         self.buffer += data
 
-        header_len_55AA = struct.calcsize(MESSAGE_RECV_HEADER_FMT)
+        header_len_55AA = struct.calcsize(MESSAGE_HEADER_FMT_55AA)
         header_len_6699 = struct.calcsize(MESSAGE_HEADER_FMT_6699)
         header_len = header_len_55AA
 
@@ -1109,11 +1109,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             # in the requested range
             self.dps_to_request = {"1": None}
             self.add_dps_to_request(range(*dps_range))
-            try:
-                data = await self.status(cid=cid)
-            except Exception as ex:
-                self.exception("Failed to get status: %s", ex)
-                raise
+            data = await self.status(cid=cid)
             # if "dps" in data:
             if cid and cid in data:
                 self.dps_cache.update({cid: data[cid]})
