@@ -300,8 +300,8 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             )
 
         commands = devices_data[device]
-        commands.pop("rf", False)
         if command not in commands:
+            commands.pop("rf", False)
             raise ServiceValidationError(
                 f"Couldn't find the command {command} for in {device} device. the available commands for this device is: {list(commands)}"
             )
@@ -364,8 +364,8 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             )
 
         commands = devices_data[device]
-        commands.pop("rf", False)
         if command not in commands:
+            commands.pop("rf", False)
             raise ServiceValidationError(
                 f"Couldn't find the command {command} for in {device} device. the available commands for this device is: {list(commands)}"
             )
