@@ -69,7 +69,8 @@ MODE_RF_TO_SHORT = {
     MODE_IR_TO_RF[ControlMode.STUDY_EXIT]: "rfstudy_exit",
 }
 ATTR_FREQ = "freq"
-
+ATTR_VER = "ver"
+ATTR_RF_TYPE = "rf_type"
 
 CODE_STORAGE_VERSION = 1
 SOTRAGE_KEY = "localtuya_remotes_codes"
@@ -275,7 +276,12 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
                 command[NSDP_KEY1] = base64_code  # also code: key_code
             if rf:
                 command[ATTR_FREQ] = "0"
-
+                if ATTR_RF_TYPE not in command or not command[ATTR_RF_TYPE]:
+                    command[ATTR_RF_TYPE] = "sub_2g"
+                if ATTR_FREQ not in command or not command[ATTR_FREQ]:
+                    command[ATTR_FREQ] = "0"
+                if ATTR_VER not in command or not command[ATTR_VER]:
+                    command[ATTR_VER] = "2"
             command = {self._dp_id: json.dumps(command)}
 
         self.debug(f"Sending Command: {command}")
