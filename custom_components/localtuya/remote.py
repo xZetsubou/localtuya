@@ -267,7 +267,6 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             if control == ControlMode.SEND_IR:
                 command[self._dp_id] = ControlMode.STUDY_KEY.value
                 command[self._dp_key_study] = base64_code
-
         else:
             command = {NSDP_CONTROL: control if not rf else MODE_IR_TO_RF.get(control)}
             if control == ControlMode.SEND_IR:
