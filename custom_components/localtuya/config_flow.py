@@ -129,7 +129,7 @@ def _col_to_select(
 CLOUD_CONFIGURE_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_REGION, default="eu"): _col_to_select(
-            ["eu", "us", "cn", "in"]
+            ["eu", "we", "us", "ea", "cn", "in"]
         ),
         vol.Optional(CONF_CLIENT_ID): cv.string,
         vol.Optional(CONF_CLIENT_SECRET): cv.string,
