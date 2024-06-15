@@ -66,7 +66,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         # For SubDevices
         self._node_id: str = self._device_config.node_id
         self._fake_gateway = fake_gateway
-        self._gwateway: TuyaDevice = None
+        self._gateway: TuyaDevice = None
         self.sub_devices: dict[str, TuyaDevice] = {}
 
         self._status = {}
@@ -148,7 +148,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self.warning("Sub-device localkey doesn't match the gateway localkey")
                 self._local_key = gateway._local_key
 
-            self._gwateway = gateway
+            self._gateway = gateway
             gateway.sub_devices[self._node_id] = self
             return gateway
         else:
@@ -292,8 +292,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Ensure that the device is not still connecting; if it is, wait for it."""
         if not self.connected and self._connect_task:
             await self._connect_task
-        if not self.connected and self._gwateway and self._gwateway._connect_task:
-            await self._gwateway._connect_task
+        if not self.connected and self._gateway and self._gateway._connect_task:
+            await self._gateway._connect_task
         if not self._interface:
             self.error(f"Not connected to device {self._device_config.name}")
 
