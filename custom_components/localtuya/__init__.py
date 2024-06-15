@@ -465,10 +465,14 @@ def reconnectTask(hass: HomeAssistant, entry: ConfigEntry):
             dev_id = dev._device_config.id
             if check_if_device_disabled(hass, entry, dev_id):
                 continue
-            if not dev.connected:
-                asyncio.create_task(dev.async_connect())
+            if dev.is_connecting or dev.connected:
+                continue
+            if dev._gateway and (dev._gateway.is_connecting or not dev._gateway.connected):
+                continue
 
-    # Add unsub callbeack in unsub_listeners object.
+            asyncio.create_task(dev.async_connect())
+
+    # Add unsub callback in unsub_listeners object.
     hass_localtuya.unsub_listeners.append(
         async_track_time_interval(hass, _async_reconnect, RECONNECT_INTERVAL)
     )
