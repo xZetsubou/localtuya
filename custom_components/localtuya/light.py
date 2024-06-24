@@ -98,10 +98,8 @@ def map_range(value, from_lower, from_upper, to_lower=0, to_upper=255, reverse=F
     """Map a value in one range to another."""
     if reverse:
         value = from_upper - value + from_lower
-    mapped = (value - from_lower) * (to_upper - to_lower) / (
-        from_upper - from_lower
-    ) + to_lower
-    return round(min(max(mapped, to_lower), to_upper))
+    mapped = value * to_upper / from_upper
+    return min(max(round(mapped), to_lower), to_upper)
 
 
 def flow_schema(dps):
