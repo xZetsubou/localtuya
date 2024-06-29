@@ -346,14 +346,17 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         color_modes = self.supported_color_modes
         brightness = None
         if ATTR_EFFECT in kwargs and (features & LightEntityFeature.EFFECT):
-            scene = self._scenes.get(kwargs[ATTR_EFFECT])
+            effect = kwargs[ATTR_EFFECT]
+            scene = self._scenes.get(effect)
             if scene is not None:
                 if scene.startswith(MODE_SCENE):
                     states[self._config.get(CONF_COLOR_MODE)] = scene
                 else:
                     states[self._config.get(CONF_COLOR_MODE)] = MODE_SCENE
                     states[self._config.get(CONF_SCENE)] = scene
-            elif kwargs[ATTR_EFFECT] == SCENE_MUSIC:
+            elif effect in {MODE_WHITE, MODE_COLOR, MODE_SCENE, MODE_MUSIC}:
+                states[self._config.get(CONF_COLOR_MODE)] = effect
+            elif effect == SCENE_MUSIC:
                 states[self._config.get(CONF_COLOR_MODE)] = MODE_MUSIC
 
         if ATTR_BRIGHTNESS in kwargs and (
