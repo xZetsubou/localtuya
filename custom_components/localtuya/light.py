@@ -98,10 +98,8 @@ def map_range(value, from_lower, from_upper, to_lower=0, to_upper=255, reverse=F
     """Map a value in one range to another."""
     if reverse:
         value = from_upper - value + from_lower
-    mapped = (value - from_lower) * (to_upper - to_lower) / (
-        from_upper - from_lower
-    ) + to_lower
-    return round(min(max(mapped, to_lower), to_upper))
+    mapped = value * to_upper / from_upper
+    return min(max(round(mapped), to_lower), to_upper)
 
 
 def flow_schema(dps):
@@ -188,9 +186,15 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def brightness(self):
         """Return the brightness of the light."""
-        if self._brightness is not None and (self.is_color_mode or self.is_white_mode):
+        brightness = self._brightness
+        if brightness is not None and (self.is_color_mode or self.is_white_mode):
+            if self._upper_brightness >= 1000: 
+                # Round to the nearest 10th, since Tuya does that.
+                # If the value is less than 5, it will round down to 0.
+                # So instead, we take _lower_brightness, which is < 5 in this case.
+                brightness = (brightness + 5) // 10 * 10 if brightness >= 5 else self._lower_brightness
             return map_range(
-                self._brightness, self._lower_brightness, self._upper_brightness, 0, 255
+                brightness, self._lower_brightness, self._upper_brightness, 0, 255
             )
         return None
 
