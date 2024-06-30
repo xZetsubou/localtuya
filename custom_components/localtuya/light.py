@@ -354,7 +354,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
                 else:
                     states[self._config.get(CONF_COLOR_MODE)] = MODE_SCENE
                     states[self._config.get(CONF_SCENE)] = scene
-            elif effect in {MODE_WHITE, MODE_COLOR, MODE_SCENE, MODE_MUSIC}:
+            elif effect in (MODE_WHITE, MODE_COLOR, MODE_SCENE, MODE_MUSIC):
                 states[self._config.get(CONF_COLOR_MODE)] = effect
             elif effect == SCENE_MUSIC:
                 states[self._config.get(CONF_COLOR_MODE)] = MODE_MUSIC
