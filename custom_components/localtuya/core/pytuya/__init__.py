@@ -948,7 +948,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             """Continuously send heart beat updates."""
             self.debug("Start a heartbeat for sub-devices")
             # This will break if main "heartbeat" stopped
-            while True and self.heartbeater:
+            while True:
                 try:
                     # Reset the state before every reuqest.
                     self.sub_devices_states = {"online": [], "offline": []}
@@ -1002,6 +1002,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         """Clean up session."""
         self.debug(f"Cleaning up session.")
         self.real_local_key = self.local_key
+
+        if self.sub_devices_hb:
+            self.sub_devices_hb.cancel()
+
         if self.heartbeater:
             self.heartbeater.cancel()
 
