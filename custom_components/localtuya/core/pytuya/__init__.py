@@ -972,14 +972,16 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     def connection_lost(self, exc):
         """Disconnected from device."""
         self.debug("Connection lost: %s", exc, force=True)
+
+        listener = self.listener and self.listener()
+        self.clean_up_session()
+
         try:
             listener = self.listener and self.listener()
             if listener is not None:
                 listener.disconnected(exc or "Connection lost")
         except Exception:  # pylint: disable=broad-except
             self.exception("Failed to call disconnected callback")
-
-        self.clean_up_session()
 
     async def transport_write(self, data, command_delay=True):
         """Write data on transport, The 'command_delay' will ensure that no massive requests happen all at once."""
