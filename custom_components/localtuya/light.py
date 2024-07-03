@@ -48,10 +48,16 @@ MODE_MUSIC = "music"
 MODE_SCENE = "scene"
 MODE_WHITE = "white"
 
+SCENE_WHITE  = "None"
+SCENE_CLOUD  = "Current scene"
+SCENE_COLOR  = "Current color"
 SCENE_CUSTOM = "Custom"
-SCENE_MUSIC = "Music"
+SCENE_MUSIC  = "Music"
 
 SCENE_LIST_RGBW_1000 = {
+    SCENE_WHITE: MODE_WHITE,
+    SCENE_COLOR: MODE_COLOR,
+    SCENE_CLOUD: MODE_SCENE,
     "Night": "000e0d0000000000000000c80000",
     "Read": "010e0d0000000000000003e801f4",
     "Meeting": "020e0d0000000000000003e803e8",
@@ -67,6 +73,9 @@ SCENE_LIST_RGBW_1000 = {
 }
 
 SCENE_LIST_RGBW_255 = {
+    SCENE_WHITE: MODE_WHITE,
+    SCENE_COLOR: MODE_COLOR,
+    SCENE_CLOUD: MODE_SCENE,
     "Night": "bd76000168ffff",
     "Read": "fffcf70168ffff",
     "Meeting": "cf38000168ffff",
@@ -78,6 +87,9 @@ SCENE_LIST_RGBW_255 = {
 }
 
 SCENE_LIST_RGB_1000 = {
+    SCENE_WHITE: MODE_WHITE,
+    SCENE_COLOR: MODE_COLOR,
+    SCENE_CLOUD: MODE_SCENE,
     "Night": "000e0d00002e03e802cc00000000",
     "Read": "010e0d000084000003e800000000",
     "Working": "020e0d00001403e803e800000000",
@@ -349,7 +361,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             effect = kwargs[ATTR_EFFECT]
             scene = self._scenes.get(effect)
             if scene is not None:
-                if scene.startswith(MODE_SCENE):
+                if scene.startswith(MODE_SCENE) or scene in (MODE_WHITE, MODE_COLOR):
                     states[self._config.get(CONF_COLOR_MODE)] = scene
                 else:
                     states[self._config.get(CONF_COLOR_MODE)] = MODE_SCENE
