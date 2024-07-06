@@ -41,11 +41,14 @@ from .fans import FANS
 from .humidifiers import HUMIDIFIERS
 from .lights import LIGHTS
 from .numbers import NUMBERS
+from .remotes import REMOTES
 from .selects import SELECTS
 from .sensors import SENSORS
 from .sirens import SIRENS
 from .switches import SWITCHES
 from .vacuums import VACUUMS
+from .locks import LOCKS
+from .water_heaters import WATER_HEATERS
 
 # The supported PLATFORMS [ Platform: Data ]
 DATA_PLATFORMS = {
@@ -57,15 +60,21 @@ DATA_PLATFORMS = {
     Platform.FAN: FANS,
     Platform.HUMIDIFIER: HUMIDIFIERS,
     Platform.LIGHT: LIGHTS,
+    Platform.LOCK: LOCKS,
     Platform.NUMBER: NUMBERS,
+    Platform.REMOTE: REMOTES,
     Platform.SELECT: SELECTS,
     Platform.SENSOR: SENSORS,
     Platform.SIREN: SIRENS,
     Platform.SWITCH: SWITCHES,
     Platform.VACUUM: VACUUMS,
+    Platform.WATER_HEATER: WATER_HEATERS,
 }
 
 _LOGGER = logging.getLogger(__name__)
+
+TUYA_CATEGORY = "category"
+DEVICE_CLOUD_DATA = "device_cloud_data"
 
 
 def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dict]:
@@ -77,7 +86,7 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
         return
 
     device_name: str = localtuya_data.get(CONF_FRIENDLY_NAME).strip()
-    device_cloud_data: dict = localtuya_data.get("device_cloud_data", {})
+    device_cloud_data: dict = localtuya_data.get(DEVICE_CLOUD_DATA, {})
     dps_data = device_cloud_data.get("dps_data", {})
 
     entities = {}
@@ -91,38 +100,45 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
                 localtuya_entity_configs = ent_data.entity_configs
                 # Conditions
                 contains_any: list[str] = ent_data.contains_any
-                local_entity = {}
+                entity = {}
 
                 # used_dp = 0
                 for k, code in localtuya_conf.items():
                     if type(code) == Enum:
                         code = code.value
 
+                    # If there's multi possible codes.
                     if isinstance(code, tuple):
-                        for dp_code in code:
-                            if any(dp_code in dps.split() for dps in detected_dps):
-                                code = parse_enum(dp_code)
+                        for _code in code:
+                            if any(_code in dp.lower().split() for dp in detected_dps):
+                                code = parse_enum(_code)
                                 break
                             else:
                                 code = None
 
                     for dp_data in detected_dps:
                         dp_data: str = dp_data.lower()
+                        # Same method we use in config_flow to get dp.
+                        dp_id = dp_data.split(" ")[0]
+
+                        if k in entity:
+                            # if the k already configured break the loop!.
+                            _LOGGER.debug(f"{k} Already configured with: {entity[k]}.")
+                            break
 
                         if contains_any is not None:
                             if not any(cond in dp_data for cond in contains_any):
                                 continue
 
                         if code and code.lower() in dp_data.split():
-                            # Same method we use in config_flow to get dp.
-                            local_entity[k] = dp_data.split(" ")[0]
+                            entity[k] = dp_id
 
                 # Pull dp values from cloud. still unsure to apply this to all.
                 # This is due to the fact that some local values may not same with the values provided from cloud.
                 # For now, this is applied only to numbers values.
                 for k, v in localtuya_entity_configs.items():
                     if isinstance(v, CLOUD_VALUE):
-                        config_dp = local_entity.get(v.dp_config)
+                        config_dp = entity.get(v.dp_config)
                         dp_values = get_dp_values(config_dp, dps_data, v) or {}
 
                         # special case for lights
@@ -130,23 +146,23 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
                         #     value = dp_values.get(v.value_key)
                         #     dp_values[v.value_key] = convert_to_kelvin(value)
 
-                        local_entity[k] = dp_values.get(v.value_key, v.default_value)
+                        entity[k] = dp_values.get(v.value_key, v.default_value)
                     else:
-                        local_entity[k] = v
+                        entity[k] = v
 
-                if local_entity:
+                if entity:
                     # Entity most contains ID
-                    if not local_entity.get(CONF_ID):
+                    if not entity.get(CONF_ID):
                         continue
                     # Workaround to Prevent duplicated id.
-                    if local_entity[CONF_ID] in entities:
-                        _LOGGER.debug(f"{device_name}: Duplicated ID: {local_entity}")
+                    if entity[CONF_ID] in entities:
+                        _LOGGER.debug(f"{device_name}: Duplicated ID: {entity}")
                         continue
 
-                    local_entity.update(main_confs)
-                    local_entity[CONF_PLATFORM] = platform
-                    entities[local_entity.get(CONF_ID)] = local_entity
-                    _LOGGER.debug(f"{device_name}: Entity configured: {local_entity}")
+                    entity.update(main_confs)
+                    entity[CONF_PLATFORM] = platform
+                    entities[entity.get(CONF_ID)] = entity
+                    _LOGGER.debug(f"{device_name}: Entity configured: {entity}")
 
     # sort entites by id
     sorted_ids = sorted(entities, key=int)
@@ -154,7 +170,7 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
     # convert to list of configs
     list_entities = [entities.get(id) for id in sorted_ids]
 
-    _LOGGER.debug(f"{device_name}: Entities configured: {list_entities}")
+    _LOGGER.debug(f"{device_name}: Configured entities: {list_entities}")
     # return []
     return list_entities
 
@@ -181,13 +197,32 @@ def get_dp_values(dp: str, dps_data: dict, req_info: CLOUD_VALUE = None) -> dict
     if not dp_values or not (dp_values := json.loads(dp_values)):
         return
 
+    # Some DPS doesn't have the type, in high level data.
+    if not dp_type and (_type := dp_values.get("type")):
+        dp_type = _type.capitalize()
+        # Fix type names.
+        dp_type = DPType.INTEGER if dp_type == "Value" else dp_type
+
     # Integer values: min, max, scale, step
     if dp_values and dp_type == DPType.INTEGER:
+        # We only need the scaling factor, other values will be scaled from via later on.
+        # dp_values["min"] = scale(dp_values.get("min"), val_scale)
+        valid_type = req_info.prefer_type and req_info.prefer_type in (str, float, int)
+        pref_type = req_info.prefer_type if valid_type else int
         val_scale = dp_values.get("scale", 1)
-        dp_values["min"] = scale(dp_values.get("min"), val_scale)
-        dp_values["max"] = scale(dp_values.get("max"), val_scale)
-        dp_values["step"] = scale(dp_values.get("step"), val_scale, float)
-        dp_values["scale"] = scale(1, val_scale, float)
+        dp_values["min"] = pref_type(dp_values.get("min"))
+        dp_values["max"] = pref_type(dp_values.get("max"))
+        dp_values["step"] = pref_type(dp_values.get("step"))
+
+        pref_type = req_info.prefer_type if valid_type else float
+        dp_values["scale"] = pref_type(scale(1, val_scale, float))
+
+        # Scale if requested.
+        if req_info.scale:
+            for v in ("min", "max", "step"):
+                value = dp_values[v]
+                dp_values[v] = pref_type(scale(value, val_scale))
+
         return dp_values
 
     # ENUM Values: range: list of values.
@@ -207,7 +242,10 @@ def get_dp_values(dp: str, dps_data: dict, req_info: CLOUD_VALUE = None) -> dict
 
 def scale(value: int, scale: int, _type: type = int) -> float:
     """Return scaled value."""
-    return _type(value) / (10**scale)
+    value = _type(value) / (10**scale)
+    if value.is_integer():
+        value = int(value)
+    return value
 
 
 def convert_list(_list: list, req_info: CLOUD_VALUE = str):
@@ -226,8 +264,8 @@ def convert_list(_list: list, req_info: CLOUD_VALUE = str):
         # Return dict {value_1: Value 1, value_2: Value 2, value_3: Value 3}
         to_dict = {}
         for k in _list:
-            if k in req_info.remap_values:
-                k_name = req_info.remap_values.get(k)
+            if k.lower() in req_info.remap_values:
+                k_name = req_info.remap_values.get(k.lower())
             else:
                 # k_name = k.replace("_", " ").capitalize()  # Default name
                 k_name = k  # Default name

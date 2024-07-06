@@ -5,6 +5,7 @@
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
 """
+
 from typing import Any
 from .base import DPCode, LocalTuyaEntity, EntityCategory, CLOUD_VALUE
 from homeassistant.const import CONF_BRIGHTNESS, CONF_COLOR_TEMP, CONF_SCENE
@@ -70,7 +71,7 @@ LIGHTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             color_temp=(DPCode.TEMP_VALUE_V2, DPCode.TEMP_VALUE),
             color=(DPCode.COLOUR_DATA_V2, DPCode.COLOUR_DATA),
             scene=(DPCode.SCENE_DATA_V2, DPCode.SCENE_DATA),
-            custom_configs=localtuya_light(29, 1000, 2700, 6500, False, False)
+            custom_configs=localtuya_light(29, 1000, 2700, 6500, False, False),
             # default_color_type=DEFAULT_COLOR_TYPE_DATA_V2,
         ),
     ),
@@ -260,7 +261,6 @@ LIGHTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "tgkg": (
         LocalTuyaEntity(
             id=DPCode.SWITCH_LED_1,
-            name="light",
             brightness=DPCode.BRIGHT_VALUE_1,
             brightness_upper=DPCode.BRIGHTNESS_MAX_1,
             brightness_lower=DPCode.BRIGHTNESS_MIN_1,
@@ -268,7 +268,7 @@ LIGHTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
         LocalTuyaEntity(
             id=DPCode.SWITCH_LED_2,
-            name="light_2",
+            name="Light 2",
             brightness=DPCode.BRIGHT_VALUE_2,
             brightness_upper=DPCode.BRIGHTNESS_MAX_2,
             brightness_lower=DPCode.BRIGHTNESS_MIN_2,
@@ -276,7 +276,7 @@ LIGHTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
         LocalTuyaEntity(
             id=DPCode.SWITCH_LED_3,
-            name="light_3",
+            name="Light 3",
             brightness=DPCode.BRIGHT_VALUE_3,
             brightness_upper=DPCode.BRIGHTNESS_MAX_3,
             brightness_lower=DPCode.BRIGHTNESS_MIN_3,
@@ -391,6 +391,15 @@ LIGHTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
     ),
 }
+
+# HDMI Sync Box A1
+LIGHTS["hdmipmtbq"] = (
+    *LIGHTS["tgkg"],
+    *LIGHTS["dj"],
+)
+
+# Dimmer
+LIGHTS["tdq"] = LIGHTS["tgkg"]
 
 # Scene Switch
 # https://developer.tuya.com/en/docs/iot/f?id=K9gf7nx6jelo8

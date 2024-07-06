@@ -288,6 +288,24 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:account-lock",
             entity_category=EntityCategory.CONFIG,
         ),
+        LocalTuyaEntity(
+            id=DPCode.SLEEP,
+            name="Sleep",
+            icon="mdi:sleep",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SHAKE,
+            name="Shake",
+            # icon="mdi:vibrate",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.INNERDRY,
+            name="Inner Dry",
+            icon="mdi:water-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
     ),
     # Sous Vide Cooker
     # https://developer.tuya.com/en/docs/iot/categorymzj?id=Kaiuz2vy130ux
@@ -477,6 +495,37 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:account-voice",
             entity_category=EntityCategory.CONFIG,
         ),
+        LocalTuyaEntity(
+            id=DPCode.RESET_MAP,
+            name="Map Resetting",
+            icon="mdi:backup-restore",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.BREAK_CLEAN,
+            name="Resumable Cleaning",
+            icon="mdi:cog-play-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.Y_MOP,
+            name="Mop Y",
+            icon="mdi:dots-vertical",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
+    # Water Valve
+    "sfkzq": (
+        LocalTuyaEntity(
+            id=DPCode.SWITCH,
+            icon="mdi:valve",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SWITCH_WEATHER,
+            name="Smart Weather",
+            icon="mdi:auto-mode",
+            entity_category=EntityCategory.CONFIG,
+        ),
     ),
     # Siren Alarm
     # https://developer.tuya.com/en/docs/iot/categorysgbj?id=Kaiuz37tlpbnu
@@ -554,6 +603,12 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.MOTION_SWITCH,
             name="Motion Alarm",
             icon="mdi:motion-sensor",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.PTZ_STOP,
+            name="PTZ Stop",
+            icon="mdi:stop-circle",
             entity_category=EntityCategory.CONFIG,
         ),
     ),
@@ -870,6 +925,22 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
         ),
     ),
+    # Thermostat
+    # https://developer.tuya.com/en/docs/iot/f?id=K9gf45ld5l0t9
+    "wk": (
+        LocalTuyaEntity(
+            id=DPCode.CHILD_LOCK,
+            name="Child Lock",
+            icon="mdi:account-lock",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ECO,
+            name="ECO",
+            icon="mdi:sprout",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
 }
 
 # Scene Switch
@@ -884,7 +955,11 @@ SWITCHES["wxkg"] = SWITCHES["kg"]
 # https://developer.tuya.com/en/docs/iot/s?id=K9gf7o5prgf7s
 SWITCHES["cz"] = SWITCHES["pc"]
 
-SWITCHES["wk"] = CHILD_LOCK
+# Climates / heaters
+SWITCHES["wkf"] = SWITCHES["wk"]
+SWITCHES["rs"] = SWITCHES["wk"]
+SWITCHES["qn"] = SWITCHES["wk"]
+SWITCHES["kt"] = SWITCHES["wk"]
 
 # Dehumidifier
 # https://developer.tuya.com/en/docs/iot/categorycs?id=Kaiuz1vcz4dha

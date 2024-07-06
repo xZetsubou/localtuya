@@ -279,7 +279,7 @@ BINARY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # https://developer.tuya.com/en/docs/iot/categorypir?id=Kaiuz3ss11b80
     "pir": (
         LocalTuyaEntity(
-            id=DPCode.PIR,
+            id=(DPCode.PIR, DPCode.PIR_STATE),
             device_class=BinarySensorDeviceClass.MOTION,
             custom_configs={CONF_STATE_ON: "pir"},
         ),
@@ -420,3 +420,5 @@ BINARY_SENSORS["cz"] = FAULT_SENSOR
 BINARY_SENSORS["cs"] = FAULT_SENSOR
 BINARY_SENSORS["jsq"] = FAULT_SENSOR
 BINARY_SENSORS["kt"] = FAULT_SENSOR
+BINARY_SENSORS["sd"] = FAULT_SENSOR
+BINARY_SENSORS["sfkzq"] = FAULT_SENSOR

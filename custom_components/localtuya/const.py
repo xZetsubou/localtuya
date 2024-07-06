@@ -1,6 +1,17 @@
 """Constants for localtuya integration."""
 
-from homeassistant.const import EntityCategory, Platform
+from dataclasses import dataclass
+from typing import Any
+from homeassistant.const import (
+    CONF_DEVICE_ID,
+    CONF_ENTITIES,
+    CONF_FRIENDLY_NAME,
+    CONF_HOST,
+    CONF_ID,
+    CONF_SCAN_INTERVAL,
+    EntityCategory,
+    Platform,
+)
 
 DOMAIN = "localtuya_custom"
 
@@ -20,12 +31,15 @@ PLATFORMS = {
     "Fan": Platform.FAN,
     "Humidifier": Platform.HUMIDIFIER,
     "Light": Platform.LIGHT,
+    "Lock": Platform.LOCK,
     "Number": Platform.NUMBER,
+    "Remote": Platform.REMOTE,
     "Select": Platform.SELECT,
     "Sensor": Platform.SENSOR,
     "Siren": Platform.SIREN,
     "Switch": Platform.SWITCH,
     "Vacuum": Platform.VACUUM,
+    "Water Heater": Platform.WATER_HEATER,
 }
 
 ATTR_CURRENT = "current"
@@ -37,6 +51,10 @@ ATTR_UPDATED_AT = "updated_at"
 CONF_TUYA_IP = "ip"
 CONF_TUYA_GWID = "gwId"
 CONF_TUYA_VERSION = "version"
+
+# Status Payloads.
+RESTORE_STATES = {"0": "restore"}
+
 
 # config flow
 CONF_LOCAL_KEY = "local_key"
@@ -60,6 +78,7 @@ CONF_MANUAL_DPS = "manual_dps_strings"
 CONF_DEFAULT_VALUE = "dps_default_value"
 CONF_RESET_DPIDS = "reset_dpids"
 CONF_PASSIVE_ENTITY = "is_passive_entity"
+CONF_DEVICE_SLEEP_TIME = "device_sleep_time"
 
 # ALARM
 CONF_ALARM_SUPPORTED_STATES = "alarm_supported_states"
@@ -89,6 +108,7 @@ CONF_COMMANDS_SET = "commands_set"
 CONF_POSITIONING_MODE = "positioning_mode"
 CONF_CURRENT_POSITION_DP = "current_position_dp"
 CONF_SET_POSITION_DP = "set_position_dp"
+CONF_STOP_SWITCH_DP = "stop_switch_dp"
 CONF_POSITION_INVERTED = "position_inverted"
 CONF_SPAN_TIME = "span_time"
 
@@ -145,6 +165,7 @@ CONF_FAULT_DP = "fault_dp"
 CONF_PAUSED_STATE = "paused_state"
 CONF_RETURN_MODE = "return_mode"
 CONF_STOP_STATUS = "stop_status"
+CONF_PAUSE_DP = "pause_dp"
 
 # number
 CONF_MIN_VALUE = "min_value"
@@ -154,6 +175,18 @@ CONF_STEPSIZE = "step_size"
 # select
 CONF_OPTIONS = "select_options"
 CONF_OPTIONS_FRIENDLY = "select_options_friendly"
+
+# Remote
+CONF_RECEIVE_DP = "receive_dp"
+CONF_KEY_STUDY_DP = "key_study_dp"
+
+# Lock
+CONF_JAMMED_DP = "jammed_dp"
+CONF_LOCK_STATE_DP = "lock_state_dp"
+
+# Water Heater
+CONF_TARGET_TEMPERATURE_LOW_DP = "target_temperature_low_dp"
+CONF_TARGET_TEMPERATURE_HIGH_DP = "target_temperature_high_dp"
 
 # States
 ATTR_STATE = "raw_state"
@@ -172,3 +205,26 @@ DEFAULT_CATEGORIES = {
     "CONFIG": ["select", "number", "button"],
     "DIAGNOSTIC": ["sensor", "binary_sensor"],
 }
+
+
+@dataclass
+class DeviceConfig:
+    """Represent the main configuration for LocalTuya device."""
+
+    device_config: dict[str, Any]
+
+    def __post_init__(self) -> None:
+        self.id: str = self.device_config[CONF_DEVICE_ID]
+        self.host: str = self.device_config[CONF_HOST]
+        self.local_key: str = self.device_config[CONF_LOCAL_KEY]
+        self.entities: list = self.device_config[CONF_ENTITIES]
+        self.protocol_version: str = self.device_config[CONF_PROTOCOL_VERSION]
+        self.sleep_time: int = self.device_config.get(CONF_DEVICE_SLEEP_TIME, 0)
+        self.scan_interval: int = self.device_config.get(CONF_SCAN_INTERVAL, 0)
+        self.enable_debug: bool = self.device_config.get(CONF_ENABLE_DEBUG, False)
+        self.name: str = self.device_config.get(CONF_FRIENDLY_NAME)
+        self.node_id: str | None = self.device_config.get(CONF_NODE_ID)
+        self.model: str = self.device_config.get(CONF_MODEL, "Tuya generic")
+        self.reset_dps: str = self.device_config.get(CONF_RESET_DPIDS, "")
+        self.manual_dps: str = self.device_config.get(CONF_MANUAL_DPS, "")
+        self.dps_strings: list = self.device_config.get(CONF_DPS_STRINGS, [])

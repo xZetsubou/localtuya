@@ -22,27 +22,7 @@ __A Home Assistant custom Integration for local handling of Tuya-based devices._
 
 <br>
 
-<details><summary> 𝐑𝐞𝐩𝐨𝐫𝐭𝐢𝐧𝐠 𝐚𝐧 𝐢𝐬𝐬𝐮𝐞 </summary>
-<p>
-
-Whenever you write a bug report, it's incredibly helpful to include debug logs directly. Otherwise, we'll need to request them separately, prolonging the process. Please enable debug logs as shown and include them in your issue:
-
-<details><summary> Via UI </summary>
-
-![](https://github.com/xZetsubou/hass-localtuya/assets/46300268/2515cf9d-fffb-46a9-b2c2-e776e20c5eb3)
-</details>
-
-```yaml
-logger:
-  default: warning
-  logs:
-    custom_components.localtuya: debug
-    custom_components.localtuya.pytuya: debug
-```
-Then, edit the device that is showing problems and check the "Enable debugging for this device" button.
-
-</p>
-</details> 
+[𝐑𝐞𝐩𝐨𝐫𝐭𝐢𝐧𝐠 𝐚𝐧 𝐢𝐬𝐬𝐮𝐞](https://xzetsubou.github.io/hass-localtuya/report_issue/)
 
 <!-- ### Notes
 

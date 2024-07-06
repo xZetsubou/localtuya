@@ -11,7 +11,9 @@ from homeassistant.const import (
     PERCENTAGE,
     UnitOfTime,
     UnitOfPower,
+    UnitOfTemperature,
     CONF_UNIT_OF_MEASUREMENT,
+    UnitOfLength,
 )
 
 from .base import DPCode, LocalTuyaEntity, EntityCategory, CLOUD_VALUE
@@ -170,7 +172,7 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.COUNTDOWN,
             icon="mdi:timer",
             entity_category=EntityCategory.CONFIG,
-            name="Light 4 Timer",
+            name="Timer",
             custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
     ),
@@ -353,6 +355,42 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Power 2 Wanring Limit",
             custom_configs=localtuya_numbers(0, 50000, 1, 1, UnitOfPower.WATT),
         ),
+        LocalTuyaEntity(
+            id=DPCode.POWER_ADJUSTMENT,
+            icon="mdi:generator-mobile",
+            entity_category=EntityCategory.CONFIG,
+            name="Power Adjustment",
+            custom_configs=localtuya_numbers(20, 100, 1, 1, PERCENTAGE),
+        ),
+        # Fan "tdq"
+        LocalTuyaEntity(
+            id=DPCode.FAN_COUNTDOWN,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Fan Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.FAN_COUNTDOWN_2,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Fan 2 Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.FAN_COUNTDOWN_3,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Fan 3 Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.FAN_COUNTDOWN_4,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Fan 4 Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
+        ),
     ),
     # Smart Lock
     # https://developer.tuya.com/en/docs/iot/s?id=Kb0o2xhlkxbet
@@ -423,6 +461,13 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
             name="Light level",
             custom_configs=localtuya_numbers(0, 981, 1, 1, "lx"),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.INTERVAL_TIME,
+            icon="mdi:timer-sand-complete",
+            entity_category=EntityCategory.CONFIG,
+            name="Interval",
+            custom_configs=localtuya_numbers(1, 720, 1, 1, UnitOfTime.MINUTES),
         ),
     ),
     # Robot Vacuum
@@ -620,6 +665,66 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             custom_configs=localtuya_numbers(1, 9),
         ),
     ),
+    # Temperature and Humidity Sensor
+    # https://developer.tuya.com/en/docs/iot/categorywsdcg?id=Kaiuz3hinij34
+    "wsdcg": (
+        LocalTuyaEntity(
+            id=(DPCode.MAXTEMP_SET, DPCode.UPPER_TEMP, DPCode.UPPER_TEMP_F),
+            name="Max Temperature",
+            icon="mdi:thermometer-high",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(-200, 600, unit=UnitOfTemperature.CELSIUS),
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.MINITEMP_SET, DPCode.LOWER_TEMP, DPCode.LOWER_TEMP_F),
+            name="Min Temperature",
+            icon="mdi:thermometer-low",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(-200, 600, unit=UnitOfTemperature.CELSIUS),
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.MAXHUM_SET, DPCode.MAX_HUMI),
+            name="Max Humidity",
+            icon="mdi:water-percent",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(0, 100, unit=PERCENTAGE),
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.MINIHUM_SET, DPCode.MIN_HUMI),
+            name="Min Humidity",
+            icon="mdi:water-percent",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(0, 100, unit=PERCENTAGE),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TEMP_PERIODIC_REPORT,
+            name="Report Temperature Period",
+            icon="mdi:timer-sand",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(1, 120, unit=UnitOfTime.MINUTES),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.HUM_PERIODIC_REPORT,
+            name="Report Humidity Period",
+            icon="mdi:timer-sand",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(1, 120, unit=UnitOfTime.MINUTES),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TEMP_SENSITIVITY,
+            name="Temperature Sensitivity",
+            icon="mdi:thermometer-lines",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(3, 20, unit=UnitOfTemperature.CELSIUS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.HUM_SENSITIVITY,
+            name="Humidity Sensitivity",
+            icon="mdi:water-opacity",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(3, 20, unit=PERCENTAGE),
+        ),
+    ),
     # Alarm Host
     # https://developer.tuya.com/en/docs/iot/categorymal?id=Kaiuz33clqxaf
     "mal": (
@@ -645,6 +750,159 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
         ),
     ),
+    # Air conditioner
+    # https://developer.tuya.com/en/docs/iot/categorykt?id=Kaiuz0z71ov2n
+    "kt": (
+        LocalTuyaEntity(
+            id=DPCode.TIMER,
+            name="Timer",
+            custom_configs=localtuya_numbers(0, 24, unit=UnitOfTime.HOURS),
+            icon="mdi:timer-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
+    # Smart Electricity Meter
+    # https://developer.tuya.com/en/docs/iot/smart-meter?id=Kaiuz4gv6ack7
+    "zndb": (
+        LocalTuyaEntity(
+            id=DPCode.ENERGY_A_CALIBRATION_FWD,
+            name="Energy A Calibrations",
+            custom_configs=localtuya_numbers(800, 1200),
+            icon="mdi:lightning-bolt-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ENERGY_B_CALIBRATION_FWD,
+            name="Energy A Calibrations",
+            custom_configs=localtuya_numbers(800, 1200),
+            icon="mdi:lightning-bolt-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ENERGY_C_CALIBRATION_FWD,
+            name="Energy A Calibrations",
+            custom_configs=localtuya_numbers(800, 1200),
+            icon="mdi:lightning-bolt-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ENERGY_A_CALIBRATION_REV,
+            name="Reverse Energy A Calibrations",
+            custom_configs=localtuya_numbers(800, 1200),
+            icon="mdi:lightning-bolt-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ENERGY_B_CALIBRATION_REV,
+            name="Reverse Energy B Calibrations",
+            custom_configs=localtuya_numbers(800, 1200),
+            icon="mdi:lightning-bolt-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ENERGY_C_CALIBRATION_REV,
+            name="Reverse Energy C Calibrations",
+            custom_configs=localtuya_numbers(800, 1200),
+            icon="mdi:lightning-bolt-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.CURRENT_A_CALIBRATION,
+            name="Current A Calibrations",
+            custom_configs=localtuya_numbers(800, 1200),
+            icon="mdi:power-cycle",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.CURRENT_B_CALIBRATION,
+            name="Current B Calibrations",
+            custom_configs=localtuya_numbers(800, 1200),
+            icon="mdi:power-cycle",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.CURRENT_C_CALIBRATION,
+            name="Current C Calibrations",
+            custom_configs=localtuya_numbers(800, 1200),
+            icon="mdi:power-cycle",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.POWER_A_CALIBRATION,
+            name="Power A Calibrations",
+            custom_configs=localtuya_numbers(800, 1200),
+            icon="mdi:power-cycle",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.POWER_B_CALIBRATION,
+            name="Power B Calibrations",
+            custom_configs=localtuya_numbers(800, 1200),
+            icon="mdi:power-cycle",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.POWER_C_CALIBRATION,
+            name="Power C Calibrations",
+            custom_configs=localtuya_numbers(800, 1200),
+            icon="mdi:power-cycle",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.FREQ_CALIBRATION,
+            name="Frequency Calibrations",
+            custom_configs=localtuya_numbers(800, 1200),
+            icon="mdi:sine-wave",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.VOLTAGE_COEF,
+            name="Voltage Calibrations",
+            custom_configs=localtuya_numbers(800, 1200),
+            icon="mdi:flash-triangle-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.REPORT_RATE_CONTROL,
+            name="Report Period",
+            custom_configs=localtuya_numbers(3, 60, unit=UnitOfTime.SECONDS),
+            icon="mdi:timer-sand",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
+    # Ultrasonic level sensor
+    "ywcgq": (
+        LocalTuyaEntity(
+            id=DPCode.MAX_SET,
+            name="Maximum",
+            custom_configs=localtuya_numbers(0, 100, unit=PERCENTAGE),
+            icon="mdi:pan-top-right",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.MINI_SET,
+            name="Minimum",
+            custom_configs=localtuya_numbers(0, 100, unit=PERCENTAGE),
+            icon="mdi:pan-bottom-left",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.LIQUID_DEPTH_MAX,
+            name="Depth Maximum",
+            custom_configs=localtuya_numbers(100, 2400, unit=UnitOfLength.METERS),
+            icon="mdi:arrow-collapse-down",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.INSTALLATION_HEIGHT,
+            name="Installation Height",
+            custom_configs=localtuya_numbers(
+                200, 2500, _scale=0.001, unit=UnitOfLength.METERS
+            ),
+            icon="mdi:table-row-height",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
 }
 
 # Wireless Switch  # also can come as knob switch.
@@ -659,11 +917,26 @@ NUMBERS["wxkg"] = (
     *NUMBERS["kg"],
 )
 
+# Water Valve
+NUMBERS["sfkzq"] = NUMBERS["kg"]
+
+# Water Detector
+# https://developer.tuya.com/en/docs/iot/categorysj?id=Kaiuz3iub2sli
+NUMBERS["sj"] = NUMBERS["wsdcg"]
+
+# Circuit Breaker
+# https://developer.tuya.com/en/docs/iot/dlq?id=Kb0kidk9enyh8
+NUMBERS["dlq"] = NUMBERS["zndb"]
+
+# HDMI Sync Box A1
+NUMBERS["hdmipmtbq"] = NUMBERS["dj"]
+
 # Scene Switch
 # https://developer.tuya.com/en/docs/iot/f?id=K9gf7nx6jelo8
 NUMBERS["cjkg"] = NUMBERS["kg"]
 
 NUMBERS["cz"] = NUMBERS["kg"]
+NUMBERS["tdq"] = NUMBERS["kg"]
 NUMBERS["pc"] = NUMBERS["kg"]
 
 # Locker

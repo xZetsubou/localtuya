@@ -103,6 +103,7 @@
                     "add_entities": "Aggiungi nuove entità",
                     "manual_dps_strings": "(Opzionale) DPS manuali, se non rilevati automaticamente (separati da virgole)",
                     "reset_dpids": "(Opzionale) DPID da inviare nel comando RESET, se il dispositivo non risponde alle richieste di stato dopo l'accensione (separati da virgole)",
+                    "device_sleep_time": "(Optional) Device sleep time in seconds: If the device reports its state, then it goes into sleep",
                     "export_config": "Salva configurazione entità come modello"
                 }
             },
@@ -151,6 +152,7 @@
                     "positioning_mode": "Positioning mode",
                     "current_position_dp": "Current Position (for *position* mode only)",
                     "set_position_dp": "Set Position (for *position* mode only)",
+                    "stop_switch_dp": "(Optional) Stop switch (if the cover has continue command?)",
                     "position_inverted": "Invert 0-100 position (for *position* mode only)",
                     "span_time": "Full opening time, in secs. (for *timed* mode only)",
                     "unit_of_measurement": "(Optional) Unit of Measurement",
@@ -161,11 +163,11 @@
                     "state_off": "Off Value",
                     "powergo_dp": "Power DP (usually 25 or 2)",
                     "idle_status_value": "Idle Status (comma-separated)",
-                    "returning_status_value": "Returning Status",
+                    "returning_status_value": "Returning Status (comma-separated)",
                     "docked_status_value": "Docked Status (comma-separated)",
                     "fault_dp": "Fault DP (usually 11)",
                     "battery_dp": "Battery status DP (usually 14)",
-                    "mode_dp": "Mode DP (usually 27)",
+                    "mode_dp": "Mode DP",
                     "modes": "Modes list",
                     "return_mode": "Return home mode",
                     "fan_speed_dp": "(Optional) Fan speeds DP",
@@ -174,6 +176,7 @@
                     "clean_area_dp": "Clean Area DP (usually 32)",
                     "clean_record_dp": "Clean Record DP (usually 34)",
                     "locate_dp": "Locate DP (usually 31)",
+                    "pause_dp":"Pause DP",
                     "paused_state": "Pause state (pause, paused, etc)",
                     "stop_status": "Stop status",
                     "brightness": "Brightness (only for white color)",
@@ -230,7 +233,9 @@
                     "humidifier_set_humidity_dp": "(Optional) Set Humidity DP",
                     "min_humidity": "Set the minimum supported humidity",
                     "max_humidity": "Set the maximum supported humidity",
-                    "alarm_supported_states": "States supported by the device"
+                    "alarm_supported_states": "States supported by the device",
+                    "receive_dp":"Receiving signals DP. (default is 202)",
+                    "key_study_dp":"(Optional) Key Study DP (usually 7)"
                 },
                 "data_description": {
                     "hvac_mode_set":"Each line represents [ hvac_mode: device_value ] [Supported HVAC Modes](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-modes)",
@@ -240,7 +245,7 @@
                     "select_options":"Each line represents [ device_value: friendly name ]",
                     "alarm_supported_states":"Each line represents [ supported state: device value ] [Supported States](https://developers.home-assistant.io/docs/core/entity/alarm-control-panel/#states)",
                     "humidifier_available_modes":"Each line represents [ device_value: friendly name ]",
-                    "device_class": "Find out more about [Device Classes](https://www.home-assistant.io/docs/configuration/customizing-devices/#device-class)",
+                    "device_class": "Find out more about [Device Classes](https://www.home-assistant.io/integrations/homeassistant/#device-class)",
                     "state_class": "Find out more about [State Classes](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes)"
                 }
             }

@@ -5,6 +5,8 @@ based on tuya-convert.py from tuya-convert:
 
 Maintained by @xZetsubou
 """
+
+import os
 import asyncio
 import json
 import logging
@@ -14,7 +16,7 @@ from socket import inet_aton
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-from .common import pytuya
+from .entity import pytuya
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -65,14 +67,15 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
     async def start(self):
         """Start discovery by listening to broadcasts."""
         loop = asyncio.get_running_loop()
+        op_reuse_port = {"reuse_port": True} if os.name != "nt" else {}
         listener = loop.create_datagram_endpoint(
-            lambda: self, local_addr=("0.0.0.0", 6666), reuse_port=True
+            lambda: self, local_addr=("0.0.0.0", 6666), **op_reuse_port
         )
         encrypted_listener = loop.create_datagram_endpoint(
-            lambda: self, local_addr=("0.0.0.0", 6667), reuse_port=True
+            lambda: self, local_addr=("0.0.0.0", 6667), **op_reuse_port
         )
         # tuyaApp_encrypted_listener = loop.create_datagram_endpoint(
-        #     lambda: self, local_addr=("0.0.0.0", 7000), reuse_port=True
+        #     lambda: self, local_addr=("0.0.0.0", 7000), **op_reuse_port
         # )
         self._listeners = await asyncio.gather(listener, encrypted_listener)
         _LOGGER.debug("Listening to broadcasts on UDP port 6666, 6667")

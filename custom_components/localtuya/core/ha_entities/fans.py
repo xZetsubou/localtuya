@@ -32,6 +32,7 @@ FAN_SPEED_DP = (
     DPCode.SPEED,
     DPCode.FAN_SPEED_ENUM,
 )
+
 FANS_OSCILLATING = (DPCode.SWITCH_HORIZONTAL, DPCode.SWITCH_VERTICAL)
 
 
@@ -63,6 +64,20 @@ FANS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             ),
         ),
     ),
+    # Normal switch with fan controller.
+    "tdq": (
+        LocalTuyaEntity(
+            id=(DPCode.SWITCH_FAN, DPCode.FAN_SWITCH),
+            name="Fan",
+            icon="mdi:fan",
+            fan_speed_control=FAN_SPEED_DP,
+            fan_direction=DPCode.FAN_DIRECTION,
+            fan_oscillating_control=FANS_OSCILLATING,
+            custom_configs=localtuya_fan(
+                DIRECTION_FORWARD, DIRECTION_REVERSE, 1, 100, "disabled", "int"
+            ),
+        ),
+    ),
 }
 # Fan with Light
 FANS["fsd"] = FANS["fs"]
@@ -70,5 +85,3 @@ FANS["fsd"] = FANS["fs"]
 FANS["fskg"] = FANS["fs"]
 # Air Purifier
 FANS["kj"] = FANS["fs"]
-# Dehumidifier
-# FANS["cs"] = FANS["fs"]

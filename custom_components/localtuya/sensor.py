@@ -1,4 +1,5 @@
 """Platform to present any Tuya DP as a sensor."""
+
 import logging
 from functools import partial
 from .config_flow import _col_to_select
@@ -17,7 +18,7 @@ from homeassistant.const import (
     STATE_UNKNOWN,
 )
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import CONF_SCALING, CONF_STATE_CLASS
 
 _LOGGER = logging.getLogger(__name__)
@@ -39,7 +40,7 @@ def flow_schema(dps):
     }
 
 
-class LocaltuyaSensor(LocalTuyaEntity, SensorEntity):
+class LocalTuyaSensor(LocalTuyaEntity, SensorEntity):
     """Representation of a Tuya sensor."""
 
     def __init__(
@@ -85,4 +86,4 @@ class LocaltuyaSensor(LocalTuyaEntity, SensorEntity):
         return
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSensor, flow_schema)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaSensor, flow_schema)

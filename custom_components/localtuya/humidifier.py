@@ -1,4 +1,5 @@
 """Platform to locally control Tuya-based button devices."""
+
 import logging
 from functools import partial
 from .config_flow import _col_to_select
@@ -26,7 +27,7 @@ CONF_HUMIDIFIER_CURRENT_HUMIDITY_DP = "humidifier_current_humidity_dp"
 CONF_HUMIDIFIER_MODE_DP = "humidifier_mode_dp"
 CONF_HUMIDIFIER_AVAILABLE_MODES = "humidifier_available_modes"
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,6 +37,9 @@ def flow_schema(dps):
     """Return schema used in config flow."""
     return {
         vol.Optional(CONF_HUMIDIFIER_SET_HUMIDITY_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_HUMIDIFIER_CURRENT_HUMIDITY_DP): _col_to_select(
+            dps, is_dps=True
+        ),
         vol.Optional(CONF_HUMIDIFIER_MODE_DP): _col_to_select(dps, is_dps=True),
         vol.Required(ATTR_MIN_HUMIDITY, default=DEFAULT_MIN_HUMIDITY): int,
         vol.Required(ATTR_MAX_HUMIDITY, default=DEFAULT_MAX_HUMIDITY): int,
@@ -46,7 +50,7 @@ def flow_schema(dps):
     }
 
 
-class LocaltuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
+class LocalTuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
     """Representation of a Localtuya Humidifier."""
 
     _dp_mode = CONF_HUMIDIFIER_MODE_DP
@@ -149,4 +153,4 @@ class LocaltuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
                 self._current_mode = "unknown"
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaHumidifier, flow_schema)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaHumidifier, flow_schema)

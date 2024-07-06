@@ -1,4 +1,5 @@
 """Platform to present any Tuya DP as an enumeration."""
+
 import logging
 from functools import partial
 
@@ -7,7 +8,7 @@ from homeassistant.components.select import DOMAIN, SelectEntity
 from homeassistant.const import CONF_DEVICE_CLASS, STATE_UNKNOWN
 from homeassistant.helpers import selector
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_DEFAULT_VALUE,
     CONF_OPTIONS,
@@ -29,7 +30,7 @@ def flow_schema(dps):
 _LOGGER = logging.getLogger(__name__)
 
 
-class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
+class LocalTuyaSelect(LocalTuyaEntity, SelectEntity):
     """Representation of a Tuya Enumeration."""
 
     def __init__(
@@ -46,7 +47,14 @@ class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
 
         # Set Display options
         options_values, options_display_name = [], []
-        for k, v in self._config.get(CONF_OPTIONS, {}).items():
+        config_options: dict = self._config.get(CONF_OPTIONS)
+        if not isinstance(config_options, dict):
+            # Warn the user in-case he used the wrong format.
+            self.error(
+                f"{self.name} DPiD: {self._dp_id}: Options configured incorrectly! It must be in the format of key-value pairs, where each line follows the structure [device_value: friendly name]"
+            )
+            config_options = {}
+        for k, v in config_options.items():
             options_values.append(k)
             options_display_name.append(v if v else k.replace("_", "").capitalize())
 
@@ -104,4 +112,4 @@ class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
         return self._valid_options[0]
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSelect, flow_schema)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaSelect, flow_schema)
