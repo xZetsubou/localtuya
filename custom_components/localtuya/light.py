@@ -135,7 +135,7 @@ def flow_schema(dps):
         ),
         vol.Optional(CONF_COLOR_TEMP_REVERSE, default=DEFAULT_COLOR_TEMP_REVERSE): bool,
         vol.Optional(CONF_SCENE): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_SCENE_VALUES): selector.ObjectSelector(),
+        vol.Optional(CONF_SCENE_VALUES, default={}): selector.ObjectSelector(),
         vol.Optional(CONF_MUSIC_MODE, default=False): bool,
     }
 
@@ -257,6 +257,8 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         """Return the current effect for this light."""
         if self.is_scene_mode or self.is_music_mode:
             return self._effect
+        elif (color_mode := self.__get_color_mode()) in self._scenes.values():
+            return self.__find_scene_by_scene_data(color_mode)
         return None
 
     @property
