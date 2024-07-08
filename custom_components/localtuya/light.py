@@ -48,9 +48,9 @@ MODE_MUSIC = "music"
 MODE_SCENE = "scene"
 MODE_WHITE = "white"
 
-SCENE_WHITE  = "None"
-SCENE_CLOUD  = "Current scene"
-SCENE_COLOR  = "Current color"
+SCENE_WHITE  = "Default"
+SCENE_CLOUD  = "Mode Scene"
+SCENE_COLOR  = "Mode Color"
 SCENE_CUSTOM = "Custom"
 SCENE_MUSIC  = "Music"
 
