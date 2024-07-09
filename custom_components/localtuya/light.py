@@ -49,10 +49,10 @@ MODE_SCENE = "scene"
 MODE_WHITE = "white"
 
 SCENE_CUSTOM = "Custom"
-SCENE_MUSIC  = "Music"
+SCENE_MUSIC = "Music"
 
 EFFECTS_MODES = {
-    "Default":    MODE_WHITE,
+    "Default": MODE_WHITE,
     "Mode Color": MODE_COLOR,
     "Mode Scene": MODE_SCENE,
 }
