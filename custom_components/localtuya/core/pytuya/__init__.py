@@ -947,10 +947,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         async def loop():
             """Continuously send heart beat updates."""
             self.debug("Start a heartbeat for sub-devices")
-            # This will break if main "heartbeat" stopped
             while True:
                 try:
-                    # Reset the state before every reuqest.
+                    # Reset the state before every request.
                     self.sub_devices_states = {"online": [], "offline": []}
                     await self.subdevices_query()
                     await asyncio.sleep(HEARTBEAT_SUB_DEVICES_INTERVAL)
@@ -977,7 +976,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.clean_up_session()
 
         try:
-            listener = self.listener and self.listener()
             if listener is not None:
                 listener.disconnected(exc or "Connection lost")
         except Exception:  # pylint: disable=broad-except
