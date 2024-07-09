@@ -48,16 +48,15 @@ MODE_MUSIC = "music"
 MODE_SCENE = "scene"
 MODE_WHITE = "white"
 
-SCENE_WHITE  = "Default"
-SCENE_CLOUD  = "Mode Scene"
-SCENE_COLOR  = "Mode Color"
 SCENE_CUSTOM = "Custom"
 SCENE_MUSIC  = "Music"
 
+EFFECTS_MODES = {
+    "Default":    MODE_WHITE,
+    "Mode Color": MODE_COLOR,
+    "Mode Scene": MODE_SCENE,
+}
 SCENE_LIST_RGBW_1000 = {
-    SCENE_WHITE: MODE_WHITE,
-    SCENE_COLOR: MODE_COLOR,
-    SCENE_CLOUD: MODE_SCENE,
     "Night": "000e0d0000000000000000c80000",
     "Read": "010e0d0000000000000003e801f4",
     "Meeting": "020e0d0000000000000003e803e8",
@@ -73,9 +72,6 @@ SCENE_LIST_RGBW_1000 = {
 }
 
 SCENE_LIST_RGBW_255 = {
-    SCENE_WHITE: MODE_WHITE,
-    SCENE_COLOR: MODE_COLOR,
-    SCENE_CLOUD: MODE_SCENE,
     "Night": "bd76000168ffff",
     "Read": "fffcf70168ffff",
     "Meeting": "cf38000168ffff",
@@ -87,9 +83,6 @@ SCENE_LIST_RGBW_255 = {
 }
 
 SCENE_LIST_RGB_1000 = {
-    SCENE_WHITE: MODE_WHITE,
-    SCENE_COLOR: MODE_COLOR,
-    SCENE_CLOUD: MODE_SCENE,
     "Night": "000e0d00002e03e802cc00000000",
     "Read": "010e0d000084000003e800000000",
     "Working": "020e0d00001403e803e800000000",
@@ -175,10 +168,12 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         self._effect = None
         self._effect_list = []
         self._scenes = {}
+        custom_scenes = False
         if self.has_config(CONF_SCENE):
             if self.has_config(CONF_SCENE_VALUES):
                 values_list = list(self._config.get(CONF_SCENE_VALUES))
                 values_name = list(self._config.get(CONF_SCENE_VALUES).values())
+                custom_scenes = True
                 self._scenes = dict(zip(values_name, values_list))
             elif int(self._config.get(CONF_SCENE)) < 20:
                 self._scenes = SCENE_LIST_RGBW_255
@@ -186,6 +181,10 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
                 self._scenes = SCENE_LIST_RGB_1000
             else:
                 self._scenes = SCENE_LIST_RGBW_1000
+
+            if not custom_scenes:
+                self._scenes = {**EFFECTS_MODES, **self._scenes}
+
             self._effect_list = list(self._scenes.keys())
         if self._config.get(CONF_MUSIC_MODE):
             self._effect_list.append(SCENE_MUSIC)
