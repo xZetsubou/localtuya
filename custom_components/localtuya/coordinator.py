@@ -199,7 +199,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 break  # Succeed break while loop
             except OSError as e:
                 await self.abort_connect()
-                if retry >= max_retries or e.errno == pytuya.errno.EHOSTUNREACH:
+                if (retry >= max_retries or e.errno == pytuya.errno.EHOSTUNREACH) and not self.is_sleep:
                     self.warning(f"Connection failed: {e}")
                     break
             except Exception as ex:  # pylint: disable=broad-except
