@@ -505,9 +505,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             return
 
         self._call_on_close.append(asyncio.create_task(self._async_reconnect()).cancel)
-        delay = (0 if self.is_subdevice else 3) + sleep_time
         fun = partial(self._shutdown_entities, exc=exc)
-        self._call_on_close.append(async_call_later(self._hass, delay, fun))
+        self._call_on_close.append(async_call_later(self._hass, 3 + sleep_time, fun))
 
     async def _async_reconnect(self):
         """Task: continuously attempt to reconnect to the device."""
