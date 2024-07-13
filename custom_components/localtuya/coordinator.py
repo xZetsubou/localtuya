@@ -558,6 +558,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self.warning("Sub-device is online")
         else:
             self._offline += 1
-            if self._offline == MIN_OFFLINE_EVENTS:
+            if self._offline == 1:
                 self.warning("Sub-device is offline")
+            elif self._offline == MIN_OFFLINE_EVENTS:
                 self.disconnected("Device is offline")
