@@ -35,7 +35,7 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 RECONNECT_INTERVAL = timedelta(seconds=5)
-
+MIN_OFFLINE_EVENTS = 10 # Offline events before disconnecting the device
 
 class HassLocalTuyaData(NamedTuple):
     """LocalTuya data stored in homeassistant data object."""
@@ -80,7 +80,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._connect_task: asyncio.Task | None = None
         self._unsub_refresh: CALLBACK_TYPE | None = None
         self._reconnect_task = False
-        self._online = True
+        self._offline = 0
         self._call_on_close: list[CALLBACK_TYPE] = []
         self._entities = []
         self._local_key: str = self._device_config.local_key
@@ -200,7 +200,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 break  # Succeed break while loop
             except OSError as e:
                 await self.abort_connect()
-                if retry >= max_retries or e.errno == pytuya.errno.EHOSTUNREACH:
+                if (
+                    retry >= max_retries or e.errno == pytuya.errno.EHOSTUNREACH
+                ) and not self.is_sleep:
                     self.warning(f"Connection failed: {e}")
                     break
             except Exception as ex:  # pylint: disable=broad-except
@@ -506,9 +508,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             return
 
         self._call_on_close.append(asyncio.create_task(self._async_reconnect()).cancel)
-        delay = (0 if self.is_subdevice else 3) + sleep_time
         fun = partial(self._shutdown_entities, exc=exc)
-        self._call_on_close.append(async_call_later(self._hass, delay, fun))
+        self._call_on_close.append(async_call_later(self._hass, 3 + sleep_time, fun))
 
     async def _async_reconnect(self):
         """Task: continuously attempt to reconnect to the device."""
@@ -518,6 +519,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._reconnect_task = True
         attempts = 0
         while True and not self._is_closing:
+            # for sub-devices, if it is reported as offline then no need for reconnect.
+            if self.is_subdevice and self._offline >= MIN_OFFLINE_EVENTS:
+                await asyncio.sleep(10)
+                continue
+
             # for sub-devices, if the gateway isn't connected then no need for reconnect.
             if self._gateway and (
                 not self._gateway.connected or self._gateway.is_connecting
@@ -546,11 +552,12 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     @callback
     def online(self, is_online):
         """Device is offline or online."""
-        if is_online == self._online:
-            return
-
-        self._online = is_online
-        self.warning("Sub-device is " + ("online" if is_online else "offline"))
-# It has no sense to disconnect when sub-device went offline!
-#        if not is_online:
-#            self.disconnected("Device is offline")
+        if is_online:
+            if self._offline > 0:
+                self.warning("Sub-device is online")
+                self._offline = 0
+        else:
+            self._offline += 1
+            if self._offline == MIN_OFFLINE_EVENTS:
+                self.warning("Sub-device is offline")
+                self.disconnected("Device is offline")
