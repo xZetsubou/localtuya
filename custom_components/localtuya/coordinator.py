@@ -554,8 +554,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Device is offline or online."""
         if is_online:
             if self._offline > 0:
-                self.warning("Sub-device is online")
                 self._offline = 0
+                self.warning("Sub-device is online")
         else:
             self._offline += 1
             if self._offline == MIN_OFFLINE_EVENTS:
