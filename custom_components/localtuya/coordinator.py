@@ -521,7 +521,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         while True and not self._is_closing:
             # for sub-devices, if it is reported as offline then no need for reconnect.
             if self.is_subdevice and self._offline >= MIN_OFFLINE_EVENTS:
-                await asyncio.sleep(10)
+                await asyncio.sleep(1)
                 continue
 
             # for sub-devices, if the gateway isn't connected then no need for reconnect.
