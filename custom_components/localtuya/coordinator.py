@@ -540,8 +540,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self.debug(f"Reconnect task has been canceled: {e}", force=True)
                 break
 
-            if self.connected and not self.is_sleep and attempts > 0:
-                self.debug(f"Reconnect succeeded on attempt: {attempts}", force=True)
+            if self.connected:
+                if not self.is_sleep and attempts > 0
+                    self.info(f"Reconnect succeeded on attempt: {attempts}")
                 break
 
             attempts += 1
