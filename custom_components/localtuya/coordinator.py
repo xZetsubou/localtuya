@@ -541,7 +541,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 break
 
             if self.connected:
-                if not self.is_sleep and attempts > 0
+                if not self.is_sleep and attempts > 0:
                     self.info(f"Reconnect succeeded on attempt: {attempts}")
                 break
 
