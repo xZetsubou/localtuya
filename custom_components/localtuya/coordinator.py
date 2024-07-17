@@ -532,10 +532,10 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 continue
 
             try:
+                if not self._connect_task:
+                    await self.async_connect()
                 if self._connect_task:
                     await self._connect_task
-                else:
-                    await self.async_connect()
             except asyncio.CancelledError as e:
                 self.debug(f"Reconnect task has been canceled: {e}", force=True)
                 break
