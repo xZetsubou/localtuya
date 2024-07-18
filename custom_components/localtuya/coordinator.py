@@ -228,7 +228,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
                 self.debug("Retrieving initial state")
                 # Usually we use status instead of detect_available_dps, but some device doesn't reports all dps when ask for status.
-                status = await self._interface.status(self._node_id)
+                status = await self._interface.status(cid=self._node_id)
                 if status is None:
                     raise Exception("Failed to retrieve status")
 

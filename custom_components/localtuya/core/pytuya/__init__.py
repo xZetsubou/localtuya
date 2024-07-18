@@ -1202,7 +1202,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             # in the requested range
             self.dps_to_request = {"1": None}
             self.add_dps_to_request(range(*dps_range))
-            data = await self.status(cid, delay)
+            data = await self.status(cid=cid, delay=delay)
             if cid and cid in data:
                 self.dps_cache.update({cid: data[cid]})
             elif not cid and "parent" in data:
