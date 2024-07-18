@@ -950,10 +950,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             self.debug("Start a heartbeat for sub-devices")
             while True:
                 try:
+                    await asyncio.sleep(HEARTBEAT_SUB_DEVICES_INTERVAL)
                     # Reset the state before every request.
                     self.sub_devices_states = {"online": [], "offline": []}
                     await self.subdevices_query()
-                    await asyncio.sleep(HEARTBEAT_SUB_DEVICES_INTERVAL)
                 except asyncio.CancelledError:
                     break
                 except Exception as ex:
