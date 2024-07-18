@@ -750,8 +750,6 @@ class EmptyListener(TuyaListener):
 class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     """Implementation of the Tuya protocol."""
 
-    HEARTBEAT_SKIP = 5
-
     def __init__(
         self,
         dev_id: str,
@@ -925,9 +923,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             self.debug("Started heartbeat loop")
             while True:
                 try:
-                    # if self.last_command_sent > self.HEARTBEAT_SKIP:
-                    await self.heartbeat()
                     await asyncio.sleep(HEARTBEAT_INTERVAL)
+                    await self.heartbeat()
                 except asyncio.CancelledError:
                     self.debug("Stopped heartbeat loop")
                     raise
