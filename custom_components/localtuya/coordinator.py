@@ -80,7 +80,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._connect_task: asyncio.Task | None = None
         self._unsub_refresh: CALLBACK_TYPE | None = None
         self._reconnect_task = False
-        self._offline = 0
+        self._subdevice_off_count = 0
         self._call_on_close: list[CALLBACK_TYPE] = []
         self._entities = []
         self._local_key: str = self._device_config.local_key
@@ -520,7 +520,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         attempts = 0
         while True and not self._is_closing:
             # for sub-devices, if it is reported as offline then no need for reconnect.
-            if self.is_subdevice and self._offline >= MIN_OFFLINE_EVENTS:
+            if self.is_subdevice and self._subdevice_off_count >= MIN_OFFLINE_EVENTS:
                 await asyncio.sleep(1)
                 continue
 
@@ -553,8 +553,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     @callback
     def online(self, is_online):
         """Sub-Device is offline or online."""
-        off_count = self._offline
-        self._offline = 0 if is_online else off_count  + 1
+        off_count = self._subdevice_off_count
+        self._subdevice_off_count = 0 if is_online else off_count  + 1
 
         if is_online:
             return self.info("Sub-device is online") if off_count > 0 else None
