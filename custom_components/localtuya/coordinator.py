@@ -551,7 +551,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._reconnect_task = False
 
     @callback
-    def online(self, is_online):
+    def subdevice_state(self, is_online):
         """Sub-Device is offline or online."""
         off_count = self._subdevice_off_count
         self._subdevice_off_count = 0 if is_online else off_count  + 1

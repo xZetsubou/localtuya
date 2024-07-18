@@ -736,7 +736,7 @@ class TuyaListener(ABC):
         """Device disconnected."""
 
     @abstractmethod
-    def online(self, is_online):
+    def subdevice_state(self, is_online):
         """Device is offline or online."""
 
 
@@ -749,7 +749,7 @@ class EmptyListener(TuyaListener):
     def disconnected(self, exc=""):
         """Device disconnected."""
 
-    def online(self, is_online):
+    def subdevice_state(self, is_online):
         """Device is offline or online."""
 
 
@@ -853,7 +853,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 if listener is None or on_devs is None:
                     return
                 for cid, device in listener.sub_devices.items():
-                    device.online(cid in on_devs)
+                    device.subdevice_state(cid in on_devs)
             except asyncio.CancelledError:
                 pass
 
