@@ -1110,9 +1110,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             return await self.exchange(command, dps, nodeID=nodeID)
         return payload
 
-    async def status(self, cid=None):
+    async def status(self, cid, delay=True):
         """Return device status."""
-        status: dict = await self.exchange(command=DP_QUERY, nodeID=cid, delay=False)
+        status: dict = await self.exchange(command=DP_QUERY, nodeID=cid, delay=delay)
 
         self.dps_cache.setdefault("parent", {})
         if status and "dps" in status:
@@ -1196,12 +1196,13 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         ranges = [(2, 11), (11, 21), (21, 31), (100, 111)]
 
+        delay = True
         for dps_range in ranges:
             # dps 1 must always be sent, otherwise it might fail in case no dps is found
             # in the requested range
             self.dps_to_request = {"1": None}
             self.add_dps_to_request(range(*dps_range))
-            data = await self.status(cid=cid)
+            data = await self.status(cid, delay)
             if cid and cid in data:
                 self.dps_cache.update({cid: data[cid]})
             elif not cid and "parent" in data:
@@ -1209,6 +1210,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
             if self.dev_type == "type_0a" and not cid:
                 return self.dps_cache.get("parent", {})
+
+            delay = False
 
         return self.dps_cache.get(cid or "parent", {})
 
