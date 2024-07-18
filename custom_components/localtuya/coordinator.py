@@ -554,7 +554,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     def subdevice_state(self, is_online):
         """Sub-Device is offline or online."""
         off_count = self._subdevice_off_count
-        self._subdevice_off_count = 0 if is_online else off_count  + 1
+        self._subdevice_off_count = 0 if is_online else off_count + 1
 
         if is_online:
             return self.info("Sub-device is online") if off_count > 0 else None
