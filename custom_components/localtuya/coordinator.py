@@ -552,14 +552,15 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
     @callback
     def online(self, is_online):
-        """Device is offline or online."""
+        """Sub-Device is offline or online."""
+        off_count = self._offline
+        self._offline = 0 if is_online else off_count  + 1
+
         if is_online:
-            if self._offline > 0:
-                self._offline = 0
-                self.warning("Sub-device is online")
+            return self.info("Sub-device is online") if off_count > 0 else None
         else:
-            self._offline += 1
-            if self._offline == 1:
+            off_count += 1
+            if off_count == 1:
                 self.warning("Sub-device is offline")
-            elif self._offline == MIN_OFFLINE_EVENTS:
+            elif off_count >= MIN_OFFLINE_EVENTS:
                 self.disconnected("Device is offline")
