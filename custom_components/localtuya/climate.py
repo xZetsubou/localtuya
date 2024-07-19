@@ -2,6 +2,7 @@
     # PRESETS and HVAC_MODE Needs to be handle in better way.
 """
 
+import re
 import asyncio
 import logging
 from functools import partial
@@ -89,10 +90,9 @@ HVAC_MODE_SETS = {
     HVACMode.OFF: False,
     HVACMode.AUTO: "auto",
     HVACMode.COOL: "cold",
-    HVACMode.HEAT: "hot",
-    HVACMode.HEAT_COOL: "heat",
-    HVACMode.DRY: "wet",
-    HVACMode.FAN_ONLY: "wind",
+    HVACMode.HEAT: "warm",
+    HVACMode.DRY: "dehumidify",
+    HVACMode.FAN_ONLY: "air",
 }
 
 HVAC_ACTION_SETS = {
@@ -104,7 +104,7 @@ HVAC_ACTION_SETS = {
 TEMPERATURE_CELSIUS = "celsius"
 TEMPERATURE_FAHRENHEIT = "fahrenheit"
 DEFAULT_TEMPERATURE_UNIT = TEMPERATURE_CELSIUS
-DEFAULT_PRECISION = PRECISION_TENTHS
+DEFAULT_PRECISION = 0.1
 DEFAULT_TEMPERATURE_STEP = PRECISION_HALVES
 # Empirically tested to work for AVATTO thermostat
 MODE_WAIT = 0.1
@@ -204,6 +204,12 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     ):
         """Initialize a new LocalTuyaClimate."""
         super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
+        # Custom variables for Lennox
+        self._device = device
+        self._previous_hvac_mode = None
+        self._previous_target_temp = None
+        self._previous_fan_speed = None
+
         self._state = None
         self._target_temperature = None
         self._target_temp_forced_to_celsius = False
@@ -419,6 +425,15 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
             await self._device.set_dp(
                 temperature, self._config[CONF_TARGET_TEMPERATURE_DP]
             )
+            if self._state:
+                await self.turn_on_led()
+                await asyncio.sleep(1)
+                key = self.get_key(temperature = temperature)
+                _LOGGER.error("Setting key= ", key)
+                data = self.get_ir_data(key)
+                await self._device.set_dp("{\"head\":\"010ed80000000000040014003e00ab00ca\",\"key1\":{\"data\":\"" + data +"\",\"data_type\":0,\"key\":\"" + key + "\"},\"devid\":\"\",\"ver\":\"3\",\"delay\":300,\"control\":\"send_ir\",\"v_devid\":\"" + self._device.dev_id + "\",\"key_num\":1}\t", 201)
+                await asyncio.sleep(1)
+                await self.turn_off_led()
 
     async def async_set_fan_mode(self, fan_mode):
         """Set new target fan mode."""
@@ -430,22 +445,46 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     async def async_set_hvac_mode(self, hvac_mode: HVACMode):
         """Set new target operation mode."""
         new_states = {}
-        if not self._state:
-            new_states[self._dp_id] = True
-        elif hvac_mode == HVACMode.OFF and HVACMode.OFF not in self._hvac_mode_set:
+        _LOGGER.error("Requested Mode=", hvac_mode.value)
+        _LOGGER.error("Current Mode=", self.hvac_mode)
+        self._previous_hvac_mode = self.hvac_mode
+        self._previous_target_temperature = self.target_temperature
+
+        if not self._state and self.hvac_mode == HVACMode.OFF:
+            await self._device.set_dp(True, self._dp_id)
+            await asyncio.sleep(2)
+        elif hvac_mode == HVACMode.OFF:
+            self._previous_hvac_mode = self.hvac_mode
+            self._previous_target_temperature = self.target_temperature
+            await self._device.set_dp(False, self._dp_id)
+            await self.async_turn_off()
             new_states[self._dp_id] = False
-
-        if hvac_mode in self._hvac_mode_set:
-            new_states[self._hvac_mode_dp] = self._hvac_mode_set[hvac_mode]
-
+            return
+        await self.turn_on_led()
+        await asyncio.sleep(2)
+        key = self.get_key(mode = hvac_mode)
+        _LOGGER.error("Setting key= ", key)
+        data = self.get_ir_data(key)
+        await self._device.set_dp("{\"head\":\"010ed80000000000040014003e00ab00ca\",\"key1\":{\"data\":\"" + data +"\",\"data_type\":0,\"key\":\"" + key + "\"},\"devid\":\"\",\"ver\":\"3\",\"delay\":300,\"control\":\"send_ir\",\"v_devid\":\"" + self._device.dev_id + "\",\"key_num\":1}\t", 201)
+        await asyncio.sleep(2)
+        await self.turn_off_led()
+        new_states[self._hvac_mode_dp] = self._hvac_mode_set[hvac_mode]
         await self._device.set_dps(new_states)
 
     async def async_turn_on(self) -> None:
         """Turn the entity on."""
         await self._device.set_dp(True, self._dp_id)
+        key = self.get_key(mode = self.hvac_mode, temperature = self.target_temperature)
+        data = self.get_ir_data(key)
+        _LOGGER.error("Setting key= ", key)
+        await self._device.set_dp("{\"head\":\"010ed80000000000040014003e00ab00ca\",\"key1\":{\"data\":\"" + data +"\",\"data_type\":0,\"key\":\"" + key + "\"},\"devid\":\"\",\"ver\":\"3\",\"delay\":300,\"control\":\"send_ir\",\"v_devid\":\"" + self._device.dev_id + "\",\"key_num\":1}\t", 201)
+
 
     async def async_turn_off(self) -> None:
         """Turn the entity off."""
+        for i in range(3):
+            await self._device.set_dp("{\"head\":\"010ed80000000000040014003e00ab00ca\",\"key1\":{\"data\":\"02$$0030B24D7B84E01F@%\",\"data_type\":0,\"key\":\"power_off\"},\"devid\":\"\",\"ver\":\"3\",\"delay\":300,\"control\":\"send_ir\",\"v_devid\":\"" + self._device.dev_id + "\",\"key_num\":1}", 201)
+            await asyncio.sleep(1)
         await self._device.set_dp(False, self._dp_id)
 
     async def async_set_preset_mode(self, preset_mode):
@@ -519,6 +558,180 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
                 if self.dp_value(CONF_HVAC_ACTION_DP) == tuya_value:
                     self._hvac_action = ha_action
                     break
+
+    def getMode(self, mode):
+        match mode:
+            case 'cool':
+                return 0
+            case 'heat':
+                return 1
+            case 'auto':
+                return 2
+            case 'fan_only':
+                return 3
+            case 'dry':
+                return 4
+            
+    async def turn_on_led(self):
+        _LOGGER.error("Turning on LED for %s", self._device.friendly_name)
+        if self._device.friendly_name == 'Master Bedroom AC': 
+            await self.toggle_helper_button('input_boolean.master_bedroom_ac_led', 'on')
+        elif self._device.friendly_name == 'Bedroom 2 AC': 
+            await self.toggle_helper_button('input_boolean.bedroom_2_ac_led', 'on')
+        elif self._device.friendly_name == 'Bedroom 3 AC': 
+            await self.toggle_helper_button('input_boolean.bedroom_3_ac_led', 'on')
+        elif self._device.friendly_name == 'Living Room AC': 
+            await self.toggle_helper_button('input_boolean.living_room_ac_led', 'on')
+
+    async def turn_off_led(self):
+        _LOGGER.error("Turning off LED for %s", self._device.friendly_name)
+        if self._device.friendly_name == 'Master Bedroom AC': 
+            await self.toggle_helper_button('input_boolean.master_bedroom_ac_led', 'off')
+        elif self._device.friendly_name == 'Bedroom 2 AC': 
+            await self.toggle_helper_button('input_boolean.bedroom_2_ac_led', 'off')
+        elif self._device.friendly_name == 'Bedroom 3 AC': 
+            await self.toggle_helper_button('input_boolean.bedroom_3_ac_led', 'off')
+        elif self._device.friendly_name == 'Living Room AC': 
+            await self.toggle_helper_button('input_boolean.living_room_ac_led', 'off')
+
+    async def toggle_helper_button(self, button_name, state):
+        inputStateObject = self._device._hass.states.get(button_name)
+        inputState = inputStateObject.state
+        inputAttributesObject = inputStateObject.attributes.copy()
+        _LOGGER.error("OFF=", inputStateObject)
+        if state != inputState:
+            self._device._hass.states.async_set(button_name, state, inputAttributesObject)
+
+    def get_key(self, **kwargs):
+        mode = kwargs.get('mode', self.hvac_mode)
+        _LOGGER.error("get_key", mode)
+        temperature = kwargs.get('temperature', self._target_temperature)
+        key = "M" + str(self.getMode(mode))
+        if self.hvac_mode is not 'fan_only':
+            key = key + "_" + "T" + str(round(temperature))
+        if self.hvac_mode != 'auto' and self.hvac_mode != 'dry':
+            key = key + "_" + "S" + str(0)
+        _LOGGER.error("on=",key)
+        return key
+    
+    def get_ir_data(self, key):
+        data = '02$$0030B24DBF407C83@%'
+        match key:
+            case 'M4_T17':
+                data = '02$$0030B24D1FE004FB@%'
+            case 'M4_T18':
+                data = '02$$0030B24D1FE014EB@%'
+            case 'M4_T19':
+                data = '02$$0030B24D1FE034CB@%'
+            case 'M4_T20':
+                data = '02$$0030B24D1FE024DB@%'
+            case 'M4_T21':
+                data = '02$$0030B24D1FE0649B@%'
+            case 'M4_T22':
+                data = '02$$0030B24D1FE0748B@%'
+            case 'M4_T23':
+                data = '02$$0030B24D1FE054AB@%'
+            case 'M4_T24':
+                data = '02$$0030B24D1FE044BB@%'
+            case 'M4_T25':
+                data = '02$$0030B24D1FE0C43B@%'
+            case 'M4_T26':
+                data = '02$$0030B24D1FE0D42B@%'
+            case 'M4_T27':
+                data = '02$$0030B24D1FE0946B@%'
+            case 'M4_T28':
+                data = '02$$0030B24D1FE0847B@%'
+            case 'M4_T29':
+                data = '02$$0030B24D1FE0A45B@%'
+            case 'M4_T30':
+                data = '02$$0030B24D1FE0B44B@%'
+            case 'M0_T17_S0':
+                data = '02$$0030B24DBF4000FF@%'
+            case 'M0_T18_S0':
+                data = '02$$0030B24DBF4010EF@%'
+            case 'M0_T19_S0':
+                data = '02$$0030B24DBF4030CF@%'
+            case 'M0_T20_S0':
+                data = '02$$0030B24DBF4020DF@%'
+            case 'M0_T21_S0':
+                data = '02$$0030B24DBF40609F@%'
+            case 'M0_T22_S0':
+                data = '02$$0030B24DBF40708F@%'
+            case 'M0_T23_S0':
+                data = '02$$0030B24DBF4050AF@%'
+            case 'M0_T24_S0':
+                data = '02$$0030B24DBF4040BF@%'
+            case 'M0_T25_S0':
+                data = '02$$0030B24DBF40C03F@%'
+            case 'M0_T26_S0':
+                data = '02$$0030B24DBF40D02F@%'
+            case 'M0_T27_S0':
+                data = '02$$0030B24DBF40906F@%'
+            case 'M0_T28_S0':
+                data = '02$$0030B24DBF40807F@%'
+            case 'M0_T29_S0':
+                data = '02$$0030B24DBF40A05F@%'
+            case 'M0_T30_S0':
+                data = '02$$0030B24DBF40B04F@%'
+            case 'M2_T17':
+                data = '02$$0030B24D1FE008F7@%'
+            case 'M2_T18':
+                data = '02$$0030B24D1FE018E7@%'
+            case 'M2_T19':
+                data = '02$$0030B24D1FE038C7@%'
+            case 'M2_T20':
+                data = '02$$0030B24D1FE028D7@%'
+            case 'M2_T21':
+                data = '02$$0030B24D1FE06897@%'
+            case 'M2_T22':
+                data = '02$$0030B24D1FE07887@%'
+            case 'M2_T23':
+                data = '02$$0030B24D1FE058A7@%'
+            case 'M2_T24':
+                data = '02$$0030B24D1FE048B7@%'
+            case 'M2_T25':
+                data = '02$$0030B24D1FE0C837@%'
+            case 'M2_T26':
+                data = '02$$0030B24D1FE0D827@%'
+            case 'M2_T27':
+                data = '02$$0030B24D1FE09867@%'
+            case 'M2_T28':
+                data = '02$$0030B24D1FE08877@%'
+            case 'M2_T29':
+                data = '02$$0030B24D1FE0A857@%'
+            case 'M2_T30':
+                data = '02$$0030B24D1FE0B847@%'
+            case 'M1_T17_S0':
+                data = '02$$0030B24DBF400CF3@%'
+            case 'M1_T18_S0':
+                data = '02$$0030B24DBF401CE3@%'
+            case 'M1_T19_S0':
+                data = '02$$0030B24DBF403CC3@%'
+            case 'M1_T20_S0':
+                data = '02$$0030B24DBF402CD3@%'
+            case 'M1_T21_S0':
+                data = '02$$0030B24DBF406C93@%'
+            case 'M1_T22_S0':
+                data = '02$$0030B24DBF407C83@%'
+            case 'M1_T23_S0':
+                data = '02$$0030B24DBF405CA3@%'
+            case 'M1_T24_S0':
+                data = '02$$0030B24DBF404CB3@%'
+            case 'M1_T25_S0':
+                data = '02$$0030B24DBF40CC33@%'
+            case 'M1_T26_S0':
+                data = '02$$0030B24DBF40DC23@%'
+            case 'M1_T27_S0':
+                data = '02$$0030B24DBF409C63@%'
+            case 'M1_T28_S0':
+                data = '02$$0030B24DBF408C73@%'
+            case 'M1_T29_S0':
+                data = '02$$0030B24DBF40AC53@%'
+            case 'M1_T30_S0':
+                data = '02$$0030B24DBF40BC43@%'
+            case 'M3_S0':
+                data = '02$$0030B24DBF40E41B@%'
+        return data
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaClimate, flow_schema)

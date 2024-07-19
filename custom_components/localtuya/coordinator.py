@@ -21,6 +21,9 @@ from homeassistant.helpers.dispatcher import (
 
 from .core import pytuya
 from .core.cloud_api import TuyaCloudApi
+from homeassistant.const import (
+    CONF_FRIENDLY_NAME,
+)
 from .const import (
     ATTR_UPDATED_AT,
     CONF_GATEWAY_ID,
@@ -61,6 +64,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._entry = entry
         self._hass_entry: HassLocalTuyaData = None
         self._device_config = DeviceConfig(device_config.copy())
+        self._dev_id = self._device_config.id
 
         self._interface = None
 
@@ -88,6 +92,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self._default_reset_dpids = [int(id.strip()) for id in reset_dps.split(",")]
 
         dev = self._device_config
+        self._friendly_name = dev.name
         self.set_logger(_LOGGER, dev.id, dev.enable_debug, dev.name)
 
         # This has to be done in case the device type is type_0d
@@ -123,6 +128,33 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         is_sleep = last_update < device_sleep
 
         return device_sleep > 0 and is_sleep
+    
+    @property
+    def friendly_name(self):
+        return self._friendly_name
+    
+    @property
+    def dev_id(self):
+        return self._dev_id
+    
+    # @property
+    # def name(self):
+    #     """Get name of Tuya entity."""
+    #     return self._config[CONF_FRIENDLY_NAME]
+    
+    # @property
+    # def device_info(self):
+    #     """Return device information for the device registry."""
+    #     model = self._dev_config_entry.get("model", "Tuya generic")
+    #     return {
+    #         "identifiers": {
+    #             # Serial numbers are unique identifiers within a specific domain
+    #             (DOMAIN, f"local_{self._dev_config_entry[CONF_DEVICE_ID]}")
+    #         },
+    #         "name": self._dev_config_entry[CONF_FRIENDLY_NAME],
+    #         "manufacturer": "Tuya",
+    #         "model": f"{model} ({self._dev_config_entry[CONF_DEVICE_ID]})",
+    #     }
 
     async def async_connect(self, _now=None) -> None:
         """Connect to device if not already connected."""
@@ -331,6 +363,10 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             await self._interface.close()
             self._interface = None
         self.debug(f"Closed connection", force=True)
+        # self.info(
+        #     "Closed connection with device %s.",
+        #     self._dev_config_entry[CONF_FRIENDLY_NAME],
+        # )
 
     async def update_local_key(self):
         """Retrieve updated local_key from Cloud API and update the config_entry."""
@@ -390,6 +426,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             await asyncio.sleep(0.001)
             await self.set_status()
         else:
+            # self.error(
+            #     "Not connected to device %s", self._dev_config_entry[CONF_FRIENDLY_NAME]
+            # )
             if self.is_sleep:
                 return self._pending_status.update({str(dp_index): state})
 
@@ -400,6 +439,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             await asyncio.sleep(0.001)
             await self.set_status()
         else:
+            # self.error(
+            #     "Not connected to device %s", self._dev_config_entry[CONF_FRIENDLY_NAME]
+            # )
             if self.is_sleep:
                 return self._pending_status.update(states)
 
