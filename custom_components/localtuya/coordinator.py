@@ -35,7 +35,7 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 RECONNECT_INTERVAL = timedelta(seconds=5)
-
+MIN_OFFLINE_EVENTS = 10 # Offline events before disconnecting the device
 
 class HassLocalTuyaData(NamedTuple):
     """LocalTuya data stored in homeassistant data object."""
@@ -81,6 +81,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._connect_task: asyncio.Task | None = None
         self._unsub_refresh: CALLBACK_TYPE | None = None
         self._reconnect_task = False
+        self._subdevice_off_count = 0
         self._call_on_close: list[CALLBACK_TYPE] = []
         self._entities = []
         self._local_key: str = self._device_config.local_key
@@ -519,6 +520,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._reconnect_task = True
         attempts = 0
         while True and not self._is_closing:
+            # for sub-devices, if it is reported as offline then no need for reconnect.
+            if self.is_subdevice and self._subdevice_off_count >= MIN_OFFLINE_EVENTS:
+                await asyncio.sleep(1)
+                continue
+
             # for sub-devices, if the gateway isn't connected then no need for reconnect.
             if self.is_subdevice and not self.sub_device_online:
                 self.warning(f"Sub deivce is offline")
@@ -531,19 +537,35 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 continue
 
             try:
+                if not self._connect_task:
+                    await self.async_connect()
                 if self._connect_task:
                     await self._connect_task
-                else:
-                    await self.async_connect()
             except asyncio.CancelledError as e:
                 self.debug(f"Reconnect task has been canceled: {e}", force=True)
                 break
 
             if self.connected:
-                self.debug(f"Reconnect succeeded on attempt: {attempts}", force=True)
+                if not self.is_sleep and attempts > 0:
+                    self.info(f"Reconnect succeeded on attempt: {attempts}")
                 break
 
             attempts += 1
             await asyncio.sleep(RECONNECT_INTERVAL.total_seconds())
 
         self._reconnect_task = False
+
+    @callback
+    def subdevice_state(self, is_online):
+        """Sub-Device is offline or online."""
+        off_count = self._subdevice_off_count
+        self._subdevice_off_count = 0 if is_online else off_count + 1
+
+        if is_online:
+            return self.info("Sub-device is online") if off_count > 0 else None
+        else:
+            off_count += 1
+            if off_count == 1:
+                self.warning("Sub-device is offline")
+            elif off_count >= MIN_OFFLINE_EVENTS:
+                self.disconnected("Device is offline")
