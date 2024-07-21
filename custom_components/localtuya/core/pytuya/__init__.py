@@ -726,6 +726,7 @@ class TuyaListener(ABC):
     """Listener interface for Tuya device changes."""
 
     sub_devices: dict[str, Self]
+    sub_device_online = False
 
     @abstractmethod
     def status_updated(self, status):
