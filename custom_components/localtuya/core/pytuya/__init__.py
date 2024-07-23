@@ -1111,7 +1111,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             return await self.exchange(command, dps, nodeID=nodeID)
         return payload
 
-    async def status(self, cid):
+    async def status(self, cid=None):
         """Return device status."""
         status: dict = await self.exchange(command=DP_QUERY, nodeID=cid)
 
