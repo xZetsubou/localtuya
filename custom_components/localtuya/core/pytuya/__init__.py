@@ -983,10 +983,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         except Exception:  # pylint: disable=broad-except
             self.exception("Failed to call disconnected callback")
 
-    async def transport_write(self, data, command_delay=True):
-        """Write data on transport, The 'command_delay' will ensure that no massive requests happen all at once."""
+    async def transport_write(self, data):
+        """Write data on transport, ensure that no massive requests happen all at once."""
         wait = 0
-        while command_delay and self.last_command_sent < 0.050:
+        while self.last_command_sent < 0.050:
             await asyncio.sleep(0.060)
             wait += 1
             if wait >= 10:
@@ -1057,7 +1057,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 )
         return None
 
-    async def exchange(self, command, dps=None, nodeID=None, delay=True, payload=None):
+    async def exchange(self, command, dps=None, nodeID=None, payload=None):
         """Send and receive a message, returning response from device."""
         if not self.is_connected:
             return None
@@ -1086,7 +1086,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         enc_payload = self._encode_message(payload)
 
-        await self.transport_write(enc_payload, delay)
+        await self.transport_write(enc_payload)
         msg = await self.dispatcher.wait_for(seqno, payload.cmd)
         if msg is None:
             self.debug("Wait was aborted for seqno %d", seqno)
@@ -1111,9 +1111,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             return await self.exchange(command, dps, nodeID=nodeID)
         return payload
 
-    async def status(self, cid, delay=True):
+    async def status(self, cid):
         """Return device status."""
-        status: dict = await self.exchange(command=DP_QUERY, nodeID=cid, delay=delay)
+        status: dict = await self.exchange(command=DP_QUERY, nodeID=cid)
 
         self.dps_cache.setdefault("parent", {})
         if status and "dps" in status:
@@ -1197,13 +1197,12 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         ranges = [(2, 11), (11, 21), (21, 31), (100, 111)]
 
-        delay = True
         for dps_range in ranges:
             # dps 1 must always be sent, otherwise it might fail in case no dps is found
             # in the requested range
             self.dps_to_request = {"1": None}
             self.add_dps_to_request(range(*dps_range))
-            data = await self.status(cid=cid, delay=delay)
+            data = await self.status(cid=cid)
             if cid and cid in data:
                 self.dps_cache.update({cid: data[cid]})
             elif not cid and "parent" in data:
@@ -1211,8 +1210,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
             if self.dev_type == "type_0a" and not cid:
                 return self.dps_cache.get("parent", {})
-
-            delay = False
 
         return self.dps_cache.get(cid or "parent", {})
 
