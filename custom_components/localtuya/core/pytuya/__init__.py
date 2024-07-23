@@ -987,7 +987,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         """Write data on transport, ensure that no massive requests happen all at once."""
         wait = 0
         while self.last_command_sent < 0.050:
-            await asyncio.sleep(0.060)
+            await asyncio.sleep(0.010)
             wait += 1
             if wait >= 10:
                 break
