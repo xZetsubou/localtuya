@@ -181,7 +181,7 @@ NO_PROTOCOL_HEADER_CMDS = [
     LAN_EXT_STREAM,
 ]
 
-HEARTBEAT_INTERVAL = 10
+HEARTBEAT_INTERVAL = 9
 
 # DPS that are known to be safe to use with update_dps (0x12) command
 UPDATE_DPS_WHITELIST = [18, 19, 20]  # Socket (Wi-Fi)
