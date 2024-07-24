@@ -89,11 +89,17 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self._default_reset_dpids = [int(id.strip()) for id in reset_dps.split(",")]
 
         dev = self._device_config
-        self.set_logger(_LOGGER, dev.id, dev.enable_debug, dev.name)
+        self.set_logger(_LOGGER, dev.id, dev.enable_debug, self.friendly_name)
 
         # This has to be done in case the device type is type_0d
         for dp in self._device_config.dps_strings:
             self.dps_to_request[dp.split(" ")[0]] = None
+
+    @property
+    def friendly_name(self):
+        """Name string for log prefixes."""
+        name = self._device_config.name
+        return name if not self._fake_gateway else (name +"/G")
 
     def add_entities(self, entities):
         """Set the entities associated with this device."""
@@ -185,7 +191,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                         return await self.abort_connect()
                     self._interface = gateway._interface
                     if self._device_config.enable_debug:
-                        self._interface.enable_debug(True, gateway._device_config.name)
+                        self._interface.enable_debug(True, gateway.friendly_name)
                 else:
                     self._interface = await pytuya.connect(
                         self._device_config.host,
@@ -195,7 +201,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                         self._device_config.enable_debug,
                         self,
                     )
-                    self._interface.enable_debug(self._device_config.enable_debug, name)
+                    self._interface.enable_debug(self._device_config.enable_debug, self.friendly_name)
                 self._interface.add_dps_to_request(self.dps_to_request)
                 break  # Succeed break while loop
             except OSError as e:
