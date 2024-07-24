@@ -32,10 +32,14 @@ from .const import (
     DeviceConfig,
     RESTORE_STATES,
 )
+from .core.pytuya import (
+    HEARTBEAT_INTERVAL,
+)
 
 _LOGGER = logging.getLogger(__name__)
 RECONNECT_INTERVAL = timedelta(seconds=5)
-MIN_OFFLINE_EVENTS = 10 # Offline events before disconnecting the device
+# Offline events before disconnecting the device, around 5 minutes
+MIN_OFFLINE_EVENTS = 5 * 60 // HEARTBEAT_INTERVAL
 
 class HassLocalTuyaData(NamedTuple):
     """LocalTuya data stored in homeassistant data object."""
@@ -170,6 +174,17 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self.error(f"Couldn't find the gateway for: {self._node_id}")
         return None
 
+    async def _connect_subdevices(self):
+        """Connect to sub-devices one by one."""
+        if not self.sub_devices or not self.connected:
+            return
+        for subdevice in self.sub_devices.values():
+            await subdevice.async_connect()
+            if subdevice._connect_task:
+                await subdevice._connect_task
+            if not self.connected:
+                break
+
     async def _make_connection(self):
         """Subscribe localtuya entity events."""
         if self.is_sleep and not self._status:
@@ -238,7 +253,6 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 if status is None:
                     raise Exception("Failed to retrieve status")
 
-                self._interface.start_heartbeat()
                 self.status_updated(status)
             except (UnicodeDecodeError, pytuya.DecodeError) as e:
                 self.exception(f"Handshake with {host} failed: due to {type(e)}: {e}")
@@ -281,17 +295,16 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self._connect_task = None
             self.debug(f"Success: connected to: {host}", force=True)
 
-            if self.sub_devices:
-                for subdevice in self.sub_devices.values():
-                    self._hass.async_create_task(subdevice.async_connect())
-
-                self._interface.start_sub_devices_heartbeat()
-
             if not self._status and "0" in self._device_config.manual_dps.split(","):
                 self.status_updated(RESTORE_STATES)
 
             if self._pending_status:
                 await self.set_status()
+
+            if self.sub_devices:
+                asyncio.create_task(self._connect_subdevices())
+
+            self._interface.start_heartbeat(self.sub_devices)
 
         # If not connected try to handle the errors.
         if not self.connected:

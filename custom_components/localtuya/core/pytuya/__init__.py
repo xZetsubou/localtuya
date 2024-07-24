@@ -182,7 +182,6 @@ NO_PROTOCOL_HEADER_CMDS = [
 ]
 
 HEARTBEAT_INTERVAL = 10
-HEARTBEAT_SUB_DEVICES_INTERVAL = 30
 
 # DPS that are known to be safe to use with update_dps (0x12) command
 UPDATE_DPS_WHITELIST = [18, 19, 20]  # Socket (Wi-Fi)
@@ -916,16 +915,16 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.transport = transport
         self.on_connected.set_result(True)
 
-    def start_heartbeat(self):
+    def start_heartbeat(self, is_gateway: bool):
         """Start the heartbeat transmissions with the device."""
 
-        async def heartbeat_loop():
+        async def heartbeat_loop(action):
             """Continuously send heart beat updates."""
             self.debug("Started heartbeat loop")
             while True:
                 try:
                     await asyncio.sleep(HEARTBEAT_INTERVAL)
-                    await self.heartbeat()
+                    await action()
                 except asyncio.CancelledError:
                     self.debug("Stopped heartbeat loop")
                     raise
@@ -939,31 +938,21 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if self.transport is not None:
                 self.clean_up_session()
 
+            self.debug("Stopped heartbeat loop")
+
+        async def hb():
+            await self.heartbeat()
+
+        async def sq():
+            # Reset the state before every request.
+            self.sub_devices_states = {"online": [], "offline": []}
+            await self.subdevices_query()
+
         if self.heartbeater is None:
             # Prevent duplicates heartbeat task
-            self.heartbeater = self.loop.create_task(heartbeat_loop())
-
-    def start_sub_devices_heartbeat(self):
-        """Update the states of subdevices every 30sec. this function only be called once."""
-
-        async def loop():
-            """Continuously send heart beat updates."""
-            self.debug("Start a heartbeat for sub-devices")
-            while True:
-                try:
-                    await asyncio.sleep(HEARTBEAT_SUB_DEVICES_INTERVAL)
-                    # Reset the state before every request.
-                    self.sub_devices_states = {"online": [], "offline": []}
-                    await self.subdevices_query()
-                except asyncio.CancelledError:
-                    break
-                except Exception as ex:
-                    self.debug(f"Sub-devices heartbeat failed: {ex}")
-                    if self.transport is None:
-                        break
-
-        if not self.sub_devices_hb:
-            self.sub_devices_hb = self.loop.create_task(loop())
+            self.heartbeater = self.loop.create_task(
+                heartbeat_loop(sq if is_gateway else hb)
+            )
 
     def data_received(self, data):
         """Received data from device."""
