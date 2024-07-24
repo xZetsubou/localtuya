@@ -190,8 +190,11 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
 
             if not custom_scenes:
                 self._scenes = {**EFFECTS_MODES, **self._scenes}
+        elif self._write_only and self._config.get(CONF_COLOR_MODE):
+            self._scenes = EFFECTS_MODES
 
-            self._effect_list = list(self._scenes.keys())
+        self._effect_list = list(self._scenes.keys())
+
         if self._config.get(CONF_MUSIC_MODE):
             self._effect_list.append(SCENE_MUSIC)
 
