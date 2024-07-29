@@ -827,7 +827,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         try:
             spayload = json.dumps(payload)
             # spayload = payload.replace('\"','').replace('\'','')
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             spayload = '""'
 
         vals = (error_codes[number], str(number), spayload)
@@ -1031,7 +1031,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         try:
             await self.transport_write(enc_payload)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             await self.close()
             return None
         while recv_retries:
@@ -1040,7 +1040,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 msg = await self.dispatcher.wait_for(seqno, payload.cmd)
                 # for 3.4 devices, we get the starting seqno with the SESS_KEY_NEG_RESP message
                 self.seqno = msg.seqno
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 msg = None
             if msg and len(msg.payload) != 0:
                 return msg
