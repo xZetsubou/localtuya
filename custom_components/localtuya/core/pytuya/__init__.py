@@ -867,10 +867,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             updated_states["online"] = list(set(cached_on_devs + on_devs))
             updated_states["offline"] = list(set(cached_off_devs + off_devs))
 
-            self.sub_devices_states = updated_states
-
             if self._sub_devs_query_task is not None:
                 self._sub_devs_query_task.cancel()
+
+            self.sub_devices_states = updated_states
             self._sub_devs_query_task = self.loop.create_task(_action())
 
     def _setup_dispatcher(self) -> MessageDispatcher:
