@@ -1086,7 +1086,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         enc_payload = self._encode_message(payload)
 
-        await self.transport_write(enc_payload)
+        try:
+            await self.transport_write(enc_payload)
+        except Exception:  # pylint: disable=broad-except
+            return self.clean_up_session()
         msg = await self.dispatcher.wait_for(seqno, payload.cmd)
         if msg is None:
             self.debug("Wait was aborted for seqno %d", seqno)
