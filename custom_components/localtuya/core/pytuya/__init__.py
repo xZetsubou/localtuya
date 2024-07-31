@@ -797,7 +797,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.dispatcher = self._setup_dispatcher()
         self.on_connected = on_connected
         self.heartbeater: asyncio.Task | None = None
-        self.sub_devices_hb: asyncio.Task | None = None
         self._sub_devs_query_task: asyncio.Task | None = None
         self.dps_cache = {}
         self.sub_devices_states = {"online": [], "offline": []}
@@ -993,9 +992,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         """Clean up session."""
         self.debug(f"Cleaning up session.")
         self.real_local_key = self.local_key
-
-        if self.sub_devices_hb:
-            self.sub_devices_hb.cancel()
 
         if self.heartbeater:
             self.heartbeater.cancel()
