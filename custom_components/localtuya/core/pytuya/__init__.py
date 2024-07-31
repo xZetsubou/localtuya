@@ -903,15 +903,13 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if listener is not None:
                 if cid:
                     # Don't pass sub-device's payload to the (fake)gateway!
-                    listener = listener.sub_devices.get(cid, None)
+                    if not listener := listener.sub_devices.get(cid, None):
+                        return self.debug(f"Payload for missing sub-device discarded: \"{decoded_message}\"")
                     status = self.dps_cache.get(cid, {})
                 else:
                     status = self.dps_cache.get("parent", {})
 
-                if listener is not None:
-                    listener.status_updated(status)
-                else:
-                    self.debug(f"Payload for missing sub-device discarded: \"{decoded_message}\"")
+                listener.status_updated(status)
 
         return MessageDispatcher(self.id, _status_update, self.version, self.local_key)
 
