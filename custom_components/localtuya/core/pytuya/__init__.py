@@ -911,7 +911,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 if listener is not None:
                     listener.status_updated(status)
                 else:
-                    self.info(f"Payload for missing sub-device discarded: \"{decoded_message}\"")
+                    self.debug(f"Payload for missing sub-device discarded: \"{decoded_message}\"")
 
         return MessageDispatcher(self.id, _status_update, self.version, self.local_key)
 
