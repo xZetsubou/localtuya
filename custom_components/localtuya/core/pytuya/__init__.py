@@ -950,7 +950,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         if self.heartbeater is None:
             # Prevent duplicates heartbeat task
             self.heartbeater = self.loop.create_task(
-                heartbeat_loop(sq if is_gateway else hb)
+                heartbeat_loop(
+                    # Ver. 3.3 gateways don't respond to subdevice query
+                    sq if is_gateway and self.version >= 3.4 else hb
+                )
             )
 
     def data_received(self, data):
