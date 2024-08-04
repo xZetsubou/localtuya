@@ -363,7 +363,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
             host = f"{host}_{node_id}"
             devices[host] = (device := TuyaDevice(hass, entry, config))
+            # Add even absent sub-devices, to start connecting with them
             gateway.sub_devices[node_id] = device
+            # Required for an absent device as well, even if it is not its gateway anymore
+            device._gateway = gateway
 
         hass_localtuya = HassLocalTuyaData(tuya_api, devices, [])
         hass.data[DOMAIN][entry.entry_id] = hass_localtuya

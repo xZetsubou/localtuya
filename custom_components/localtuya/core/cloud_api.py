@@ -14,6 +14,7 @@ from requests.adapters import HTTPAdapter, Retry
 _LOGGER = logging.getLogger(__name__)
 
 DEVICES_UPDATE_INTERVAL = 300
+DEVICES_UPDATE_INTERVAL_FORCED = 10
 
 TUYA_ENDPOINTS = {
     # Regions code
@@ -177,7 +178,8 @@ class TuyaCloudApi:
     async def async_get_devices_list(self, force_update=False) -> str | None:
         """Obtain the list of devices associated to a user. - force_update will ignore last update check."""
 
-        if not force_update and (int(time.time()) - self._last_devices_update) < 0:
+        interval = DEVICES_UPDATE_INTERVAL if not force_update else DEVICES_UPDATE_INTERVAL_FORCED
+        if int(time.time()) - (self._last_devices_update + interval) < 0:
             return _LOGGER.debug(f"Devices has been updated a minutes ago.")
 
         resp = await self.async_make_request(
@@ -206,7 +208,7 @@ class TuyaCloudApi:
         ]
         # await asyncio.run(*get_functions)
 
-        self._last_devices_update = int(time.time()) + DEVICES_UPDATE_INTERVAL
+        self._last_devices_update = int(time.time())
         return "ok"
 
     async def async_get_device_specifications(self, device_id) -> dict[str, dict]:
