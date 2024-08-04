@@ -1019,6 +1019,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         if self.heartbeater:
             self.heartbeater.cancel()
 
+        if self._sub_devs_query_task:
+            self._sub_devs_query_task.cancel()
+
         if self.dispatcher:
             self.dispatcher.abort()
 
