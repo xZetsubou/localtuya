@@ -43,6 +43,7 @@ RECONNECT_INTERVAL = timedelta(seconds=5)
 # Offline events before disconnecting the device, around 5 minutes
 MIN_OFFLINE_EVENTS = 5 * 60 // HEARTBEAT_INTERVAL
 
+
 class HassLocalTuyaData(NamedTuple):
     """LocalTuya data stored in homeassistant data object."""
 
@@ -106,7 +107,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
     def friendly_name(self):
         """Name string for log prefixes."""
         name = self._device_config.name
-        return name if not self._fake_gateway else (name +"/G")
+        return name if not self._fake_gateway else (name + "/G")
 
     def add_entities(self, entities):
         """Set the entities associated with this device."""
@@ -162,9 +163,9 @@ class TuyaDevice(TuyaListener, ContextualLogger):
     def _get_gateway(self):
         """Return the gateway device of this sub device."""
         if not self._node_id:
-            return None # Should never happen
+            return None  # Should never happen
         if (gateway := self._gateway) == None:
-            return None # Should never happen
+            return None  # Should never happen
 
         # Ensure that sub-device still on the same gateway device.
         if gateway._local_key != self._local_key:
@@ -226,7 +227,9 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                         self._device_config.enable_debug,
                         self,
                     )
-                    self._interface.enable_debug(self._device_config.enable_debug, self.friendly_name)
+                    self._interface.enable_debug(
+                        self._device_config.enable_debug, self.friendly_name
+                    )
                 self._interface.add_dps_to_request(self.dps_to_request)
                 break  # Succeed break while loop
             except OSError as e:
@@ -380,39 +383,36 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         await cloud_api.async_get_devices_list(force_update=True)
 
         cloud_devs = cloud_api.device_list
-        if not dev_id in cloud_devs:
-            return # Don't delete or disable such a device: it may be back later!
-        if not (cloud_localkey := cloud_devs[dev_id].get(CONF_LOCAL_KEY)):
-            return # TODO: May it happen? What does "no local key" for a device mean?
-        if self._local_key == cloud_localkey:
-            return
+        if dev_id in cloud_devs:
+            cloud_localkey = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
+            if not cloud_localkey or self._local_key == cloud_localkey:
+                return
 
-        self._local_key = cloud_localkey
-        new_data = self._entry.data.copy()
+            new_data = self._entry.data.copy()
+            self._local_key = cloud_localkey
 
-        if self._node_id:
-            from .core.helpers import get_gateway_by_deviceid
+            if self._node_id:
+                from .core.helpers import get_gateway_by_deviceid
 
-            # Update Node ID.
-            if (new_node_id := cloud_devs[dev_id].get(CONF_NODE_ID)) and new_node_id != self._node_id:
-                new_data[CONF_DEVICES][dev_id][CONF_NODE_ID] = new_node_id
+                # Update Node ID.
+                if new_node_id := cloud_devs[dev_id].get(CONF_NODE_ID):
+                    new_data[CONF_DEVICES][dev_id][CONF_NODE_ID] = new_node_id
 
-            # Update Gateway ID and IP
-            if new_gw := get_gateway_by_deviceid(dev_id, cloud_devs):
-                self.info(f"Gateway ID has been updated to: {new_gw.id}")
-                new_data[CONF_DEVICES][dev_id][CONF_GATEWAY_ID] = new_gw.id
+                # Update Gateway ID and IP
+                if new_gw := get_gateway_by_deviceid(dev_id, cloud_devs):
+                    self.info(f"Gateway ID has been updated to: {new_gw.id}")
+                    new_data[CONF_DEVICES][dev_id][CONF_GATEWAY_ID] = new_gw.id
 
-                discovery = self._hass.data[DOMAIN].get(DATA_DISCOVERY)
-                if discovery and (local_gw := discovery.devices.get(new_gw.id)):
-                    new_ip = local_gw.get(CONF_TUYA_IP, self._device_config.host)
-                    new_data[CONF_DEVICES][dev_id][CONF_HOST] = new_ip
-                    self.info(f"IP has been updated to: {new_ip}")
+                    discovery = self._hass.data[DOMAIN].get(DATA_DISCOVERY)
+                    if discovery and (local_gw := discovery.devices.get(new_gw.id)):
+                        new_ip = local_gw.get(CONF_TUYA_IP, self._device_config.host)
+                        new_data[CONF_DEVICES][dev_id][CONF_HOST] = new_ip
+                        self.info(f"IP has been updated to: {new_ip}")
 
-        new_data[CONF_DEVICES][dev_id][CONF_LOCAL_KEY] = self._local_key
-        new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
-        # This will cause restart of LocalTuya
-        self._hass.config_entries.async_update_entry(self._entry, data=new_data)
-        self.info(f"Local-key has been updated")
+            new_data[CONF_DEVICES][dev_id][CONF_LOCAL_KEY] = self._local_key
+            new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
+            self._hass.config_entries.async_update_entry(self._entry, data=new_data)
+            self.info(f"Local-key has been updated")
 
     async def set_status(self):
         """Send self._pending_status payload to device."""
@@ -615,7 +615,11 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         self._subdevice_off_count = 0 if is_online else off_count + 1
 
         if is_online:
-            return self.info(f"Sub-device is online {self._node_id}") if off_count > 0 else None
+            return (
+                self.info(f"Sub-device is online {self._node_id}")
+                if off_count > 0
+                else None
+            )
         else:
             off_count += 1
             if off_count == 1:
