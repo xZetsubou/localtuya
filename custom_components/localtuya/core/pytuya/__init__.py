@@ -116,6 +116,12 @@ class DecodeError(Exception):
     pass
 
 
+class SubdeviceState(Enum):
+    ONLINE = 1
+    OFFLINE = 2
+    ABSENT = 3
+
+
 # Tuya Command Types
 # Reference:
 # https://github.com/tuya/tuya-iotos-embeded-sdk-wifi-ble-bk7231n/blob/master/sdk/include/lan_protocol.h
@@ -735,11 +741,6 @@ class TuyaListener(ABC):
     def disconnected(self, exc=""):
         """Device disconnected."""
 
-    class SubdeviceState(Enum):
-        ONLINE = 1
-        OFFLINE = 2
-        ABSENT = 3
-
     @abstractmethod
     def subdevice_state(self, state):
         """Device is offline or online."""
@@ -861,11 +862,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 subdevices = dict(listener.sub_devices)
                 for cid, device in subdevices.items():
                     if cid in on_devs:
-                        device.subdevice_state(TuyaListener.SubdeviceState.ONLINE)
+                        device.subdevice_state(SubdeviceState.ONLINE)
                     elif cid in off_devs:
-                        device.subdevice_state(TuyaListener.SubdeviceState.OFFLINE)
+                        device.subdevice_state(SubdeviceState.OFFLINE)
                     else:
-                        device.subdevice_state(TuyaListener.SubdeviceState.ABSENT)
+                        device.subdevice_state(SubdeviceState.ABSENT)
             except asyncio.CancelledError:
                 pass
 
@@ -972,7 +973,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             self.heartbeater = self.loop.create_task(
                 heartbeat_loop(
                     # Ver. 3.3 gateways don't respond to subdevice query
-                    sq if is_gateway and self.version >= 3.4 else hb
+                    sq
+                    if is_gateway and self.version >= 3.4
+                    else hb
                 )
             )
 
