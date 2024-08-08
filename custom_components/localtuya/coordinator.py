@@ -41,7 +41,7 @@ from .core.pytuya import (
 
 _LOGGER = logging.getLogger(__name__)
 RECONNECT_INTERVAL = timedelta(seconds=5)
-# Offline events before disconnecting the device, around 5 minutes
+# Subdevice: Offline events before disconnecting the device, around 5 minutes
 MIN_OFFLINE_EVENTS = 5 * 60 // HEARTBEAT_INTERVAL
 
 
@@ -165,7 +165,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         """Return the gateway device of this sub device."""
         if not self._node_id:
             return None  # Should never happen
-        if (gateway := self._gateway) == None:
+        if (gateway := self._gateway) is None:
             return None  # Should never happen
 
         # Ensure that sub-device still on the same gateway device.
