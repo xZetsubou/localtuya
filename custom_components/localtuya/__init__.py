@@ -329,7 +329,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             if check_if_device_disabled(hass, entry, dev_id):
                 continue
             if config.get(CONF_NODE_ID):
-                continue # skip sub-devices
+                continue  # skip sub-devices
 
             entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
             platforms = platforms.union(
@@ -346,7 +346,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             if check_if_device_disabled(hass, entry, dev_id):
                 continue
             if not (node_id := config.get(CONF_NODE_ID)):
-                continue # skip not sub-devices
+                continue  # skip not sub-devices
 
             entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
             platforms = platforms.union(
@@ -376,8 +376,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
         # Connect to Tuya devices. Sub-devices will be connected by their gateways.
         connect_to_devices = [
-            asyncio.create_task(device.async_connect())
-            for device in devices_to_connect
+            asyncio.create_task(device.async_connect()) for device in devices_to_connect
         ]
         # Update listener: add to unsub_listeners
         entry_update = entry.add_update_listener(update_listener)
