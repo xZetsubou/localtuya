@@ -742,7 +742,7 @@ class TuyaListener(ABC):
         """Device disconnected."""
 
     @abstractmethod
-    def subdevice_state(self, state):
+    def subdevice_state(self, state: SubdeviceState):
         """Device is offline or online."""
 
 
@@ -755,7 +755,7 @@ class EmptyListener(TuyaListener):
     def disconnected(self, exc=""):
         """Device disconnected."""
 
-    def subdevice_state(self, state):
+    def subdevice_state(self, state: SubdeviceState):
         """Device is offline or online."""
 
 
