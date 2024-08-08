@@ -595,7 +595,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
     @callback
     def subdevice_state(self, state):
         """Sub-Device is offline or online."""
-        if state is SubdeviceState.ABSENT:
+        if state == SubdeviceState.ABSENT:
             if not self._subdevice_absent:
                 # Don't disconnect immediately, because false events
                 # happen with some gateways!
@@ -611,7 +611,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             self.info(f"Sub-device is back {self._node_id}")
             self._subdevice_absent = False
 
-        is_online = state is SubdeviceState.ONLINE
+        is_online = state == SubdeviceState.ONLINE
         off_count = self._subdevice_off_count
         self._subdevice_off_count = 0 if is_online else off_count + 1
 
