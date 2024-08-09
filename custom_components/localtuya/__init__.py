@@ -448,6 +448,7 @@ def async_config_entry_by_device_id(hass: HomeAssistant, device_id):
 
 
 async def setup_devices(hass: HomeAssistant, entry: ConfigEntry, entry_devices: dict):
+    """Setup Localtuya devices object."""
     devices: dict[str, TuyaDevice] = {}
 
     # First pass: add WiFi and Ethernet devices

@@ -336,8 +336,8 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         self._is_closing = True
         self._shutdown_entities()
 
-        for callback in self._call_on_close:
-            callback()
+        for cb in self._call_on_close:
+            cb()
 
         if self._connect_task is not None:
             self._connect_task.cancel()
