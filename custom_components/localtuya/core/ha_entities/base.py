@@ -7,9 +7,10 @@ from homeassistant.const import (
     CONF_ICON,
     CONF_ENTITY_CATEGORY,
     CONF_DEVICE_CLASS,
+    Platform,
     EntityCategory,
 )
-from ...const import CONF_STATE_CLASS
+from ...const import CONF_CLEAN_AREA_DP, CONF_DPS_STRINGS, CONF_STATE_CLASS
 
 
 # Obtain values from cloud data.
@@ -48,7 +49,7 @@ class LocalTuyaEntity:
         self,
         name: str = "",
         icon: str = "",
-        entity_category: EntityCategory = "None",
+        entity_category="None",
         device_class=None,
         state_class=None,
         custom_configs: dict[str, Any | tuple[Any, CLOUD_VALUE]] = {},

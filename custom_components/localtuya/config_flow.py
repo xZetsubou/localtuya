@@ -98,7 +98,7 @@ def _col_to_select(
     opt_list: dict | list, multi_select=False, is_dps=False, custom_value=False
 ) -> SelectSelector:
     """Convert collections to SelectSelectorConfig."""
-    if isinstance(opt_list, dict):
+    if type(opt_list) == dict:
         return SelectSelector(
             SelectSelectorConfig(
                 options=[
@@ -109,7 +109,7 @@ def _col_to_select(
                 multiple=True if multi_select else False,
             )
         )
-    elif isinstance(opt_list, list):
+    elif type(opt_list) == list:
         # value used the same method as func available_dps_string, no spaces values.
         return SelectSelector(
             SelectSelectorConfig(
@@ -603,12 +603,14 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_auto_configure_device(self, user_input=None):
         """Handle asking which templates to use"""
 
+        errors = {}
         placeholders = {}
 
         # Gather the informations
         is_cloud = not self.config_entry.data.get(CONF_NO_CLOUD)
         dev_id = self.selected_device
         category = None
+        node_id = self.nodeID
         device_data = self.cloud_data.device_list.get(dev_id)
         if device_data:
             category = self.cloud_data.device_list[dev_id].get(TUYA_CATEGORY, "")
@@ -629,11 +631,11 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             )
 
         if not is_cloud:
-            err_msg = "This feature requires cloud API setup for now"
+            err_msg = f"This feature requires cloud API setup for now"
         elif not device_data:
-            err_msg = "Couldn't find your device in the cloud account you using"
+            err_msg = f"Couldn't find your device in the cloud account you using"
         elif not category:
-            err_msg = "Your device category isn't supported"
+            err_msg = f"Your device category isn't supported"
         elif not dev_data:
             err_msg = f"Couldn't find the data for your device category: {category}."
 
@@ -752,7 +754,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         if dev_id in ent.unique_id
                         and ent.original_name not in entitesNames
                     }
-
                     for entity_id in reg_entities.values():
                         ent_reg.async_remove(entity_id)
 
@@ -932,7 +933,7 @@ async def setup_localtuya_devices(
     for dev_id, dev_data in deepcopy(devices).items():
         category = devices_cloud_data[dev_id].get("category")
         dev_data[DEVICE_CLOUD_DATA] = devices_cloud_data[dev_id]
-        if category and dev_data.get(CONF_DPS_STRINGS, False):
+        if category and (dps_strings := dev_data.get(CONF_DPS_STRINGS, False)):
             dev_entites = gen_localtuya_entities(dev_data, category)
 
         # Configure entities fails
@@ -1223,7 +1224,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
                 except (OSError, ValueError, pytuya.DecodeError) as ex:
                     error = ex
                     break
-                except Exception:
+                except:
                     continue
                 finally:
                     if not auto_protocol and data.get(CONF_DEVICE_SLEEP_TIME, 0) > 0:

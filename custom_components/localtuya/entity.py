@@ -34,6 +34,7 @@ from .coordinator import HassLocalTuyaData, TuyaDevice
 from .const import (
     ATTR_STATE,
     CONF_DEFAULT_VALUE,
+    CONF_ID,
     CONF_NODE_ID,
     CONF_PASSIVE_ENTITY,
     CONF_RESTORE_ON_RECONNECT,

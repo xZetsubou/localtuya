@@ -8,7 +8,7 @@ import voluptuous as vol
 from homeassistant.components.sensor import (
     DEVICE_CLASSES_SCHEMA,
     DOMAIN,
-    # STATE_CLASSES_SCHEMA,
+    STATE_CLASSES_SCHEMA,
     SensorStateClass,
     SensorEntity,
 )

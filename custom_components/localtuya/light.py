@@ -220,7 +220,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             return self._hs
         if (
             ColorMode.HS in self.supported_color_modes
-            and ColorMode.COLOR_TEMP not in self.supported_color_modes
+            and not ColorMode.COLOR_TEMP in self.supported_color_modes
         ):
             return [0, 0]
         return None

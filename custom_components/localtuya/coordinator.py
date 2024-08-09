@@ -5,16 +5,17 @@ import asyncio
 import logging
 import time
 from datetime import timedelta
-from typing import Any, NamedTuple
+from typing import Any, Callable, Coroutine, NamedTuple
 from functools import partial
 
 
-from homeassistant.core import HomeAssistant, CALLBACK_TYPE, callback
+from homeassistant.core import HomeAssistant, CALLBACK_TYPE, callback, State
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_DEVICES, CONF_HOST, CONF_DEVICE_ID
+from homeassistant.const import CONF_ID, CONF_DEVICES, CONF_HOST, CONF_DEVICE_ID
 from homeassistant.helpers.event import async_track_time_interval, async_call_later
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
+    async_dispatcher_send,
     dispatcher_send,
 )
 
@@ -250,7 +251,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                     await self.abort_connect()
                     if self.is_subdevice:
                         update_localkey = True
-            except:  # noqa: E722
+            except:
                 if self._fake_gateway:
                     self.warning(f"Failed to use {name} as gateway.")
                     await self.abort_connect()
@@ -307,7 +308,6 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                 )
             if update_localkey:
                 # Check if the cloud device info has changed!.
-                self.warning("Started update localkey...")
                 await self.update_local_key()
 
         self._connect_task = None
@@ -336,8 +336,8 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         self._is_closing = True
         self._shutdown_entities()
 
-        for cb in self._call_on_close:
-            cb()
+        for callback in self._call_on_close:
+            callback()
 
         if self._connect_task is not None:
             self._connect_task.cancel()
@@ -346,7 +346,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         if self._interface is not None:
             await self._interface.close()
             self._interface = None
-        self.debug("Closed connection", force=True)
+        self.debug(f"Closed connection", force=True)
 
     async def update_local_key(self):
         """Retrieve updated local_key from Cloud API and update the config_entry."""
@@ -385,7 +385,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             new_data[CONF_DEVICES][dev_id][CONF_LOCAL_KEY] = self._local_key
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
             self._hass.config_entries.async_update_entry(self._entry, data=new_data)
-            self.info("Local-key has been updated")
+            self.info(f"Local-key has been updated")
 
     async def set_status(self):
         """Send self._pending_status payload to device."""
@@ -397,7 +397,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             except Exception as ex:  # pylint: disable=broad-except
                 self.debug(f"Failed to set values {payload} --> {ex}", force=True)
         elif not self._interface:
-            self.error("Device is not connected.")
+            self.error(f"Device is not connected.")
 
     async def set_dp(self, state, dp_index):
         """Change value of a DP of the Tuya device."""

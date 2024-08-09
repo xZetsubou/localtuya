@@ -70,7 +70,7 @@ try:
         "seqno cmd retcode payload crc crc_good prefix iv",
         defaults=(True, 0x55AA, None),
     )
-except Exception:
+except:
     TuyaMessage = namedtuple(
         "TuyaMessage", "seqno cmd retcode payload crc crc_good prefix iv"
     )
@@ -329,7 +329,7 @@ def pack_message(msg, hmac_key=None):
         header_fmt = MESSAGE_HEADER_FMT_6699
         end_fmt = MESSAGE_END_FMT_6699
         msg_len = len(msg.payload) + (struct.calcsize(end_fmt) - 4) + 12
-        if type(msg.retcode) is int:
+        if type(msg.retcode) == int:
             msg_len += struct.calcsize(MESSAGE_RETCODE_FMT)
         header_data = (msg.prefix, 0, msg.seqno, msg.cmd, msg_len)
     else:
@@ -342,7 +342,7 @@ def pack_message(msg, hmac_key=None):
 
     if msg.prefix == PREFIX_6699_VALUE:
         cipher = AESCipher(hmac_key)
-        if type(msg.retcode) is int:
+        if type(msg.retcode) == int:
             raw = struct.pack(MESSAGE_RETCODE_FMT, msg.retcode) + msg.payload
         else:
             raw = msg.payload
@@ -449,7 +449,7 @@ def unpack_message(data, hmac_key=None, header=None, no_retcode=False, logger=_L
                 tag=crc,
             )
             crc_good = True
-        except Exception:
+        except:
             crc_good = False
 
         retcode_len = struct.calcsize(MESSAGE_RETCODE_FMT)
@@ -700,7 +700,7 @@ class MessageDispatcher(ContextualLogger):
         elif msg.cmd == LAN_EXT_STREAM:
             self._release_listener(self.SUB_DEVICE_QUERY_SEQNO, msg)
             if msg.payload:
-                self.debug("Got Sub-devices status update")
+                self.debug(f"Got Sub-devices status update")
                 self.callback_status_update(msg)
         else:
             if msg.cmd == CONTROL_NEW or not msg.payload:
@@ -1011,7 +1011,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
     def clean_up_session(self):
         """Clean up session."""
-        self.debug("Cleaning up session.")
+        self.debug(f"Cleaning up session.")
         self.real_local_key = self.local_key
 
         if self.heartbeater:
@@ -1285,7 +1285,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 try:
                     payload = payload.decode()
                 except Exception as ex:
-                    self.debug(f"payload was not string type and decoding failed: {ex}")
+                    self.debug("payload was not string type and decoding failed")
                     return self.error_json(ERR_JSON, payload)
 
             if "data unvalid" in payload:
@@ -1306,7 +1306,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         try:
             json_payload = json.loads(payload)
         except Exception as ex:
-            self.debug(f"Invalid JSON Response from Device: {ex}")
             json_payload = self.error_json(ERR_JSON, payload)
 
             if "devid not" in payload:  # DeviceID Not found.
@@ -1408,7 +1407,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     # adds protocol header (if needed) and encrypts
     def _encode_message(self, msg):
         hmac_key = None
-        # iv = None
+        iv = None
         payload = msg.payload
         self.cipher = AESCipher(self.local_key)
 
@@ -1420,7 +1419,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             self.debug("final payload for cmd %r: %r", msg.cmd, payload)
 
             if self.version >= 3.5:
-                # iv = True
+                iv = True
                 # seqno cmd retcode payload crc crc_good, prefix, iv
                 msg = TuyaMessage(
                     self.seqno, msg.cmd, None, payload, 0, True, PREFIX_6699_VALUE, True
@@ -1647,6 +1646,8 @@ async def connect(
         raise ex
     except Exception as ex:
         raise ex
+    except:
+        raise Exception(f"The host refused to connect")
 
     await asyncio.wait_for(on_connected, timeout=timeout)
     return protocol

@@ -11,8 +11,6 @@ import yaml
 
 from homeassistant.util.yaml import load_yaml
 from homeassistant.const import CONF_PLATFORM, CONF_ENTITIES
-from ..const import CONF_LOCAL_KEY, CONF_NODE_ID
-from .ha_entities import gen_localtuya_entities  # noqa: F401
 
 
 import custom_components.localtuya.templates as templates_dir
@@ -76,7 +74,7 @@ class templates:
         fname = fname.replace(" ", "_")
         template_dir = os.path.dirname(templates_dir.__file__)
         template_file = os.path.join(template_dir, fname)
-        cls.yaml_dump(export_config, template_file)
+        _config = cls.yaml_dump(export_config, template_file)
 
     def yaml_dump(config, fname: str | None = None) -> JSON_TYPE:
         """Save yaml config."""
@@ -88,9 +86,10 @@ class templates:
 
 
 ################################
-#        config flows          #
+##       config flows         ##
 ################################
 
+from ..const import CONF_LOCAL_KEY, CONF_NODE_ID
 
 GATEWAY = NamedTuple("Gateway", [("id", str), ("data", dict)])
 
@@ -107,3 +106,9 @@ def get_gateway_by_deviceid(device_id: str, cloud_data: dict) -> GATEWAY:
                 and dev_data.get(CONF_LOCAL_KEY) == sub_device.get(CONF_LOCAL_KEY)
             ):
                 return GATEWAY(dev_id, dev_data)
+
+
+###############################
+#    Auto configure device    #
+###############################
+from .ha_entities import gen_localtuya_entities

@@ -3,6 +3,7 @@
 from enum import StrEnum
 import logging
 from functools import partial
+from .config_flow import _col_to_select
 
 import voluptuous as vol
 from homeassistant.helpers import selector

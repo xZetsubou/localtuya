@@ -1,12 +1,11 @@
 """
     This a file contains available tuya data
     https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
-
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
 """
 
-from .base import DPCode, LocalTuyaEntity
+from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
 
 # All descriptions can be found here:
 # https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq

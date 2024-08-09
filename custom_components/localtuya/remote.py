@@ -2,17 +2,19 @@
 
 import asyncio
 import json
+import base64
 import logging
 from functools import partial
+import struct
 from enum import StrEnum
 from typing import Any, Iterable
 from .config_flow import _col_to_select
 
 import voluptuous as vol
 from homeassistant.components.remote import (
-    # ATTR_ACTIVITY,
+    ATTR_ACTIVITY,
     ATTR_COMMAND,
-    # ATTR_COMMAND_TYPE,
+    ATTR_COMMAND_TYPE,
     ATTR_NUM_REPEATS,
     ATTR_DELAY_SECS,
     ATTR_DEVICE,
@@ -22,8 +24,8 @@ from homeassistant.components.remote import (
     RemoteEntityFeature,
 )
 from homeassistant.components import persistent_notification
-from homeassistant.const import STATE_OFF
-from homeassistant.core import State
+from homeassistant.const import CONF_DEVICE_ID, STATE_OFF
+from homeassistant.core import HomeAssistant, State
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.storage import Store
 
@@ -343,7 +345,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
 
     def status_updated(self):
         """Device status was updated."""
-        # state = self.dp_value(self._dp_id)
+        state = self.dp_value(self._dp_id)
 
     def status_restored(self, stored_state: State) -> None:
         """Device status was restored.."""

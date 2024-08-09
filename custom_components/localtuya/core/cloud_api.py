@@ -196,7 +196,7 @@ class TuyaCloudApi:
             self.device_list
             and int(time.time()) - (self._last_devices_update + interval) < 0
         ):
-            return self._logger.debug("Devices has been updated a minutes ago.")
+            return self._logger.debug(f"Devices has been updated a minutes ago.")
 
         resp = await self.async_make_request(
             "GET", url=f"/v1.0/users/{self._user_id}/devices"
@@ -218,8 +218,11 @@ class TuyaCloudApi:
         self.device_list = {dev["id"]: dev for dev in r_json["result"]}
 
         # Get Devices DPS Data.
-        for devid in self.device_list:
+        get_functions = [
             self._hass.async_create_task(self.get_device_functions(devid))
+            for devid in self.device_list
+        ]
+        # await asyncio.run(*get_functions)
 
         self._last_devices_update = int(time.time())
         return "ok"

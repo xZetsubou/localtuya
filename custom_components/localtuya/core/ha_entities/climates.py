@@ -6,7 +6,14 @@
     Modified by: xZetsubou
 """
 
-from homeassistant.components.climate import HVACMode, HVACAction
+from homeassistant.components.climate import (
+    HVACMode,
+    HVACAction,
+    DEFAULT_MAX_TEMP,
+    DEFAULT_MIN_TEMP,
+    ATTR_MAX_TEMP,
+    ATTR_MIN_TEMP,
+)
 from homeassistant.const import CONF_TEMPERATURE_UNIT
 
 from .base import DPCode, LocalTuyaEntity, CLOUD_VALUE
@@ -98,6 +105,7 @@ MAP_CLIMATE_MODES = {
     "dehum": HVACMode.DRY,
     "wind": HVACMode.FAN_ONLY,
     "fan": HVACMode.FAN_ONLY,
+    "off": HVACMode.OFF,
     "0": HVACMode.COOL,
     "1": HVACMode.HEAT,
     "2": HVACMode.FAN_ONLY,
@@ -145,6 +153,62 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             ),
         ),
     ),
+    # Heater
+    # https://developer.tuya.com/en/docs/iot/f?id=K9gf46epy4j82
+    ## Converted to Water Heaters
+    # "qn": (
+    #     LocalTuyaEntity(
+    #         id=DPCode.SWITCH,
+    #         target_temperature_dp=(DPCode.TEMP_SET, DPCode.TEMP_SET_F),
+    #         current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
+    #         hvac_mode_dp=DPCode.SWITCH,
+    #         hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
+    #         preset_dp=DPCode.MODE,
+    #         fan_speed_dp=(DPCode.FAN_SPEED_ENUM, DPCode.WINDSPEED),
+    #         custom_configs=localtuya_climate(
+    #             hvac_mode_set={
+    #                 HVACMode.OFF: False,
+    #                 HVACMode.HEAT: True,
+    #             },
+    #             temp_step=1,
+    #             actions_set={
+    #                 HVACAction.HEATING: True,
+    #                 HVACAction.IDLE: False,
+    #             },
+    #             values_precsion=0.1,
+    #             target_precision=0.1,
+    #             preset_set={},
+    #         ),
+    #     ),
+    # ),
+    # Heater
+    # https://developer.tuya.com/en/docs/iot/categoryrs?id=Kaiuz0nfferyx
+    ## Converted to Water Heaters
+    # "rs": (
+    #     LocalTuyaEntity(
+    #         id=DPCode.SWITCH,
+    #         target_temperature_dp=(DPCode.TEMP_SET, DPCode.TEMP_SET_F),
+    #         current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
+    #         hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
+    #         preset_dp=DPCode.MODE,
+    #         fan_speed_dp=(DPCode.FAN_SPEED_ENUM, DPCode.WINDSPEED),
+    #         custom_configs=localtuya_climate(
+    #             hvac_mode_set={
+    #                 HVACMode.OFF: "off",
+    #                 HVACMode.HEAT: "hot",
+    #             },
+    #             temp_step=1,
+    #             actions_set={
+    #                 HVACAction.HEATING: "heating",
+    #                 HVACAction.IDLE: "warming",
+    #             },
+    #             unit=UNIT_C,
+    #             values_precsion=0.1,
+    #             target_precision=0.1,
+    #             preset_set={},
+    #         ),
+    #     ),
+    # ),
     # Thermostat
     # https://developer.tuya.com/en/docs/iot/f?id=K9gf45ld5l0t9
     "wk": (
