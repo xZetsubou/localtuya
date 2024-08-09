@@ -1,6 +1,7 @@
 """
     This a file contains available tuya data
     https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
+
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
 """
@@ -11,12 +12,12 @@ from homeassistant.const import (
     STATE_ALARM_DISARMED,
     STATE_ALARM_ARMED_HOME,
     STATE_ALARM_ARMED_AWAY,
-    STATE_ALARM_ARMED_NIGHT,
-    STATE_ALARM_ARMED_VACATION,
-    STATE_ALARM_ARMED_CUSTOM_BYPASS,
-    STATE_ALARM_PENDING,
-    STATE_ALARM_ARMING,
-    STATE_ALARM_DISARMING,
+    # STATE_ALARM_ARMED_NIGHT,
+    # STATE_ALARM_ARMED_VACATION,
+    # STATE_ALARM_ARMED_CUSTOM_BYPASS,
+    # STATE_ALARM_PENDING,
+    # STATE_ALARM_ARMING,
+    # STATE_ALARM_DISARMING,
     STATE_ALARM_TRIGGERED,
 )
 

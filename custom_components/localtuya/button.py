@@ -3,11 +3,12 @@
 import logging
 from functools import partial
 
-import voluptuous as vol
+# import voluptuous as vol
 from homeassistant.components.button import DOMAIN, ButtonEntity
 
+# from .const import CONF_PASSIVE_ENTITY
 from .entity import LocalTuyaEntity, async_setup_entry
-from .const import CONF_PASSIVE_ENTITY
+
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -6,13 +6,7 @@
     Modified by: xZetsubou
 """
 
-from .base import (
-    DPCode,
-    LocalTuyaEntity,
-    CONF_DEVICE_CLASS,
-    EntityCategory,
-    CLOUD_VALUE,
-)
+from .base import DPCode, LocalTuyaEntity, CLOUD_VALUE
 from homeassistant.components.humidifier import (
     HumidifierDeviceClass,
     ATTR_MAX_HUMIDITY,

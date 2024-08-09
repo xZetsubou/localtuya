@@ -2,7 +2,6 @@
     # PRESETS and HVAC_MODE Needs to be handle in better way.
 """
 
-import asyncio
 import logging
 from functools import partial
 from .config_flow import _col_to_select
@@ -78,7 +77,6 @@ RENAME_PRESET_SETS = {
     "Program": (PRESET_HOME),
     "Manual": (PRESET_NONE, "manual"),
     "Auto": "auto",
-    "Manual": "manual",
     "Smart": "smart",
     "Comfort": "comfortable",
     "ECO": "eco",

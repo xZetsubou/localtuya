@@ -13,14 +13,15 @@ from homeassistant.components.water_heater import (
     WaterHeaterEntity,
     WaterHeaterEntityFeature,
 )
-from homeassistant.components.water_heater.const import (
-    STATE_ECO,
-    STATE_ELECTRIC,
-    STATE_PERFORMANCE,
-    STATE_HIGH_DEMAND,
-    STATE_HEAT_PUMP,
-    STATE_GAS,
-)
+
+# from homeassistant.components.water_heater.const import (
+#     STATE_ECO,
+#     STATE_ELECTRIC,
+#     STATE_PERFORMANCE,
+#     STATE_HIGH_DEMAND,
+#     STATE_HEAT_PUMP,
+#     STATE_GAS,
+# )
 from homeassistant.const import (
     ATTR_TEMPERATURE,
     CONF_TEMPERATURE_UNIT,

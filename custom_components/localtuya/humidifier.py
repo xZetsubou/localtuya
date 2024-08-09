@@ -3,16 +3,17 @@
 import logging
 from functools import partial
 from .config_flow import _col_to_select
-from homeassistant.helpers import selector
+from .entity import LocalTuyaEntity, async_setup_entry
 
 import voluptuous as vol
 from homeassistant.const import CONF_DEVICE_CLASS
+from homeassistant.helpers import selector
 from homeassistant.components.humidifier import (
     DOMAIN,
-    HumidifierDeviceClass,
+    # HumidifierDeviceClass,
     DEVICE_CLASSES_SCHEMA,
     HumidifierEntity,
-    HumidifierEntityDescription,
+    # HumidifierEntityDescription,
     HumidifierEntityFeature,
 )
 from homeassistant.components.humidifier.const import (
@@ -26,8 +27,6 @@ CONF_HUMIDIFIER_SET_HUMIDITY_DP = "humidifier_set_humidity_dp"
 CONF_HUMIDIFIER_CURRENT_HUMIDITY_DP = "humidifier_current_humidity_dp"
 CONF_HUMIDIFIER_MODE_DP = "humidifier_mode_dp"
 CONF_HUMIDIFIER_AVAILABLE_MODES = "humidifier_available_modes"
-
-from .entity import LocalTuyaEntity, async_setup_entry
 
 
 _LOGGER = logging.getLogger(__name__)

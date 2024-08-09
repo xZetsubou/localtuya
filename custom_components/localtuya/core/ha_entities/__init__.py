@@ -1,31 +1,32 @@
 """
-    Tuya Devices: https://xzetsubou.github.io/hass-localtuya/auto_configure/
+Tuya Devices: https://xzetsubou.github.io/hass-localtuya/auto_configure/
 
-    This functionality is similar to HA Tuya, as it retrieves the category and searches for the corresponding categories. 
-    The categories data has been improved & modified to work seamlessly with localtuya
+This functionality is similar to HA Tuya, as it retrieves the category and searches for the corresponding categories.
+The categories data has been improved & modified to work seamlessly with localtuya
 
-    Device Data: You can obtain all the data for your device from Home Assistant by directly downloading the diagnostics or using entry diagnostics.
-        Alternative: Use Tuya IoT.
+Device Data: You can obtain all the data for your device from Home Assistant by directly downloading the diagnostics or using entry diagnostics.
+    Alternative: Use Tuya IoT.
 
-    Add a new device or modify an existing one:
-        1. Make sure the device category doesn't already exist. If you are creating a new one, you can modify existing categories.
-        2. In order to add a device, you need to specify the category of the device you want to add inside the entity type dictionary.
-    
-    Add entities to devices:
-        1. Open the file with the name of the entity type on which you want to make changes [e.g. switches.py] and search for your device category.
-        2. You can add entities inside the tuple value of the dictionary by including LocalTuyaEntity and passing the parameters for the entity configurations.
-        3. These configurations include "id" (required), "icon" (optional), "device_class" (optional), "state_class" (optional), and "name" (optional) [Using COVERS as an example]
-            Example: "3 ( code: percent_state , value: 0 )" - Refer to the Device Data section above for more details.
-                current_state_dp = DPCode.PERCENT_STATE < This maps the "percent_state" code DP to the current_state_dp configuration.
+Add a new device or modify an existing one:
+    1. Make sure the device category doesn't already exist. If you are creating a new one, you can modify existing categories.
+    2. In order to add a device, you need to specify the category of the device you want to add inside the entity type dictionary.
 
-            If the configuration is not DPS, it will be inserted through "custom_configs". This is used to inject any configuration into the entity configuration
-                Example: custom_configs={"positioning_mode": "position"}. I hope that clarifies the concept
-                
-        Check URL above for more details. 
+Add entities to devices:
+    1. Open the file with the name of the entity type on which you want to make changes [e.g. switches.py] and search for your device category.
+    2. You can add entities inside the tuple value of the dictionary by including LocalTuyaEntity and passing the parameters for the entity configurations.
+    3. These configurations include "id" (required), "icon" (optional), "device_class" (optional), "state_class" (optional), and "name" (optional) [Using COVERS as an example]
+        Example: "3 ( code: percent_state , value: 0 )" - Refer to the Device Data section above for more details.
+            current_state_dp = DPCode.PERCENT_STATE < This maps the "percent_state" code DP to the current_state_dp configuration.
+
+        If the configuration is not DPS, it will be inserted through "custom_configs". This is used to inject any configuration into the entity configuration
+            Example: custom_configs={"positioning_mode": "position"}. I hope that clarifies the concept
+
+    Check URL above for more details.
 """
 
 import json
-from .base import LocalTuyaEntity, CONF_DPS_STRINGS, CLOUD_VALUE, DPType
+from ...const import CONF_DPS_STRINGS
+from .base import CLOUD_VALUE, DPType
 from enum import Enum
 from homeassistant.const import Platform, CONF_FRIENDLY_NAME, CONF_PLATFORM, CONF_ID
 
@@ -104,8 +105,8 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
 
                 # used_dp = 0
                 for k, code in localtuya_conf.items():
-                    if type(code) == Enum:
-                        code = code.value
+                    if type(code) is Enum:
+                        code = parse_enum(code)
 
                     # If there's multi possible codes.
                     if isinstance(code, tuple):
@@ -176,10 +177,10 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
 
 
 def parse_enum(dp_code: Enum) -> str:
-    """Get enum value if code type is enum"""
+    """Get enum value if code type is enum."""
     try:
         parsed_dp_code = dp_code.value
-    except:
+    except (Exception,):
         parsed_dp_code = dp_code
 
     return parsed_dp_code

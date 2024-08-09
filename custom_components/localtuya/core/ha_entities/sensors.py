@@ -11,15 +11,12 @@ from homeassistant.const import (
     PERCENTAGE,
     UnitOfTime,
     UnitOfPower,
-    PERCENTAGE,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
-    UnitOfTime,
     CONF_UNIT_OF_MEASUREMENT,
     UnitOfTemperature,
     UnitOfEnergy,
     UnitOfVolume,
-    UnitOfElectricPotential,
     UnitOfMass,
     DEGREE,
     LIGHT_LUX,
@@ -959,7 +956,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             state_class=SensorStateClass.TOTAL_INCREASING,
             custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.01),
         ),
-        ## PHASE X Are probably encrypted values. since it duplicated it probably raw dict data.
+        # PHASE X Are probably encrypted values. since it duplicated it probably raw dict data.
         LocalTuyaEntity(
             id=DPCode.PHASE_A,
             name="Phase C Current",
@@ -1032,7 +1029,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
-        ## PHASE X Are probably encrypted values. since it duplicated it probably raw dict data.
+        # PHASE X Are probably encrypted values. since it duplicated it probably raw dict data.
         LocalTuyaEntity(
             id=DPCode.POWER_A,
             name="Power A",

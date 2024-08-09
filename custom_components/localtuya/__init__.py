@@ -1,11 +1,8 @@
 """The LocalTuya integration."""
 
 import asyncio
-from dataclasses import dataclass
 import logging
 import time
-from datetime import timedelta
-from typing import Any, NamedTuple
 
 import homeassistant.helpers.config_validation as cv
 import homeassistant.helpers.device_registry as dr
@@ -27,7 +24,6 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.event import async_track_time_interval
 
 from .coordinator import TuyaDevice, HassLocalTuyaData, TuyaCloudApi
 from .config_flow import ENTRIES_VERSION
@@ -66,7 +62,6 @@ async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the LocalTuya integration component."""
     hass.data.setdefault(DOMAIN, {})
 
-    current_entries = hass.config_entries.async_entries(DOMAIN)
     device_cache = {}
 
     async def _handle_reload(service: ServiceCall):
@@ -188,7 +183,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Migrate old entries merging all of them in one."""
     new_version = ENTRIES_VERSION
-    stored_entries = hass.config_entries.async_entries(DOMAIN)
+
     if config_entry.version == 1:
         # This an old version of original integration no nned to put it here.
         pass
@@ -337,7 +332,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unloading the Tuya platforms."""
     # Get used platforms.
-    platforms = {}
     disconnect_devices = []
     hass_data: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
 
