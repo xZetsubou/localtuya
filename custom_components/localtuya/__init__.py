@@ -419,7 +419,7 @@ async def async_remove_orphan_entities(hass, entry):
 
 @callback
 def check_if_device_disabled(hass: HomeAssistant, entry: ConfigEntry, dev_id):
-    """Return whether if the device disbaled or not"""
+    """Return whether if the device disbaled or not."""
     ent_reg = er.async_get(hass)
     entries = er.async_entries_for_config_entry(ent_reg, entry.entry_id)
     ha_device_id: str = None
@@ -429,8 +429,8 @@ def check_if_device_disabled(hass: HomeAssistant, entry: ConfigEntry, dev_id):
             ha_device_id = entitiy.device_id
             break
 
-    if ha_device_id:
-        return dr.async_get(hass).async_get(ha_device_id).disabled
+    if ha_device_id and (device := dr.async_get(hass).async_get(ha_device_id)):
+        return device.disabled
 
 
 @callback
