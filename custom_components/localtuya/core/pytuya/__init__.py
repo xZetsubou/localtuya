@@ -944,16 +944,20 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         async def keep_alive_loop(action):
             """Continuously send heart beat updates."""
             self.debug("Started keep alive loop.")
+            fail_attempt = 0
             while True:
                 try:
                     await asyncio.sleep(HEARTBEAT_INTERVAL)
                     await action()
+                    fail_attempt = 0
                 except asyncio.CancelledError:
                     self.debug("Stopped heartbeat loop")
                     break
                 except asyncio.TimeoutError:
-                    self.debug("Heartbeat failed due to timeout, disconnecting")
-                    break
+                    fail_attempt += 1
+                    if fail_attempt >= 2:
+                        self.debug("Heartbeat failed due to timeout, disconnecting")
+                        break
                 except Exception as ex:  # pylint: disable=broad-except
                     self.exception("Heartbeat failed (%s), disconnecting", ex)
                     break
@@ -1333,6 +1337,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         return json_payload
 
     async def _negotiate_session_key(self):
+        self.remote_nonce = b""
         self.local_key = self.real_local_key
 
         rkey = await self.exchange_quick(
