@@ -309,13 +309,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     secret = entry.data[CONF_CLIENT_SECRET]
     user_id = entry.data[CONF_USER_ID]
     tuya_api = TuyaCloudApi(hass, region, client_id, secret, user_id)
-    no_cloud = True
-    if CONF_NO_CLOUD in entry.data:
-        no_cloud = entry.data.get(CONF_NO_CLOUD)
+    no_cloud = entry.data.get(CONF_NO_CLOUD, True)
+
     if no_cloud:
-        _LOGGER.info("Cloud API account not configured.")
-        # wait 1 second to make sure possible migration has finished
-        # await asyncio.sleep(1)
+        _LOGGER.info(f"Cloud API account not configured.")
     else:
         entry.async_create_background_task(
             hass, tuya_api.async_connect(), "localtuya-cloudAPI"
@@ -324,8 +321,44 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass_localtuya = HassLocalTuyaData(tuya_api, {}, [])
     hass.data[DOMAIN][entry.entry_id] = hass_localtuya
 
-    devices = await setup_devices(hass, entry, entry.data[CONF_DEVICES])
-    hass_localtuya.devices.update(devices)
+    async def _setup_devices(entry_devices: dict):
+        """Setup Localtuya devices object."""
+        devices = hass_localtuya.devices
+        connect_to_devices = []
+
+        # Sort parent devices first then sub-devices.
+        sorted_devices = dict(
+            sorted(
+                entry_devices.items(), key=lambda k: 1 if k[1].get(CONF_NODE_ID) else 0
+            )
+        )
+
+        for dev_id, config in sorted_devices.items():
+            if check_if_device_disabled(hass, entry, dev_id):
+                continue
+
+            host = config.get(CONF_HOST)
+
+            # Parent Devices.
+            if not (node_id := config.get(CONF_NODE_ID)):
+                devices[host] = (dev := TuyaDevice(hass, entry, config))
+                connect_to_devices.append(asyncio.create_task(dev.async_connect()))
+                continue
+
+            # Sub-Devices
+            if not (gateway := devices.get(host)):
+                # Setup sub-device as fake gateway if there is no a gateway exist.
+                devices[host] = (gateway := TuyaDevice(hass, entry, config, True))
+                connect_to_devices.append(asyncio.create_task(gateway.async_connect()))
+
+            devices[f"{host}_{node_id}"] = (sub_dev := TuyaDevice(hass, entry, config))
+            sub_dev.gateway = gateway
+            gateway.sub_devices[node_id] = sub_dev
+
+        if connect_to_devices:
+            await asyncio.wait(connect_to_devices, return_when=asyncio.FIRST_COMPLETED)
+
+    await _setup_devices(entry.data[CONF_DEVICES])
 
     await async_remove_orphan_entities(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS.values())
@@ -445,51 +478,3 @@ def async_config_entry_by_device_id(hass: HomeAssistant, device_id):
             if (gw_id := dev_conf.get(CONF_GATEWAY_ID)) and gw_id == device_id:
                 return entry
     return None
-
-
-async def setup_devices(hass: HomeAssistant, entry: ConfigEntry, entry_devices: dict):
-    """Setup Localtuya devices object."""
-    devices: dict[str, TuyaDevice] = {}
-
-    # First pass: add WiFi and Ethernet devices
-    for dev_id, config in entry_devices.items():
-        if check_if_device_disabled(hass, entry, dev_id):
-            continue
-        if config.get(CONF_NODE_ID):
-            continue  # skip sub-devices
-
-        host = config.get(CONF_HOST)
-        devices[host] = TuyaDevice(hass, entry, config)
-
-    devices_to_connect = list(devices.values())
-
-    # Second pass: add Zigbee and BLE sub-devices
-    for dev_id, config in entry_devices.items():
-        if check_if_device_disabled(hass, entry, dev_id):
-            continue
-        if not (node_id := config.get(CONF_NODE_ID)):
-            continue  # skip not sub-devices
-
-        host = config.get(CONF_HOST)
-        if not (gateway := devices.get(host)):
-            # Setup sub-device as fake gateway if there is no a gateway exist.
-            devices[host] = (gateway := TuyaDevice(hass, entry, config, True))
-            devices_to_connect.append(gateway)
-
-        host = f"{host}_{node_id}"
-        devices[host] = (device := TuyaDevice(hass, entry, config))
-        # Add even absent sub-devices, to start connecting with them
-        gateway.sub_devices[node_id] = device
-        # Required for an absent device as well, even if it is not its gateway anymore
-        device.gateway = gateway
-
-    # Connect to Tuya devices. Sub-devices will be connected by their gateways.
-    connect_to_devices = [
-        asyncio.create_task(device.async_connect()) for device in devices_to_connect
-    ]
-    # Update listener: add to unsub_listeners
-
-    if connect_to_devices:
-        await asyncio.wait(connect_to_devices, return_when=asyncio.FIRST_COMPLETED)
-
-    return devices
