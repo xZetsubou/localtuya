@@ -227,16 +227,11 @@ def get_dp_values(dp: str, dps_data: dict, req_info: CLOUD_VALUE = None) -> dict
 
     # ENUM Values: range: list of values.
     if dp_values and dp_type == DPType.ENUM:
-        range_values = dp_values.get("range", []) 
-        if range_values:  # Check if range is not null or empty
-            dp_values["min"] = range_values[0]  # First value
-            dp_values["max"] = range_values[-1]  # Last value
-            dp_values["range"] = convert_list(range_values, req_info)
-        else:
-            dp_values["min"] = 0 # Or some default value
-            dp_values["max"] = 0 # Or some default value
-            dp_values["range"] = []  # Or some default value
-            
+        range_values = dp_values.get("range", [])
+
+        dp_values["min"] = range_values[0] if range_values else 0  # first value
+        dp_values["max"] = range_values[-1] if range_values else 0  # Last value
+        dp_values["range"] = convert_list(range_values, req_info)
         return dp_values
 
     # Sensors don't have type
