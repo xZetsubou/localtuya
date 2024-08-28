@@ -253,7 +253,7 @@ def scale(value: int, scale: int, _type: type = int) -> float:
 def convert_list(_list: list, req_info: CLOUD_VALUE = str):
     """Return list to dict values."""
     if not _list:
-        return ""
+        return []
 
     prefer_type = req_info.prefer_type
 
