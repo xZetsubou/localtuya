@@ -593,7 +593,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             off_count += 1
             if off_count == 1:
                 self.warning(f"Sub-device is offline {node_id}")
-            elif off_count >= MIN_OFFLINE_EVENTS:
+            elif off_count == MIN_OFFLINE_EVENTS:
                 self.disconnected("Device is offline")
 
     def _remove_from_gateway(self):
