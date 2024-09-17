@@ -369,15 +369,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unloading the Tuya platforms."""
-    # Get used platforms.
-    disconnect_devices = []
     hass_data: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
 
     # Unsub listeners.
     [unsub() for unsub in hass_data.unsub_listeners]
 
     for dev in hass_data.devices.values():
-        disconnect_devices.append(asyncio.create_task(dev.close()))
+        asyncio.create_task(dev.close())
 
     # Unload the platforms.
     await hass.config_entries.async_unload_platforms(entry, PLATFORMS.values())
