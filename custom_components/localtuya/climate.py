@@ -462,16 +462,16 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._state = self.dp_value(self._dp_id)
 
         # Update target temperature
-        if self.has_config(CONF_TARGET_TEMPERATURE_DP):
-            self._target_temperature = (
-                self.dp_value(CONF_TARGET_TEMPERATURE_DP) * self._precision_target
-            )
+        if self.has_config(CONF_TARGET_TEMPERATURE_DP) and (
+            target_dp_value := self.dp_value(CONF_TARGET_TEMPERATURE_DP)
+        ):
+            self._target_temperature = target_dp_value * self._precision_target
 
         # Update current temperature
-        if self.has_config(CONF_CURRENT_TEMPERATURE_DP):
-            self._current_temperature = (
-                self.dp_value(CONF_CURRENT_TEMPERATURE_DP) * self._precision
-            )
+        if self.has_config(CONF_CURRENT_TEMPERATURE_DP) and (
+            current_dp_temp := self.dp_value(CONF_CURRENT_TEMPERATURE_DP)
+        ):
+            self._current_temperature = current_dp_temp * self._precision
 
         # Force the Current temperature and Target temperature to matching the unit.
         target_temp, current_temperature = convert_temperature(
@@ -479,7 +479,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         )
 
         # if target temperature converted to celsius, then convert all related values to set temperature.
-        if target_temp != self._target_temperature:
+        if target_temp and target_temp != self._target_temperature:
             self._target_temperature = target_temp
             self._current_temperature = current_temperature
 
