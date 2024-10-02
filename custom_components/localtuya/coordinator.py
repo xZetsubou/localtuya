@@ -560,8 +560,10 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             return
 
         self._call_on_close.append(asyncio.create_task(self._async_reconnect()).cancel)
-        fun = partial(self._shutdown_entities, exc=exc)
-        self._call_on_close.append(async_call_later(self._hass, 3 + sleep_time, fun))
+        func = partial(self._shutdown_entities, exc=exc)
+        self._call_on_close.append(
+            asyncio.get_event_loop().call_later(3 + sleep_time, func).cancel
+        )
 
     @callback
     def subdevice_state(self, state: SubdeviceState):
