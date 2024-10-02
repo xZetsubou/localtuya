@@ -505,7 +505,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                     data = {"dp": dpid_trigger, "value": dpid_value}
                     fire_event(event, data)
 
-    def _shutdown_entities(self, now=None, exc=""):
+    def _shutdown_entities(self, exc=""):
         """Shutdown device entities"""
         if self.is_sleep or self.connected:
             return
