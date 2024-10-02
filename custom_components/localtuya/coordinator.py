@@ -462,7 +462,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                 break
 
             attempts += 1
-            scale = 1 if not self._subdevice_absent else 2
+            scale = 1 if not (self._subdevice_absent or attempts > MIN_OFFLINE_EVENTS) else 2
             await asyncio.sleep(scale * RECONNECT_INTERVAL.total_seconds())
 
         self._reconnect_task = False
