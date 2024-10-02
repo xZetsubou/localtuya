@@ -507,7 +507,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
     def _shutdown_entities(self, exc=""):
         """Shutdown device entities"""
-        if self.is_sleep or self.connected:
+        if not self._is_closing and (self.is_sleep or self.connected):
             return
 
         signal = f"localtuya_{self._device_config.id}"
