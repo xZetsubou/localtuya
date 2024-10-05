@@ -505,10 +505,14 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                     data = {"dp": dpid_trigger, "value": dpid_value}
                     fire_event(event, data)
 
-    def _shutdown_entities(self, exc=""):
+    async def _shutdown_entities(self, exc=""):
         """Shutdown device entities"""
-        if not self._is_closing and (self.is_sleep or self.connected):
-            return
+        # Delay shutdown.
+        if not self._is_closing:
+            await asyncio.sleep(3 + self._device_config.sleep_time)
+
+            if self.connected or self.is_sleep:
+                return
 
         signal = f"localtuya_{self._device_config.id}"
         dispatcher_send(self._hass, signal, None)
@@ -540,8 +544,6 @@ class TuyaDevice(TuyaListener, ContextualLogger):
     @callback
     def disconnected(self, exc=""):
         """Device disconnected."""
-        sleep_time = self._device_config.sleep_time
-
         self._interface = None
 
         if self._unsub_refresh:
@@ -560,9 +562,8 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             return
 
         self._call_on_close.append(asyncio.create_task(self._async_reconnect()).cancel)
-        func = partial(self._shutdown_entities, exc=exc)
         self._call_on_close.append(
-            asyncio.get_event_loop().call_later(3 + sleep_time, func).cancel
+            asyncio.create_task(self._shutdown_entities(exc=exc)).cancel
         )
 
     @callback
