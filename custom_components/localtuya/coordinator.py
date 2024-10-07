@@ -51,7 +51,6 @@ class HassLocalTuyaData(NamedTuple):
 
     cloud_data: TuyaCloudApi
     devices: dict[str, TuyaDevice]
-    unsub_listeners: list[CALLBACK_TYPE,]
 
 
 class TuyaDevice(TuyaListener, ContextualLogger):
