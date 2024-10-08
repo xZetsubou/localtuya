@@ -335,7 +335,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             return
 
         self._is_closing = True
-        self._shutdown_entities()
+        await self._shutdown_entities()
 
         for cb in self._call_on_close:
             cb()
