@@ -894,7 +894,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 if msg.seqno >= self.seqno:
                     self.seqno = msg.seqno + 1
                 if ack:
-                    self.debug(f"Got update ack message update seqno only. msg.seqno={msg.seqno} self.seqno={self.seqno}")
+                    self.debug(
+                        f"Got update ack message update seqno only. msg.seqno={msg.seqno} self.seqno={self.seqno}"
+                    )
                     return
 
             decoded_message: dict = self._decode_payload(msg.payload)
