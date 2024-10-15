@@ -333,7 +333,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
     async def close(self):
         """Close connection and stop re-connect loop."""
         self._is_closing = True
-        self._shutdown_entities()
+        await self._shutdown_entities()
 
         for cb in self._call_on_close:
             cb()
