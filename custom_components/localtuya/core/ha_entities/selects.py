@@ -1040,7 +1040,7 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
                     "MODE_ARM": "Arm",
                     "MODE_24": "24H",
                     "MODE_DOORBELL": "Doorbell",
-                    "MODE_24_SILENT": "Sielnt",
+                    "MODE_24_SILENT": "Silent",
                     "HOME_ARM_NO_DELAY": "Home, Arm No delay",
                     "ARM_NO_DELAY": "Arm No delay",
                 }
