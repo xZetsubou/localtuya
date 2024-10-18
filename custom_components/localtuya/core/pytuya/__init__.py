@@ -1049,8 +1049,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         try:
             await self.transport_write(enc_payload)
         except Exception:  # pylint: disable=broad-except
-            await self.close()
-            return None
+            return self.clean_up_session()
+
         while recv_retries:
             try:
                 seqno = MessageDispatcher.SESS_KEY_SEQNO
