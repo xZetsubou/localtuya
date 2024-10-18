@@ -345,9 +345,8 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             self._connect_task.cancel()
             await self._connect_task
             self._connect_task = None
-        if self._interface is not None:
-            await self._interface.close()
-            self._interface = None
+
+        await self.abort_connect()
         self.debug(f"Closed connection", force=True)
 
     async def update_local_key(self):
