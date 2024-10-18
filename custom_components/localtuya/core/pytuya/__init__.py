@@ -965,6 +965,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                     self.exception("Heartbeat failed (%s), disconnecting", ex)
                     break
 
+            self.heartbeater = None
             if self.transport is not None:
                 self.clean_up_session()
 
