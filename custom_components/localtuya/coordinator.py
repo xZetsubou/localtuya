@@ -346,6 +346,12 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             await self._connect_task
             self._connect_task = None
 
+        # Close subdevices first, to prevent them try to reconnect
+        # after gateway disconnected.
+        subdevices = list(self.sub_devices.values())
+        for subdevice in subdevices:
+            await subdevice.close()
+
         await self.abort_connect()
         self.debug(f"Closed connection", force=True)
 
