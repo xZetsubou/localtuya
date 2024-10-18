@@ -1017,6 +1017,12 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.debug("Closing connection")
         self.clean_up_session()
 
+        if self.heartbeater:
+            await self.heartbeater
+
+        if self._sub_devs_query_task:
+            await self._sub_devs_query_task
+
     def clean_up_session(self):
         """Clean up session."""
         self.debug(f"Cleaning up session.")
