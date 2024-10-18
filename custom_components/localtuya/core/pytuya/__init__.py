@@ -1028,11 +1028,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         if self._sub_devs_query_task:
             self._sub_devs_query_task.cancel()
 
-        if self.dispatcher:
-            self.dispatcher.abort()
-
         if self.is_connected:
             self.transport.close()
+
+        if self.dispatcher:
+            self.dispatcher.abort()
 
     async def exchange_quick(self, payload, recv_retries):
         """Similar to exchange() but never retries sending and does not decode the response."""
