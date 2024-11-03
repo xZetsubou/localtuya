@@ -71,7 +71,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         self._device_config = DeviceConfig(device_config.copy())
 
         self._status = {}
-        self._interface: TuyaListener | None = None
+        self._interface = None
         self._local_key = self._device_config.local_key
 
         # For SubDevices
@@ -337,9 +337,6 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         self._is_closing = True
         await self._shutdown_entities()
 
-        for cb in self._call_on_close:
-            cb()
-
         if self._connect_task is not None:
             self._connect_task.cancel()
             await self._connect_task
@@ -350,6 +347,9 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         subdevices = list(self.sub_devices.values())
         for subdevice in subdevices:
             await subdevice.close()
+
+        for cb in self._call_on_close:
+            cb()
 
         await self.abort_connect()
         self.debug(f"Closed connection", force=True)
@@ -441,7 +441,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
         self._reconnect_task = True
         attempts = 0
-        while True and not self._is_closing:
+        while True:
             # for sub-devices, if it is reported as offline then no need for reconnect.
             if self.is_subdevice and self._subdevice_off_count >= MIN_OFFLINE_EVENTS:
                 await asyncio.sleep(1)
@@ -453,6 +453,9 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             ):
                 await asyncio.sleep(3)
                 continue
+
+            if self._is_closing:
+                break
 
             try:
                 if not self._connect_task:
@@ -469,7 +472,9 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                 break
 
             attempts += 1
-            scale = 1 if not (self._subdevice_absent or attempts > MIN_OFFLINE_EVENTS) else 2
+            scale = (
+                2 if (self._subdevice_absent or attempts > MIN_OFFLINE_EVENTS) else 1
+            )
             await asyncio.sleep(scale * RECONNECT_INTERVAL.total_seconds())
 
         self._reconnect_task = False
