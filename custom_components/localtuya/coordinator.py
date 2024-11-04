@@ -85,12 +85,15 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         # last_update_time: Sleep timer, a device that reports the status every x seconds then goes into sleep.
         self._last_update_time = time.time() - 5
         self._pending_status: dict[str, dict[str, Any]] = {}
-        self._connect_task: asyncio.Task | None = None
+
+        self._task_connect: asyncio.Task | None = None
+        self._task_reconnect: asyncio.Task | None = None
+        self._task_shutdown_entities: asyncio.Task | None = None
         self._unsub_refresh: CALLBACK_TYPE | None = None
-        self._call_on_close: list[CALLBACK_TYPE] = []
+        self._unsub_new_entity: CALLBACK_TYPE | None = None
+
         self._entities = []
         self._is_closing = False
-        self._reconnect_task = False
 
         self._default_reset_dpids: list | None = None
         dev = self._device_config
@@ -118,7 +121,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
     @property
     def is_connecting(self):
         """Return whether device is currently connecting."""
-        return self._connect_task is not None
+        return self._task_connect is not None
 
     @property
     def is_subdevice(self):
@@ -148,9 +151,9 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         if self.connected:
             return self._dispatch_status()
 
-        self._connect_task = asyncio.create_task(self._make_connection())
+        self._task_connect = asyncio.create_task(self._make_connection())
         if not self.is_sleep:
-            await self._connect_task
+            await self._task_connect
 
     async def _connect_subdevices(self):
         """Gateway: connect to sub-devices one by one."""
@@ -178,7 +181,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
         self.debug(f"Trying to connect to: {host}...", force=True)
         # Connect to the device, interface should be connected for next steps.
-        while retry < max_retries:
+        while retry < max_retries and not self._is_closing:
             retry += 1
             try:
                 if self.is_subdevice:
@@ -219,7 +222,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                     break
 
         # Get device status and configure DPS.
-        if self.connected:
+        if self.connected and not self._is_closing:
             try:
                 # If reset dpids set - then assume reset is needed before status.
                 reset_dpids = self._default_reset_dpids
@@ -256,27 +259,28 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                     update_localkey = True
 
         # Connect and configure the entities, at this point the device should be ready to get commands.
-        if self.connected:
+        if self.connected and not self._is_closing:
             # Attempt to restore status for all entities that need to first set
             # the DPS value before the device will respond with status.
             for entity in self._entities:
                 await entity.restore_state_when_connected()
 
-            def _new_entity_handler(entity_id):
-                self.debug(f"New entity {entity_id} was added to {host}")
-                self._dispatch_status()
+            if self._unsub_new_entity is None:
+                def _new_entity_handler(entity_id):
+                    self.debug(f"New entity {entity_id} was added to {host}")
+                    self._dispatch_status()
 
-            signal = f"localtuya_entity_{self._device_config.id}"
-            self._call_on_close.append(
-                async_dispatcher_connect(self._hass, signal, _new_entity_handler)
-            )
+                signal = f"localtuya_entity_{self._device_config.id}"
+                self._unsub_new_entity = async_dispatcher_connect(
+                    self._hass, signal, _new_entity_handler
+                )
 
             if (scan_inv := int(self._device_config.scan_interval)) > 0:
                 self._unsub_refresh = async_track_time_interval(
                     self._hass, self._async_refresh, timedelta(seconds=scan_inv)
                 )
 
-            self._connect_task = None
+            self._task_connect = None
             # Ensure the connected sub-device is in its gateway's sub_devices
             # and reset offline/absent counters
             if self.gateway:
@@ -299,22 +303,20 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             self._interface.keep_alive(len(self.sub_devices) > 0)
 
         # If not connected try to handle the errors.
-        if not self.connected:
-            if not self._reconnect_task:
-                self._call_on_close.append(
-                    asyncio.create_task(self._async_reconnect()).cancel
-                )
+        if not self.connected and not self._is_closing:
+            if self._task_reconnect is None:
+                self._task_reconnect = asyncio.create_task(self._async_reconnect())
             if update_localkey:
                 # Check if the cloud device info has changed!.
                 await self.update_local_key()
 
-        self._connect_task = None
+        self._task_connect = None
 
     async def abort_connect(self):
         """Abort the connect process to the interface[device]"""
         if self.is_subdevice:
             self._interface = None
-            self._connect_task = None
+            self._task_connect = None
 
         if self._interface is not None:
             await self._interface.close()
@@ -322,10 +324,10 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
     async def check_connection(self):
         """Ensure that the device is not still connecting; if it is, wait for it."""
-        if not self.connected and self._connect_task:
-            await self._connect_task
-        if not self.connected and self.gateway and self.gateway._connect_task:
-            await self.gateway._connect_task
+        if not self.connected and self._task_connect:
+            await self._task_connect
+        if not self.connected and self.gateway and self.gateway._task_connect:
+            await self.gateway._task_connect
         if not self.connected:
             self.error(f"Not connected to device {self._device_config.name}")
 
@@ -337,10 +339,10 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         self._is_closing = True
         await self._shutdown_entities()
 
-        if self._connect_task is not None:
-            self._connect_task.cancel()
-            await self._connect_task
-            self._connect_task = None
+        if self._task_connect is not None:
+            self._task_connect.cancel()
+            await self._task_connect
+            self._task_connect = None
 
         # Close subdevices first, to prevent them try to reconnect
         # after gateway disconnected.
@@ -348,8 +350,19 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         for subdevice in subdevices:
             await subdevice.close()
 
-        for cb in self._call_on_close:
-            cb()
+        if self._task_shutdown_entities is not None:
+            self._task_shutdown_entities.cancel()
+            await self._task_shutdown_entities
+            self._task_shutdown_entities = None
+
+        if self._task_reconnect is not None:
+            self._task_reconnect.cancel()
+            await self._task_reconnect
+            self._task_reconnect = None
+
+        if self._unsub_new_entity is not None:
+            self._unsub_new_entity()
+            self._unsub_new_entity = None
 
         await self.abort_connect()
         self.debug(f"Closed connection", force=True)
@@ -436,10 +449,6 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
     async def _async_reconnect(self):
         """Task: continuously attempt to reconnect to the device."""
-        if self._reconnect_task:
-            return
-
-        self._reconnect_task = True
         attempts = 0
         while True:
             # for sub-devices, if it is reported as offline then no need for reconnect.
@@ -458,10 +467,10 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                 break
 
             try:
-                if not self._connect_task:
+                if not self._task_connect:
                     await self.async_connect()
-                if self._connect_task:
-                    await self._connect_task
+                if self._task_connect:
+                    await self._task_connect
             except asyncio.CancelledError as e:
                 self.debug(f"Reconnect task has been canceled: {e}", force=True)
                 break
@@ -477,7 +486,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             )
             await asyncio.sleep(scale * RECONNECT_INTERVAL.total_seconds())
 
-        self._reconnect_task = False
+        self._task_reconnect = None
 
     def _dispatch_status(self):
         signal = f"localtuya_{self._device_config.id}"
@@ -541,6 +550,8 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         else:
             self.info(f"Disconnected due to: {exc}")
 
+        self._task_shutdown_entities = None
+
     @callback
     def status_updated(self, status: dict):
         """Device updated status."""
@@ -565,18 +576,18 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             for sub_dev in self.sub_devices.values():
                 sub_dev.disconnected("Gateway disconnected")
 
-        if self._connect_task is not None:
-            self._connect_task.cancel("Device disconnected")
-            self._connect_task = None
+        if self._task_connect is not None:
+            self._task_connect.cancel("Device disconnected")
+            self._task_connect = None
 
         # If it disconnects unexpectedly.
         if self._is_closing:
             return
 
-        self._call_on_close.append(asyncio.create_task(self._async_reconnect()).cancel)
-        self._call_on_close.append(
-            asyncio.create_task(self._shutdown_entities(exc=exc)).cancel
-        )
+        if self._task_reconnect is None:
+            self._task_reconnect = asyncio.create_task(self._async_reconnect())
+        if self._task_shutdown_entities is None:
+            self._task_shutdown_entities = asyncio.create_task(self._shutdown_entities(exc=exc))
 
     @callback
     def subdevice_state(self, state: SubdeviceState):
