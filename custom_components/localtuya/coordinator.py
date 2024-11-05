@@ -579,7 +579,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                 sub_dev.disconnected("Gateway disconnected")
 
         if self._task_connect is not None:
-            self._task_connect.cancel("Device disconnected")
+            self._task_connect.cancel()
             self._task_connect = None
 
         # If it disconnects unexpectedly.
