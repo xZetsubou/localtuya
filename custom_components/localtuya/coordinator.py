@@ -350,15 +350,15 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         for subdevice in subdevices:
             await subdevice.close()
 
-        if self._task_shutdown_entities is not None:
-            self._task_shutdown_entities.cancel()
-            await self._task_shutdown_entities
-            self._task_shutdown_entities = None
-
         if self._task_reconnect is not None:
             self._task_reconnect.cancel()
             await self._task_reconnect
             self._task_reconnect = None
+
+        if self._task_shutdown_entities is not None:
+            self._task_shutdown_entities.cancel()
+            await self._task_shutdown_entities
+            self._task_shutdown_entities = None
 
         if self._unsub_new_entity is not None:
             self._unsub_new_entity()
