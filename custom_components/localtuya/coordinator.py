@@ -572,6 +572,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
         if self._unsub_refresh:
             self._unsub_refresh()
+            self._unsub_refresh = None
 
         if self.sub_devices:
             for sub_dev in self.sub_devices.values():
