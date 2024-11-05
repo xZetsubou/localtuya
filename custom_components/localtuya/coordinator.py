@@ -533,6 +533,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             await asyncio.sleep(3 + self._device_config.sleep_time)
 
             if self.connected or self.is_sleep:
+                self._task_shutdown_entities = None
                 return
 
         signal = f"localtuya_{self._device_config.id}"
