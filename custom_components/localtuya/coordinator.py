@@ -601,8 +601,10 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
         if self._task_reconnect is None:
             self._task_reconnect = asyncio.create_task(self._async_reconnect())
-        if self._task_shutdown_entities is None:
-            self._task_shutdown_entities = asyncio.create_task(self._shutdown_entities(exc=exc))
+
+        if self._task_shutdown_entities is not None:
+            self._task_shutdown_entities.cancel()
+        self._task_shutdown_entities = asyncio.create_task(self._shutdown_entities(exc=exc))
 
     @callback
     def subdevice_state(self, state: SubdeviceState):
