@@ -452,7 +452,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         try:
             await asyncio.sleep(seconds)
         except asyncio.CancelledError:
-            self.debug(f"Sleep({seconds}) interrupted")
+            self.debug(f"Sleep({seconds}) interrupted", force=True)
             return True
         return False
 
