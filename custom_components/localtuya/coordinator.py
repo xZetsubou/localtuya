@@ -88,7 +88,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
         self._task_connect: asyncio.Task | None = None
         self._task_reconnect: asyncio.Task | None = None
-        self._task_shutdown_entities: asyncio.Task | None = None
+        self._task__entities: asyncio.Task | None = None
         self._unsub_refresh: CALLBACK_TYPE | None = None
         self._unsub_new_entity: CALLBACK_TYPE | None = None
 
@@ -337,7 +337,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             return
 
         self._is_closing = True
-        await self._shutdown_entities()
+        await self.__entities()
 
         if self._task_connect is not None:
             self._task_connect.cancel()
@@ -355,8 +355,8 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             await self._task_reconnect
             self._task_reconnect = None
 
-        if self._task_shutdown_entities is not None:
-            self._task_shutdown_entities.cancel()
+        if self._task__entities is not None:
+            self._task__entities.cancel()
             await self._task_shutdown_entities
             self._task_shutdown_entities = None
 
@@ -448,7 +448,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                 pass
 
     async def _sleep(self, seconds) -> bool:
-        """Interruptable sleep"""
+        """Interruptable sleep. Returns True if cancelled."""
         try:
             await asyncio.sleep(seconds)
         except asyncio.CancelledError:
