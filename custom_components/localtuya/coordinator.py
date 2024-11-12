@@ -337,7 +337,6 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             return
 
         self._is_closing = True
-        await self._shutdown_entities()
 
         if self._task_connect is not None:
             self._task_connect.cancel()
@@ -549,11 +548,11 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                 self._task_shutdown_entities = None
                 return
 
-        signal = f"localtuya_{self._device_config.id}"
-        dispatcher_send(self._hass, signal, None)
-
         if self._is_closing:
             return
+
+        signal = f"localtuya_{self._device_config.id}"
+        dispatcher_send(self._hass, signal, None)
 
         if self.is_subdevice:
             self.info(f"Sub-device disconnected due to: {exc}")
