@@ -164,7 +164,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         # RuntimeError: dictionary changed size during iteration
         subdevices = list(self.sub_devices.values())
         for subdevice in subdevices:
-            if not self.connected:
+            if not self.connected or self._is_closing:
                 break
 
             await subdevice.async_connect()
