@@ -76,7 +76,10 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
         # For SubDevices
         self.gateway: TuyaDevice = None
+        # For a gateway, its sub-devices
         self.sub_devices: dict[str, TuyaDevice] = {}
+        # For a gateway, sub-devices that were detached
+        self.detached_sub_devices: dict[str, TuyaDevice] = {}
         self._fake_gateway = fake_gateway
         self._node_id: str = self._device_config.node_id
         self._subdevice_absent: bool = False
@@ -344,10 +347,14 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
         # Close subdevices first, to prevent them try to reconnect
         # after gateway disconnected.
-        subdevices = list(self.sub_devices.values())
-        for subdevice in subdevices:
-            await subdevice.close()
-
+        if close_subdevs := [
+            asyncio.create_task(
+                subdev.close()
+            ) for sub_devices in [
+                self.sub_devices.values(), self.detached_sub_devices.values()
+            ] for subdev in sub_devices
+        ]:
+            await asyncio.wait(close_subdevs)
 
         if self._unsub_new_entity is not None:
             self._unsub_new_entity()
@@ -632,6 +639,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         """Delete itself from the gateway's list of sub-devices."""
         if self.gateway and self._node_id in self.gateway.sub_devices:
             self.gateway.sub_devices.pop(self._node_id)
+            self.gateway.detached_sub_devices[self._node_id] = self
 
     def _get_gateway(self):
         """Return the gateway device of this sub device."""
