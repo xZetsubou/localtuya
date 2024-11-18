@@ -443,31 +443,20 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             except TimeoutError:
                 pass
 
-    async def _sleep(self, seconds) -> bool:
-        """Interruptable sleep. Returns True if cancelled."""
-        try:
-            await asyncio.sleep(seconds)
-        except asyncio.CancelledError:
-            self.debug(f"Sleep({seconds}) interrupted", force=True)
-            return True
-        return False
-
     async def _async_reconnect(self):
         """Task: continuously attempt to reconnect to the device."""
         attempts = 0
         while True:
             # for sub-devices, if it is reported as offline then no need for reconnect.
             if self.is_subdevice and self._subdevice_off_count >= MIN_OFFLINE_EVENTS:
-                if await self._sleep(1):
-                    break
+                await asyncio.sleep(1)
                 continue
 
             # for sub-devices, if the gateway isn't connected then no need for reconnect.
             if self.gateway and (
                 not self.gateway.connected or self.gateway.is_connecting
             ):
-                if await self._sleep(3):
-                    break
+                await asyncio.sleep(3)
                 continue
 
             if self._is_closing:
@@ -491,8 +480,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             scale = (
                 2 if (self._subdevice_absent or attempts > MIN_OFFLINE_EVENTS) else 1
             )
-            if await self._sleep(scale * RECONNECT_INTERVAL.total_seconds()):
-                break
+            await asyncio.sleep(scale * RECONNECT_INTERVAL.total_seconds())
 
         self._task_reconnect = None
 
@@ -538,8 +526,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         """Shutdown device entities"""
         # Delay shutdown.
         if not self._is_closing:
-            if await self._sleep(3 + self._device_config.sleep_time):
-                return
+            await asyncio.sleep(3 + self._device_config.sleep_time)
 
             if self.connected or self.is_sleep:
                 self._task_shutdown_entities = None
