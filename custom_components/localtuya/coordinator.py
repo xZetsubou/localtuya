@@ -441,43 +441,43 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         """Task: continuously attempt to reconnect to the device."""
         attempts = 0
         while True:
-            # for sub-devices, if it is reported as offline then no need for reconnect.
-            if self.is_subdevice and self._subdevice_off_count >= MIN_OFFLINE_EVENTS:
-                await asyncio.sleep(1)
-                continue
-
-            # for sub-devices, if the gateway isn't connected then no need for reconnect.
-            if self.gateway and (
-                not self.gateway.connected or self.gateway.is_connecting
-            ):
-                await asyncio.sleep(3)
-                continue
-
-            if self._is_closing:
-                break
-
             try:
+                # for sub-devices, if it is reported as offline then no need for reconnect.
+                if self.is_subdevice and self._subdevice_off_count >= MIN_OFFLINE_EVENTS:
+                    await asyncio.sleep(1)
+                    continue
+
+                # for sub-devices, if the gateway isn't connected then no need for reconnect.
+                if self.gateway and (
+                    not self.gateway.connected or self.gateway.is_connecting
+                ):
+                    await asyncio.sleep(3)
+                    continue
+
+                if self._is_closing:
+                    break
+
                 if not self._task_connect:
                     await self.async_connect()
                 if self._task_connect:
                     await self._task_connect
+
+                if self.connected:
+                    if not self.is_sleep and attempts > 0:
+                        self.info(f"Reconnect succeeded on attempt: {attempts}")
+                    break
+
+                attempts += 1
+                scale = (
+                    2
+                    if (self._subdevice_state == SubdeviceState.ABSENT)
+                    or (attempts > MIN_OFFLINE_EVENTS)
+                    else 1
+                )
+                await asyncio.sleep(scale * RECONNECT_INTERVAL.total_seconds())
             except asyncio.CancelledError as e:
                 self.debug(f"Reconnect task has been canceled: {e}", force=True)
                 break
-
-            if self.connected:
-                if not self.is_sleep and attempts > 0:
-                    self.info(f"Reconnect succeeded on attempt: {attempts}")
-                break
-
-            attempts += 1
-            scale = (
-                2
-                if (self._subdevice_state == SubdeviceState.ABSENT)
-                or (attempts > MIN_OFFLINE_EVENTS)
-                else 1
-            )
-            await asyncio.sleep(scale * RECONNECT_INTERVAL.total_seconds())
 
         self._task_reconnect = None
 
