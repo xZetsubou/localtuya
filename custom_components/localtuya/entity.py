@@ -261,6 +261,11 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         """Return the class of this device."""
         return self._config.get(CONF_DEVICE_CLASS, self._attr_device_class)
 
+    @property
+    def write_only_device(self):
+        """Return if this device write-only, if the device sent any payload this will be false."""
+        return self._device._status == RESTORE_STATES
+
     def has_config(self, attr) -> bool:
         """Return if a config parameter has a valid value."""
         value = self._config.get(attr, "-1")
