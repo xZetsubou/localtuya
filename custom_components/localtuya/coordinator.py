@@ -346,9 +346,13 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         for subdevice in self.sub_devices.values():
             await subdevice.close()
 
-        if self._unsub_new_entity is not None:
+        if self._unsub_new_entity:
             self._unsub_new_entity()
             self._unsub_new_entity = None
+
+        if self._unsub_refresh:
+            self._unsub_refresh()
+            self._unsub_refresh = None
 
         await self.abort_connect()
         self.debug("Closed connection", force=True)
