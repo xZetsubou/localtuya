@@ -742,7 +742,7 @@ class TuyaListener(ABC):
         """Device disconnected."""
 
     @abstractmethod
-    def subdevice_state(self, state: SubdeviceState):
+    def subdevice_state_updated(self, state: SubdeviceState):
         """Device is offline or online."""
 
 
@@ -755,7 +755,7 @@ class EmptyListener(TuyaListener):
     def disconnected(self, exc=""):
         """Device disconnected."""
 
-    def subdevice_state(self, state: SubdeviceState):
+    def subdevice_state_updated(self, state: SubdeviceState):
         """Device is offline or online."""
 
 
@@ -856,11 +856,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 listener = self.listener and self.listener()
                 if listener is None or (on_devs is None and off_devs is None):
                     return
-                # listener.sub_devices can be changed when an absent sub-device is removed from,
-                # or re-connected sub-deviceis added to it. Such an event causes
-                #     RuntimeError: dictionary changed size during iteration
-                subdevices = dict(listener.sub_devices)
-                for cid, device in subdevices.items():
+                for cid, device in listener.sub_devices.items():
                     if cid in on_devs:
                         device.subdevice_state(SubdeviceState.ONLINE)
                     elif cid in off_devs:
@@ -1659,7 +1655,7 @@ async def connect(
             )
 
         raise ex
-    except Exception as ex:
+    except (Exception, asyncio.CancelledError) as ex:
         raise ex
     except:
         raise Exception(f"The host refused to connect")
