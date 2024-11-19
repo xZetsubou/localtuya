@@ -523,7 +523,11 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         """Shutdown device entities"""
         # Delay shutdown.
         if not self._is_closing:
-            await asyncio.sleep(3 + self._device_config.sleep_time)
+            try:
+                await asyncio.sleep(3 + self._device_config.sleep_time)
+            except asyncio.CancelledError as e:
+                self.debug(f"Shutdown entities task has been canceled: {e}", force=True)
+                return
 
             if self.connected or self.is_sleep:
                 self._task_shutdown_entities = None
