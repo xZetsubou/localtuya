@@ -2,14 +2,14 @@
 Helpers functions for HASS-LocalTuya.
 """
 
+import asyncio
+import logging
+import os.path
 from enum import Enum
 from fnmatch import fnmatch
 from typing import NamedTuple
-import logging
-import os.path
-import yaml
 
-from homeassistant.util.yaml import load_yaml
+from homeassistant.util.yaml import load_yaml, dump
 from homeassistant.const import CONF_PLATFORM, CONF_ENTITIES
 
 
@@ -74,13 +74,16 @@ class templates:
         fname = fname.replace(" ", "_")
         template_dir = os.path.dirname(templates_dir.__file__)
         template_file = os.path.join(template_dir, fname)
-        _config = cls.yaml_dump(export_config, template_file)
+
+        asyncio.get_running_loop().run_in_executor(
+            None, cls.yaml_dump, export_config, template_file
+        )
 
     def yaml_dump(config, fname: str | None = None) -> JSON_TYPE:
         """Save yaml config."""
         try:
             with open(fname, "w", encoding="utf-8") as conf_file:
-                return yaml.dump(config, conf_file)
+                return conf_file.write(dump(config))
         except UnicodeDecodeError as exc:
             _LOGGER.error("Unable to save file %s: %s", fname, exc)
 
