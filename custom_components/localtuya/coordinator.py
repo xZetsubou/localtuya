@@ -209,7 +209,8 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                 break  # Succeed break while loop
             except asyncio.CancelledError:
                 await self.abort_connect()
-                break
+                self._task_connect = None
+                return
             except OSError as e:
                 await self.abort_connect()
                 if e.errno == errno.EHOSTUNREACH and not self.is_sleep:
@@ -247,6 +248,10 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                 self.exception(f"Handshake with {host} failed: due to {type(e)}: {e}")
                 await self.abort_connect()
                 update_localkey = True
+            except asyncio.CancelledError:
+                await self.abort_connect()
+                self._task_connect = None
+                return
             except Exception as e:
                 if not (self._fake_gateway and "Not found" in str(e)):
                     e = "Sub device is not connected" if self.is_subdevice else e
