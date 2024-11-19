@@ -602,6 +602,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             return self.disconnected("Device is absent")
         elif state == SubdeviceState.ABSENT:
             self.info(f"Sub-device is absent {node_id}")
+            return
         elif old_state == SubdeviceState.ABSENT:
             self.info(f"Sub-device is back {node_id}")
 
