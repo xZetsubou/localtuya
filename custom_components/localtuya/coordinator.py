@@ -326,7 +326,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             self._task_connect = None
 
         if self._interface is not None:
-            await self._interface.)
+            await self._interface.close()
             self._interface = None
 
     async def check_connection(self):
