@@ -811,7 +811,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.remote_nonce = b""
         self.dps_whitelist = UPDATE_DPS_WHITELIST
         self.dispatched_dps = {}  # Store payload so we can trigger an event in HA.
-        self._last_command_sent = 1
+        self._last_command_sent = 1        # The time last command was sent
+        self._last_command_send_seqno = 0  # The number in the queue to send
+        self._last_command_sent_seqno = 0  # The number allowed to send
         self.enable_debug(enable_debug)
 
     def set_version(self, protocol_version):
@@ -998,13 +1000,15 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
     async def transport_write(self, data):
         """Write data on transport, ensure that no massive requests happen all at once."""
-        wait = 0
-        while self.last_command_sent < 0.050:
+        send_seqno = self._last_command_send_seqno
+        self._last_command_send_seqno += 1
+        while (
+            self.last_command_sent < 0.050
+            or send_seqno > self._last_command_sent_seqno
+        ):
             await asyncio.sleep(0.010)
-            wait += 1
-            if wait >= 10:
-                break
 
+        self._last_command_sent_seqno += 1
         self._last_command_sent = time.time()
         self.transport.write(data)
 
