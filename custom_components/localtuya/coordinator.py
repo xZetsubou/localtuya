@@ -326,7 +326,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             self._task_connect = None
 
         if self._interface is not None:
-            await self._interface.close()
+            await self._interface.)
             self._interface = None
 
     async def check_connection(self):
@@ -347,9 +347,11 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
         tasks = [self._task_shutdown_entities, self._task_reconnect, self._task_connect]
         pending_tasks = [task for task in tasks if task and task.cancel()]
-        pending_tasks += [self.abort_connect()]
+        pending_tasks += []
         await asyncio.gather(*pending_tasks, return_exceptions=True)
 
+        # Close subdevices first, to prevent them try to reconnect
+        # after gateway disconnected.
         for subdevice in self.sub_devices.values():
             await subdevice.close()
 
@@ -361,6 +363,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             self._unsub_refresh()
             self._unsub_refresh = None
 
+        await self.abort_connect()
         self.debug("Closed connection", force=True)
 
     async def update_local_key(self):
