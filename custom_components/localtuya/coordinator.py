@@ -347,7 +347,6 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
         tasks = [self._task_shutdown_entities, self._task_reconnect, self._task_connect]
         pending_tasks = [task for task in tasks if task and task.cancel()]
-        pending_tasks += []
         await asyncio.gather(*pending_tasks, return_exceptions=True)
 
         # Close subdevices first, to prevent them try to reconnect
