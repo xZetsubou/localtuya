@@ -858,11 +858,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                     return
                 for cid, device in listener.sub_devices.items():
                     if cid in on_devs:
-                        device.subdevice_state(SubdeviceState.ONLINE)
+                        device.subdevice_state_updated(SubdeviceState.ONLINE)
                     elif cid in off_devs:
-                        device.subdevice_state(SubdeviceState.OFFLINE)
+                        device.subdevice_state_updated(SubdeviceState.OFFLINE)
                     else:
-                        device.subdevice_state(SubdeviceState.ABSENT)
+                        device.subdevice_state_updated(SubdeviceState.ABSENT)
             except asyncio.CancelledError:
                 pass
 
