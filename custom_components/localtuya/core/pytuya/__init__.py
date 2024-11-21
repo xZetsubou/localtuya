@@ -1003,8 +1003,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             while self.last_command_sent < 0.050:
                 await asyncio.sleep(0.010)
 
-        self._last_command_sent = time.time()
-        self.transport.write(data)
+            self._last_command_sent = time.time()
+            self.transport.write(data)
 
     async def close(self):
         """Close connection and abort all outstanding listeners."""
