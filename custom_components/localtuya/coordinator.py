@@ -465,9 +465,6 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                     await asyncio.sleep(3)
                     continue
 
-                if self._is_closing:
-                    break
-
                 if not self._task_connect:
                     await self.async_connect()
                 if self._task_connect:
@@ -476,6 +473,9 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                 if self.connected:
                     if not self.is_sleep and attempts > 0:
                         self.info(f"Reconnect succeeded on attempt: {attempts}")
+                    break
+
+                if self._is_closing:
                     break
 
                 attempts += 1
