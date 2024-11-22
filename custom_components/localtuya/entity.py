@@ -19,6 +19,7 @@ from homeassistant.const import (
     EntityCategory,
     STATE_UNAVAILABLE,
     STATE_UNKNOWN,
+    ATTR_VIA_DEVICE,
 )
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.dispatcher import (
@@ -207,8 +208,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     def device_info(self) -> DeviceInfo:
         """Return device information for the device registry."""
         model = self._device_config.model
-
-        return DeviceInfo(
+        device_info = DeviceInfo(
             # Serial numbers are unique identifiers within a specific domain
             identifiers={(DOMAIN, f"local_{self._device_config.id}")},
             name=self._device_config.name,
@@ -216,6 +216,9 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
             model=f"{model} ({self._device_config.id})",
             sw_version=self._device_config.protocol_version,
         )
+        if self._device.is_subdevice:
+            device_info[ATTR_VIA_DEVICE] = (DOMAIN, f"local_{self._device.gateway.id}")
+        return device_info
 
     @property
     def name(self) -> str:

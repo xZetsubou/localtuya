@@ -455,8 +455,10 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     )
                     if self.device_data.pop(EXPORT_CONFIG, False):
                         dev_config = self.config_entry.data[CONF_DEVICES][dev_id].copy()
-                        templates.export_config(
-                            dev_config, self.device_data[CONF_FRIENDLY_NAME]
+                        await self.hass.async_add_executor_job(
+                            templates.export_config,
+                            dev_config,
+                            self.device_data[CONF_FRIENDLY_NAME],
                         )
                         return self.async_create_entry(title="", data={})
                     # We will restore device details if it's already existed!
@@ -684,7 +686,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             self.use_template = True
             filename = user_input.get(TEMPLATES)
-            _config = templates.import_config(filename)
+            _config = await self.hass.async_add_executor_job(
+                templates.import_config, filename
+            )
             dev_conf = self.device_data
             dev_conf[CONF_ENTITIES] = _config
             dev_conf[CONF_DPS_STRINGS] = self.dps_strings
@@ -695,7 +699,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             self.template_device = self.device_data
             self.editing_device = True
             return await self.async_step_configure_device()
-        templates_list = templates.list_templates()
+        templates_list = await self.hass.async_add_executor_job(
+            templates.list_templates
+        )
         schema = vol.Schema(
             {vol.Required(TEMPLATES): _col_to_select(templates_list, custom_value=True)}
         )
