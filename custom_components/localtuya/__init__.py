@@ -25,7 +25,7 @@ from homeassistant.const import (
     EVENT_HOMEASSISTANT_STOP,
     SERVICE_RELOAD,
 )
-from homeassistant.core import HomeAssistant, ServiceCall, callback
+from homeassistant.core import Event, HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.event import async_track_time_interval
 
@@ -378,6 +378,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _shutdown)
     )
 
+    entry.async_on_unload(_run_async_listen(hass, entry))
     _LOGGER.info("Setup completed")
     return True
 
@@ -401,7 +402,7 @@ async def async_remove_config_entry_device(
     hass: HomeAssistant, config_entry: ConfigEntry, device_entry: dr.DeviceEntry
 ) -> bool:
     """Remove a config entry from a device."""
-    dev_id = list(device_entry.identifiers)[0][1].split("_")[-1]
+    dev_id = _device_id_by_identifiers(device_entry.identifiers)
 
     ent_reg = er.async_get(hass)
     entities = {
@@ -454,20 +455,46 @@ async def async_remove_orphan_entities(hass, entry):
         ent_reg.async_remove(entity_id)
 
 
-@callback
-def check_if_device_disabled(hass: HomeAssistant, entry: ConfigEntry, dev_id):
-    """Return whether if the device disabled or not."""
-    ent_reg = er.async_get(hass)
-    entries = er.async_entries_for_config_entry(ent_reg, entry.entry_id)
-    ha_device_id: str = None
+def _run_async_listen(hass: HomeAssistant, entry: ConfigEntry):
+    """Start the listing events"""
 
-    for entitiy in entries:
-        if dev_id in entitiy.unique_id:
-            ha_device_id = entitiy.device_id
-            break
+    @callback
+    def _event_filtter(data: dr.EventDeviceRegistryUpdatedData) -> bool:
+        identifiers = dr.async_get(hass).async_get(data["device_id"]).identifiers
+        is_localtuya = identifiers and DOMAIN in list(identifiers)[0]
+        return bool(data["action"] == "update" and is_localtuya)
 
-    if ha_device_id and (device := dr.async_get(hass).async_get(ha_device_id)):
-        return device.disabled
+    async def device_state_changed(event: Event[dr.EventDeviceRegistryUpdatedData]):
+        """Close connection if device disabled."""
+        if not "disabled_by" in event.data["changes"]:
+            return
+
+        device_registry = dr.async_get(hass).async_get(event.data["device_id"])
+
+        if device_registry.primary_config_entry != entry.entry_id:
+            return
+
+        hass_localtuya: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
+
+        dev_id = _device_id_by_identifiers(device_registry.identifiers)
+        host_ip = entry.data[CONF_DEVICES][dev_id][CONF_HOST]
+        device = hass_localtuya.devices.get(host_ip)
+
+        if device_registry.disabled:
+            if not device.sub_devices:
+                await device.close()
+        else:
+            # Update now instead of waiting 30sec.
+            await hass.config_entries.async_reload(entry.entry_id)
+
+    return hass.bus.async_listen(
+        dr.EVENT_DEVICE_REGISTRY_UPDATED, device_state_changed, _event_filtter
+    )
+
+
+def _device_id_by_identifiers(identifiers):
+    """Return localtuya device ID by device registry identifiers."""
+    return list(identifiers)[0][1].split("_")[-1]
 
 
 @callback
@@ -482,3 +509,30 @@ def async_config_entry_by_device_id(hass: HomeAssistant, device_id):
             if (gw_id := dev_conf.get(CONF_GATEWAY_ID)) and gw_id == device_id:
                 return entry
     return None
+
+
+@callback
+def async_device_id_by_entity_id(hass: HomeAssistant, entity_id):
+    """Look up config entry by device id."""
+    ent_reg = er.async_get(hass)
+    dev_reg = dr.async_get(hass)
+    if device := dev_reg.async_get(ent_reg.async_get(entity_id).device_id):
+        return list(device.identifiers)[0][1].split("_")[-1]
+
+    return None
+
+
+@callback
+def check_if_device_disabled(hass: HomeAssistant, entry: ConfigEntry, dev_id):
+    """Return whether if the device disabled or not."""
+    ent_reg = er.async_get(hass)
+    entries = er.async_entries_for_config_entry(ent_reg, entry.entry_id)
+    ha_device_id: str = None
+
+    for entitiy in entries:
+        if dev_id in entitiy.unique_id:
+            ha_device_id = entitiy.device_id
+            break
+
+    if ha_device_id and (device := dr.async_get(hass).async_get(ha_device_id)):
+        return device.disabled
