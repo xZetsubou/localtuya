@@ -483,9 +483,6 @@ def _run_async_listen(hass: HomeAssistant, entry: ConfigEntry):
         if device_registry.disabled:
             if not device.sub_devices:
                 await device.close()
-        else:
-            # Update now instead of waiting 30sec.
-            await hass.config_entries.async_reload(entry.entry_id)
 
     return hass.bus.async_listen(
         dr.EVENT_DEVICE_REGISTRY_UPDATED, device_state_changed, _event_filtter
