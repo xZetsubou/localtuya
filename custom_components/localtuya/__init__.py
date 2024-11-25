@@ -478,6 +478,10 @@ def _run_async_listen(hass: HomeAssistant, entry: ConfigEntry):
 
         dev_id = _device_id_by_identifiers(device_registry.identifiers)
         host_ip = entry.data[CONF_DEVICES][dev_id][CONF_HOST]
+
+        if cid := entry.data[CONF_DEVICES][dev_id].get(CONF_NODE_ID):
+            host_ip = f"{host_ip}_{cid}"
+
         device = hass_localtuya.devices.get(host_ip)
 
         if device and device_registry.disabled:
