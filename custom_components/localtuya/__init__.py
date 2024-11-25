@@ -480,7 +480,7 @@ def _run_async_listen(hass: HomeAssistant, entry: ConfigEntry):
         host_ip = entry.data[CONF_DEVICES][dev_id][CONF_HOST]
         device = hass_localtuya.devices.get(host_ip)
 
-        if device_registry.disabled:
+        if device and device_registry.disabled:
             if not device.sub_devices:
                 await device.close()
 
@@ -489,13 +489,13 @@ def _run_async_listen(hass: HomeAssistant, entry: ConfigEntry):
     )
 
 
-def _device_id_by_identifiers(identifiers):
+def _device_id_by_identifiers(identifiers: set[tuple[str, str]]):
     """Return localtuya device ID by device registry identifiers."""
     return list(identifiers)[0][1].split("_")[-1]
 
 
 @callback
-def async_config_entry_by_device_id(hass: HomeAssistant, device_id):
+def async_config_entry_by_device_id(hass: HomeAssistant, device_id: str):
     """Look up config entry by device id."""
     current_entries = hass.config_entries.async_entries(DOMAIN)
     for entry in current_entries:
@@ -509,7 +509,7 @@ def async_config_entry_by_device_id(hass: HomeAssistant, device_id):
 
 
 @callback
-def async_device_id_by_entity_id(hass: HomeAssistant, entity_id):
+def async_device_id_by_entity_id(hass: HomeAssistant, entity_id: str):
     """Look up config entry by device id."""
     ent_reg = er.async_get(hass)
     dev_reg = dr.async_get(hass)
@@ -520,7 +520,7 @@ def async_device_id_by_entity_id(hass: HomeAssistant, entity_id):
 
 
 @callback
-def check_if_device_disabled(hass: HomeAssistant, entry: ConfigEntry, dev_id):
+def check_if_device_disabled(hass: HomeAssistant, entry: ConfigEntry, dev_id: str):
     """Return whether if the device disabled or not."""
     ent_reg = er.async_get(hass)
     entries = er.async_entries_for_config_entry(ent_reg, entry.entry_id)
