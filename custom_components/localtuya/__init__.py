@@ -460,8 +460,8 @@ def _run_async_listen(hass: HomeAssistant, entry: ConfigEntry):
 
     @callback
     def _event_filtter(data: dr.EventDeviceRegistryUpdatedData) -> bool:
-        identifiers = dr.async_get(hass).async_get(data["device_id"]).identifiers
-        is_localtuya = identifiers and DOMAIN in list(identifiers)[0]
+        device_reg = dr.async_get(hass).async_get(data["device_id"])
+        is_localtuya = device_reg and DOMAIN in list(device_reg.identifiers)[0]
         return bool(data["action"] == "update" and is_localtuya)
 
     async def device_state_changed(event: Event[dr.EventDeviceRegistryUpdatedData]):
@@ -478,10 +478,17 @@ def _run_async_listen(hass: HomeAssistant, entry: ConfigEntry):
 
         dev_id = _device_id_by_identifiers(device_registry.identifiers)
         host_ip = entry.data[CONF_DEVICES][dev_id][CONF_HOST]
+
+        if cid := entry.data[CONF_DEVICES][dev_id].get(CONF_NODE_ID):
+            host_ip = f"{host_ip}_{cid}"
+
         device = hass_localtuya.devices.get(host_ip)
 
         if device and device_registry.disabled:
-            if not device.sub_devices:
+            # If this is a gateway or fake gateway then reload entry to start using another device as GW.
+            if device.sub_devices or (device.gateway and device.gateway.id == dev_id):
+                await hass.config_entries.async_reload(entry.entry_id)
+            else:
                 await device.close()
 
     return hass.bus.async_listen(
