@@ -637,7 +637,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                 self.disconnected("Device is offline")
 
     def filter_subdevices(self):
-        """Remove closed subdevices that are closed by us."""
+        """Remove closed subdevices that are closed."""
         self.sub_devices = dict(
             filter(lambda dev: not dev[1].is_closing, self.sub_devices.items())
         )
