@@ -470,6 +470,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         if rm_conf in user_input and user_input[rm_conf] in ["-", " "]:
                             self.device_data.pop(rm_conf)
 
+                    self.dps_strings = merge_dps_manual_strings(
+                        self.device_data.get(CONF_MANUAL_DPS, ""), self.dps_strings
+                    )
                     if self.device_data.pop(CONF_ENABLE_ADD_ENTITIES, False):
                         self.editing_device = False
                         user_input[CONF_DEVICE_ID] = dev_id
@@ -1116,6 +1119,30 @@ def gen_dps_strings():
     return [f"{dp} (value: ?)" for dp in range(1, 256)]
 
 
+def strip_dps_values(user_input, dps_strings):
+    """Remove values and keep only index for DPS config items."""
+    stripped = {}
+    for field, value in user_input.items():
+        if value in dps_strings:
+            stripped[field] = int(user_input[field].split(" ")[0])
+        else:
+            stripped[field] = user_input[field]
+    return stripped
+
+
+def merge_dps_manual_strings(manual_dps: list, dps_strings: list):
+    """Split manual_dps by comma and assign -1 as default value. Return merged with dps string."""
+    manual_list = []
+    avaliable_dps = [dp.split(" ")[0] for dp in dps_strings]
+
+    for dp in manual_dps.split(","):
+        dp = dp.strip()
+        if dp.isdigit() and dp not in avaliable_dps and dp != "0":
+            manual_list.append(f"{dp} ( value: -1 )")
+
+    return sorted(dps_strings + manual_list, key=lambda i: int(i.split(" ")[0]))
+
+
 async def platform_schema(
     hass: core.HomeAssistant, platform, dps_strings, allow_id=True, yaml=False
 ):
@@ -1158,17 +1185,6 @@ def flow_schema(platform, dps_strings):
     """Return flow schema for a specific platform."""
     integration_module = ".".join(__name__.split(".")[:-1])
     return import_module("." + platform, integration_module).flow_schema(dps_strings)
-
-
-def strip_dps_values(user_input, dps_strings):
-    """Remove values and keep only index for DPS config items."""
-    stripped = {}
-    for field, value in user_input.items():
-        if value in dps_strings:
-            stripped[field] = int(user_input[field].split(" ")[0])
-        else:
-            stripped[field] = user_input[field]
-    return stripped
 
 
 async def validate_input(hass: core.HomeAssistant, entry_id, data):
