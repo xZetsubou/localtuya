@@ -2,7 +2,7 @@
 
 import logging
 from functools import partial
-from .config_flow import _col_to_select
+from .config_flow import col_to_select
 
 import voluptuous as vol
 from homeassistant.components.sensor import (
@@ -31,7 +31,7 @@ def flow_schema(dps):
     return {
         vol.Optional(CONF_UNIT_OF_MEASUREMENT): str,
         vol.Optional(CONF_DEVICE_CLASS): DEVICE_CLASSES_SCHEMA,
-        vol.Optional(CONF_STATE_CLASS): _col_to_select(
+        vol.Optional(CONF_STATE_CLASS): col_to_select(
             [sc.value for sc in SensorStateClass]
         ),
         vol.Optional(CONF_SCALING): vol.All(

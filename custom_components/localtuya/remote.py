@@ -8,7 +8,7 @@ from functools import partial
 import struct
 from enum import StrEnum
 from typing import Any, Iterable
-from .config_flow import _col_to_select
+from .config_flow import col_to_select
 
 import voluptuous as vol
 from homeassistant.components.remote import (
@@ -64,10 +64,10 @@ SOTRAGE_KEY = "localtuya_remotes_codes"
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(
-            CONF_RECEIVE_DP, default=RemoteDP.DP_RECIEVE.value
-        ): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_KEY_STUDY_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_RECEIVE_DP, default=RemoteDP.DP_RECIEVE.value): col_to_select(
+            dps, is_dps=True
+        ),
+        vol.Optional(CONF_KEY_STUDY_DP): col_to_select(dps, is_dps=True),
     }
 
 

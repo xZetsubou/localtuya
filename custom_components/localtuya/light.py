@@ -3,7 +3,7 @@
 import logging
 import textwrap
 from functools import partial
-from .config_flow import _col_to_select
+from .config_flow import col_to_select
 from homeassistant.helpers import selector
 
 import homeassistant.util.color as color_util
@@ -110,16 +110,16 @@ def map_range(value, from_lower, from_upper, to_lower=0, to_upper=255, reverse=F
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_BRIGHTNESS): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_COLOR_TEMP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_BRIGHTNESS): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_COLOR_TEMP): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_BRIGHTNESS_LOWER, default=DEFAULT_LOWER_BRIGHTNESS): vol.All(
             vol.Coerce(int), vol.Range(min=0, max=10000)
         ),
         vol.Optional(CONF_BRIGHTNESS_UPPER, default=DEFAULT_UPPER_BRIGHTNESS): vol.All(
             vol.Coerce(int), vol.Range(min=0, max=10000)
         ),
-        vol.Optional(CONF_COLOR_MODE): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_COLOR): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_COLOR_MODE): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_COLOR): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_COLOR_TEMP_MIN_KELVIN, default=DEFAULT_MIN_KELVIN): vol.All(
             vol.Coerce(int), vol.Range(min=1500, max=8000)
         ),
@@ -127,7 +127,7 @@ def flow_schema(dps):
             vol.Coerce(int), vol.Range(min=1500, max=8000)
         ),
         vol.Optional(CONF_COLOR_TEMP_REVERSE, default=DEFAULT_COLOR_TEMP_REVERSE): bool,
-        vol.Optional(CONF_SCENE): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_SCENE): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_SCENE_VALUES, default={}): selector.ObjectSelector(),
         vol.Optional(CONF_MUSIC_MODE, default=False): bool,
     }

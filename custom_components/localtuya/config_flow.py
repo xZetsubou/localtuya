@@ -94,7 +94,7 @@ DEVICE_CLOUD_DATA = "device_cloud_data"
 CONFIGURE_MENU = [CONF_ADD_DEVICE, CONF_EDIT_DEVICE, CONF_CONFIGURE_CLOUD]
 
 
-def _col_to_select(
+def col_to_select(
     opt_list: dict | list, multi_select=False, is_dps=False, custom_value=False
 ) -> SelectSelector:
     """Convert collections to SelectSelectorConfig."""
@@ -129,7 +129,7 @@ def _col_to_select(
 
 CLOUD_CONFIGURE_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_REGION, default="eu"): _col_to_select(TUYA_ENDPOINTS),
+        vol.Required(CONF_REGION, default="eu"): col_to_select(TUYA_ENDPOINTS),
         vol.Optional(CONF_CLIENT_ID): cv.string,
         vol.Optional(CONF_CLIENT_SECRET): cv.string,
         vol.Optional(CONF_USER_ID): cv.string,
@@ -144,7 +144,7 @@ DEVICE_SCHEMA = vol.Schema(
         vol.Required(CONF_HOST): cv.string,
         vol.Required(CONF_DEVICE_ID): cv.string,
         vol.Required(CONF_LOCAL_KEY): cv.string,
-        vol.Required(CONF_PROTOCOL_VERSION, default="auto"): _col_to_select(
+        vol.Required(CONF_PROTOCOL_VERSION, default="auto"): col_to_select(
             ["auto"] + sorted(SUPPORTED_PROTOCOL_VERSIONS)
         ),
         vol.Required(CONF_ENABLE_DEBUG, default=False): bool,
@@ -157,7 +157,7 @@ DEVICE_SCHEMA = vol.Schema(
 )
 
 PICK_ENTITY_SCHEMA = vol.Schema(
-    {vol.Required(PLATFORM_TO_ADD, default="switch"): _col_to_select(PLATFORMS)}
+    {vol.Required(PLATFORM_TO_ADD, default="switch"): col_to_select(PLATFORMS)}
 )
 
 
@@ -706,7 +706,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             templates.list_templates
         )
         schema = vol.Schema(
-            {vol.Required(TEMPLATES): _col_to_select(templates_list, custom_value=True)}
+            {vol.Required(TEMPLATES): col_to_select(templates_list, custom_value=True)}
         )
         return self.async_show_form(step_id="choose_template", data_schema=schema)
 
@@ -1002,7 +1002,7 @@ def devices_schema(
 
     schema = vol.Schema(
         {
-            vol.Required(SELECTED_DEVICE): _col_to_select(devices),
+            vol.Required(SELECTED_DEVICE): col_to_select(devices),
         }
     )
 
@@ -1056,7 +1056,7 @@ def options_schema(entities):
             vol.Required(CONF_FRIENDLY_NAME): cv.string,
             vol.Required(CONF_HOST): cv.string,
             vol.Required(CONF_LOCAL_KEY): cv.string,
-            vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): _col_to_select(
+            vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): col_to_select(
                 sorted(SUPPORTED_PROTOCOL_VERSIONS)
             ),
             vol.Required(CONF_ENABLE_DEBUG, default=False): bool,
@@ -1067,7 +1067,7 @@ def options_schema(entities):
             vol.Required(
                 CONF_ENTITIES, description={"suggested_value": entity_names}
             ): cv.multi_select(entity_names),
-            # _col_to_select(entity_names, multi_select=True)
+            # col_to_select(entity_names, multi_select=True)
             vol.Required(CONF_ENABLE_ADD_ENTITIES, default=False): bool,
             vol.Optional(EXPORT_CONFIG, default=False): bool,
         }
@@ -1151,13 +1151,13 @@ async def platform_schema(
     schema = {}
     if yaml:
         # In YAML mode we force the specified platform to match flow schema
-        schema[vol.Required(CONF_PLATFORM)] = _col_to_select([platform])
+        schema[vol.Required(CONF_PLATFORM)] = col_to_select([platform])
     if allow_id:
-        schema[vol.Required(CONF_ID)] = _col_to_select(dps_strings, is_dps=True)
+        schema[vol.Required(CONF_ID)] = col_to_select(dps_strings, is_dps=True)
     schema[vol.Optional(CONF_FRIENDLY_NAME, default="")] = vol.Any(None, cv.string)
     schema[
         vol.Required(CONF_ENTITY_CATEGORY, default=str(default_category(platform)))
-    ] = _col_to_select(ENTITY_CATEGORY)
+    ] = col_to_select(ENTITY_CATEGORY)
 
     try:  # requires HA >= 2024.3 -> Later this will be remove and update HACS version requirement.
         plat_schema = await hass.async_add_import_executor_job(

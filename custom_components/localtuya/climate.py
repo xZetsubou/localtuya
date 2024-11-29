@@ -5,7 +5,7 @@
 import asyncio
 import logging
 from functools import partial
-from .config_flow import _col_to_select
+from .config_flow import col_to_select
 from homeassistant.helpers import selector
 
 import voluptuous as vol
@@ -128,34 +128,34 @@ FAN_SPEEDS_DEFAULT = "auto,low,middle,high"
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_TARGET_TEMPERATURE_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_CURRENT_TEMPERATURE_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_TEMPERATURE_STEP): _col_to_select(
+        vol.Optional(CONF_TARGET_TEMPERATURE_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_CURRENT_TEMPERATURE_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_TEMPERATURE_STEP): col_to_select(
             [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
         vol.Optional(CONF_MIN_TEMP, default=DEFAULT_MIN_TEMP): vol.Coerce(float),
         vol.Optional(CONF_MAX_TEMP, default=DEFAULT_MAX_TEMP): vol.Coerce(float),
-        vol.Optional(CONF_PRECISION, default=str(DEFAULT_PRECISION)): _col_to_select(
+        vol.Optional(CONF_PRECISION, default=str(DEFAULT_PRECISION)): col_to_select(
             [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
         vol.Optional(
             CONF_TARGET_PRECISION, default=str(DEFAULT_PRECISION)
-        ): _col_to_select([PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]),
-        vol.Optional(CONF_HVAC_MODE_DP): _col_to_select(dps, is_dps=True),
+        ): col_to_select([PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]),
+        vol.Optional(CONF_HVAC_MODE_DP): col_to_select(dps, is_dps=True),
         vol.Optional(
             CONF_HVAC_MODE_SET, default=HVAC_MODE_SETS
         ): selector.ObjectSelector(),
-        vol.Optional(CONF_HVAC_ACTION_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_HVAC_ACTION_DP): col_to_select(dps, is_dps=True),
         vol.Optional(
             CONF_HVAC_ACTION_SET, default=HVAC_ACTION_SETS
         ): selector.ObjectSelector(),
-        vol.Optional(CONF_ECO_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_ECO_DP): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_ECO_VALUE): str,
-        vol.Optional(CONF_PRESET_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_PRESET_DP): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_PRESET_SET, default={}): selector.ObjectSelector(),
-        vol.Optional(CONF_FAN_SPEED_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_FAN_SPEED_DP): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_FAN_SPEED_LIST, default=FAN_SPEEDS_DEFAULT): str,
-        vol.Optional(CONF_TEMPERATURE_UNIT): _col_to_select(SUPPORTED_TEMPERATURES),
+        vol.Optional(CONF_TEMPERATURE_UNIT): col_to_select(SUPPORTED_TEMPERATURES),
         vol.Optional(CONF_HEURISTIC_ACTION): bool,
     }
 

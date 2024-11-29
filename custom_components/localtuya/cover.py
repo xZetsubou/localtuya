@@ -14,7 +14,7 @@ from homeassistant.components.cover import (
     DEVICE_CLASSES_SCHEMA,
 )
 from homeassistant.const import CONF_DEVICE_CLASS
-from .config_flow import _col_to_select
+from .config_flow import col_to_select
 from .entity import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_COMMANDS_SET,
@@ -67,19 +67,19 @@ DEFAULT_SPAN_TIME = 25.0
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_COMMANDS_SET, default=DEF_CMD_SET): _col_to_select(
+        vol.Optional(CONF_COMMANDS_SET, default=DEF_CMD_SET): col_to_select(
             COVER_COMMANDS
         ),
-        vol.Optional(CONF_POSITIONING_MODE, default=DEF_POS_MODE): _col_to_select(
+        vol.Optional(CONF_POSITIONING_MODE, default=DEF_POS_MODE): col_to_select(
             COVER_MODES
         ),
-        vol.Optional(CONF_CURRENT_POSITION_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_SET_POSITION_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_CURRENT_POSITION_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_SET_POSITION_DP): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_POSITION_INVERTED, default=False): bool,
         vol.Optional(CONF_SPAN_TIME, default=DEFAULT_SPAN_TIME): vol.All(
             vol.Coerce(float), vol.Range(min=1.0, max=300.0)
         ),
-        vol.Optional(CONF_STOP_SWITCH_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_STOP_SWITCH_DP): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_DEVICE_CLASS): DEVICE_CLASSES_SCHEMA,
     }
 
@@ -218,7 +218,9 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
             # instead of waiting the internal timeout
             self._current_task = self.hass.async_create_task(
                 self.async_stop_after_timeout(
-                    kwargs.get("delay", self._config[CONF_SPAN_TIME] + COVER_TIMEOUT_TOLERANCE)
+                    kwargs.get(
+                        "delay", self._config[CONF_SPAN_TIME] + COVER_TIMEOUT_TOLERANCE
+                    )
                 )
             )
         self.update_state(STATE_OPENING)
@@ -234,7 +236,9 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
             # instead of waiting the internal timeout
             self._current_task = self.hass.async_create_task(
                 self.async_stop_after_timeout(
-                    kwargs.get("delay", self._config[CONF_SPAN_TIME] + COVER_TIMEOUT_TOLERANCE)
+                    kwargs.get(
+                        "delay", self._config[CONF_SPAN_TIME] + COVER_TIMEOUT_TOLERANCE
+                    )
                 )
             )
         self.update_state(STATE_CLOSING)
