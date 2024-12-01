@@ -114,8 +114,6 @@ class Mode:
 
 MAP_MODE_SET = {0: Mode(), 1: Mode(color=MODE_MANUAL)}
 
-SCENES_DEFAULTS = {"default_config": {"scenes_set": 1000}}
-
 
 def map_range(value, from_lower, from_upper, to_lower=0, to_upper=255, reverse=False):
     """Map a value in one range to another."""
@@ -147,9 +145,7 @@ def flow_schema(dps):
         ),
         vol.Optional(CONF_COLOR_TEMP_REVERSE, default=DEFAULT_COLOR_TEMP_REVERSE): bool,
         vol.Optional(CONF_SCENE): col_to_select(dps, is_dps=True),
-        vol.Optional(
-            CONF_SCENE_VALUES, default=SCENES_DEFAULTS
-        ): selector.ObjectSelector(),
+        vol.Optional(CONF_SCENE_VALUES, default={}): selector.ObjectSelector(),
         vol.Optional(CONF_MUSIC_MODE, default=False): selector.BooleanSelector(),
     }
 
