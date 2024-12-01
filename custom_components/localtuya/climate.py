@@ -257,11 +257,8 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         if self._has_fan_mode:
             supported_features |= ClimateEntityFeature.FAN_MODE
 
-        try:  # requires HA >= 2024.2.1
-            supported_features |= ClimateEntityFeature.TURN_OFF
-            supported_features |= ClimateEntityFeature.TURN_ON
-        except AttributeError:
-            ...
+        supported_features |= ClimateEntityFeature.TURN_OFF
+        supported_features |= ClimateEntityFeature.TURN_ON
 
         return supported_features
 

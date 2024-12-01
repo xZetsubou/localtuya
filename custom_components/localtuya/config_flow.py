@@ -1159,12 +1159,9 @@ async def platform_schema(
         vol.Required(CONF_ENTITY_CATEGORY, default=str(default_category(platform)))
     ] = col_to_select(ENTITY_CATEGORY)
 
-    try:  # requires HA >= 2024.3 -> Later this will be remove and update HACS version requirement.
-        plat_schema = await hass.async_add_import_executor_job(
-            flow_schema, platform, dps_strings
-        )
-    except AttributeError:
-        plat_schema = flow_schema(platform, dps_strings)
+    plat_schema = await hass.async_add_import_executor_job(
+        flow_schema, platform, dps_strings
+    )
 
     return vol.Schema(schema).extend(plat_schema)
 
