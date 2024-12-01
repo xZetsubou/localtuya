@@ -1,6 +1,6 @@
 {
   "name": "Local Tuya",
-  "homeassistant": "2023.4.0",
+  "homeassistant": "2024.11.0",
   "render_readme": true,
   "persistent_directory": "templates"
 }
