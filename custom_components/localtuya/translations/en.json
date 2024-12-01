@@ -244,7 +244,8 @@
                     "lock_state_dp":"(Optional) Lock state DP",
                     "jammed_dp":"(Optional) Jam DP",
                     "target_temperature_high_dp":"(Optional) Target Temperature High DP",
-                    "target_temperature_low_dp":"(Optional) Target Temperature Low DP"
+                    "target_temperature_low_dp":"(Optional) Target Temperature Low DP",
+                    "color_mode_set":"Supported modes set (Leave as default if you aren't sure)"
                 },
                 "data_description": {
                     "hvac_mode_set":"Each line represents [ hvac_mode: device_value ] [Supported HVAC Modes](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-modes)",
