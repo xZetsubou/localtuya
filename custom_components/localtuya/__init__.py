@@ -461,8 +461,8 @@ def _run_async_listen(hass: HomeAssistant, entry: ConfigEntry):
     @callback
     def _event_filtter(data: dr.EventDeviceRegistryUpdatedData) -> bool:
         device_reg = dr.async_get(hass).async_get(data["device_id"])
-        is_localtuya = device_reg and DOMAIN in list(device_reg.identifiers)[0]
-        return bool(data["action"] == "update" and is_localtuya)
+        is_entry = device_reg and entry.entry_id in device_reg.config_entries
+        return data["action"] == "update" and is_entry
 
     async def device_state_changed(event: Event[dr.EventDeviceRegistryUpdatedData]):
         """Close connection if device disabled."""
@@ -470,9 +470,6 @@ def _run_async_listen(hass: HomeAssistant, entry: ConfigEntry):
             return
 
         device_registry = dr.async_get(hass).async_get(event.data["device_id"])
-
-        if device_registry.primary_config_entry != entry.entry_id:
-            return
 
         hass_localtuya: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
 
