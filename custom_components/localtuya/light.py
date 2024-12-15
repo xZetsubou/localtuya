@@ -189,7 +189,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
 
         custom_scenes = False
         if self.has_config(CONF_SCENE):
-            if self.has_config(CONF_SCENE_VALUES):
+            if self.has_config(CONF_SCENE_VALUES) and len(self._config.get(CONF_SCENE_VALUES)):
                 custom_scenes = True
                 values_list = list(self._config.get(CONF_SCENE_VALUES))
                 values_name = list(self._config.get(CONF_SCENE_VALUES).values())
