@@ -1,6 +1,7 @@
 """Platform to locally control Tuya-based light devices."""
 
 import logging
+from typing import Any
 import textwrap
 import homeassistant.util.color as color_util
 import voluptuous as vol
@@ -33,6 +34,7 @@ from .const import (
     CONF_COLOR_TEMP_REVERSE,
     CONF_MUSIC_MODE,
     CONF_SCENE_VALUES,
+    CONF_WRITE_ONLY,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -96,6 +98,14 @@ SCENE_LIST_RGB_1000 = {
     + "0000000",
 }
 
+SCENE_LIST_RGBW_BLE = {
+    "Good Night": "AA==",
+    "Leisure": "Aw==",
+    "Gorgeous": "Bw==",
+    "Dream": "HA==",
+    "Sunflower": "GA==",
+    "Grassland": "BA==",
+}
 
 @dataclass(frozen=True)
 class Mode:
@@ -147,6 +157,7 @@ def flow_schema(dps):
         vol.Optional(CONF_SCENE): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_SCENE_VALUES, default={}): selector.ObjectSelector(),
         vol.Optional(CONF_MUSIC_MODE, default=False): selector.BooleanSelector(),
+        vol.Optional(CONF_WRITE_ONLY, default=False): selector.BooleanSelector(),
     }
 
 
@@ -162,7 +173,11 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
     ):
         """Initialize the Tuya light."""
         super().__init__(device, config_entry, lightid, _LOGGER, **kwargs)
-        self._state = False
+        # Light is an active device (mains powered). It should be able
+        # to respond at any time. But Tuya BLE bulbs are write-only.
+        self._write_only = self._config.get(CONF_WRITE_ONLY, False)
+
+        self._state = False if not self._write_only else None
         self._brightness = None
         self._color_temp = None
         self._lower_brightness = int(
@@ -192,6 +207,8 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
                 values_list = list(self._config.get(CONF_SCENE_VALUES))
                 values_name = list(self._config.get(CONF_SCENE_VALUES).values())
                 self._scenes = dict(zip(values_name, values_list))
+            elif self._write_only: # BLE bulbs
+                self._scenes = SCENE_LIST_RGBW_BLE
             elif int(self._config.get(CONF_SCENE)) < 20:
                 self._scenes = SCENE_LIST_RGBW_255
             elif self._config.get(CONF_BRIGHTNESS) is None:
@@ -202,6 +219,9 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             self._scenes = {**self._modes.as_dict(), **self._scenes}
 
             self._effect_list = list(self._scenes.keys())
+        elif self._write_only:
+            # BLE bulbs with no scene value DP configured
+            self._scenes = self._modes.as_dict()
 
         if self._config.get(CONF_MUSIC_MODE):
             self._effect_list.append(SCENE_MUSIC)
@@ -484,8 +504,19 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         """Turn Tuya light off."""
         await self._device.set_dp(False, self._dp_id)
 
+    def dp_value(self, key, default=None) -> Any | None:
+        if self._write_only:
+            # Consider any DP value as not trusted
+            return None
+        else:
+            return super().dp_value(key, default)
+
     def status_updated(self):
         """Device status was updated."""
+        if self._write_only:
+            # Consider any DP value as not trusted
+            return
+
         self._state = self.dp_value(self._dp_id)
         supported = self.supported_features
         self._effect = None
