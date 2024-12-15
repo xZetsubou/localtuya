@@ -187,10 +187,8 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         self._effect_list = []
         self._scenes = {}
 
-        custom_scenes = False
         if self.has_config(CONF_SCENE):
             if self.has_config(CONF_SCENE_VALUES) and len(self._config.get(CONF_SCENE_VALUES)):
-                custom_scenes = True
                 values_list = list(self._config.get(CONF_SCENE_VALUES))
                 values_name = list(self._config.get(CONF_SCENE_VALUES).values())
                 self._scenes = dict(zip(values_name, values_list))
@@ -201,8 +199,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             else:
                 self._scenes = SCENE_LIST_RGBW_1000
 
-            if not custom_scenes:
-                self._scenes = {**self._modes.as_dict(), **self._scenes}
+            self._scenes = {**self._modes.as_dict(), **self._scenes}
 
             self._effect_list = list(self._scenes.keys())
 
