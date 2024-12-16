@@ -61,9 +61,9 @@ jobs:
                     commit_hash=$(echo $line | awk '{print $1}')
                     email=$(echo $line | awk -F"by: @" '{print (NF>1)? $NF : ""}'| awk '{print $1}')
                     
-                    if [[ "$email" =~ ([0-9]+)\+([a-zA-Z0-9_-]+)@ ]]; then
-                      username="${BASH_REMATCH[2]}"
-                      sed -i "s#$email#$username#g" "commits.md"
+                    if [[ "$email" =~ (?:@?)([0-9]*\+)([a-zA-Z0-9_-]+)(@.*)(?:\s?) ]]; then
+                      id="${BASH_REMATCH[1]}"; user="${BASH_REMATCH[2]}"; email="${BASH_REMATCH[3]}"
+                      sed -i "s#$id$user$email#$user#g" "commits.md"
                     fi
           done < commits.md
 
