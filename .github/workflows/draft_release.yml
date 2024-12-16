@@ -54,12 +54,12 @@ jobs:
       - name: Get commits from latest release to HEAD
         run: |
           git fetch --tags
-          git log ${{ env.latest_tag }}..HEAD --pretty=format:'%s by: @%an-%ae in [`%h`](https://github.com/${{github.repository}}/commit/%H)' --reverse > commits.md
+          git log ${{ env.latest_tag }}..HEAD --pretty=format:'%s by @%an-%ae in [`%h`](https://github.com/${{github.repository}}/commit/%H)' --reverse > commits.md
           echo "" >> commits.md
 
           while IFS= read -r line; do
                     commit_hash=$(echo $line | awk '{print $1}')
-                    email=$(echo $line | awk -F"by: @" '{print (NF>1)? $NF : ""}'| awk '{print $1}')
+                    email=$(echo $line | awk -F"by @" '{print (NF>1)? $NF : ""}'| awk '{print $1}')
 
                     if [[ "$email" =~ @?([a-zA-Z]+)\-([0-9]+)?\+?([a-zA-Z]+) ]]; then
                       name="${BASH_REMATCH[1]}"; id="${BASH_REMATCH[2]}"; mail_name="${BASH_REMATCH[3]}";
@@ -85,7 +85,6 @@ jobs:
               section=$(echo "$item"  | jq -r '.section')
               prefix=$(echo "$item"   | jq -r '.prefix')
 
-              echo "Looking for this prefix: $prefix and this lower $first_lower with section $section"
               if [[ "$first_lower" == $prefix*: ]]; then
                 commits_map[$section]+=$parsed_commit && added=true && break
               fi
@@ -113,15 +112,9 @@ jobs:
             section_commits=$(echo '${{ toJson(steps.parse_commits.outputs) }}' | jq -r ".$section")
 
             if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
-              echo "ADDDDDDDDDDDED THIS"
-              echo "Section is $section HEADER IS: $header and Commits $section_commits"
               notes+="### $header \n $section_commits \n"
             fi
           done < <(echo '${{env.release_commits}}')
-
-          echo "-------------------------------------------------"
-          echo -e $notes
-          echo "-------------------------------------------------"
 
           echo -e $notes > commits.md
 
