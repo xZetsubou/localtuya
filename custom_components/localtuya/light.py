@@ -1,5 +1,6 @@
 """Platform to locally control Tuya-based light devices."""
 
+import base64
 import logging
 from typing import Any
 import textwrap
@@ -178,7 +179,6 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         self._write_only = self._config.get(CONF_WRITE_ONLY, False)
 
         self._state = False if not self._write_only else None
-        self._brightness = None
         self._color_temp = None
         self._lower_brightness = int(
             self._config.get(CONF_BRIGHTNESS_LOWER, DEFAULT_LOWER_BRIGHTNESS)
@@ -186,6 +186,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         self._upper_brightness = int(
             self._config.get(CONF_BRIGHTNESS_UPPER, DEFAULT_UPPER_BRIGHTNESS)
         )
+        self._brightness = None if not self._write_only else self._upper_brightness
         self._upper_color_temp = self._upper_brightness
         self._min_kelvin = int(
             self._config.get(CONF_COLOR_TEMP_MIN_KELVIN, DEFAULT_MIN_KELVIN)
@@ -235,7 +236,9 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
     def brightness(self):
         """Return the brightness of the light."""
         brightness = self._brightness
-        if brightness is not None and (self.is_color_mode or self.is_white_mode):
+        if brightness is not None and (
+            self.is_color_mode or self.is_white_mode or self._write_only
+        ):
             if self._upper_brightness >= 1000:
                 # Round to the nearest 10th, since Tuya does that.
                 # If the value is less than 5, it will round down to 0.
@@ -391,6 +394,35 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             else self._modes.white
         )
 
+    def __to_color(self, hs, brightness):
+        if self._write_only: # BLE bulbs
+            color = base64.b64encode(
+                bytes([
+                        round(hs[0]) // 256,
+                        round(hs[0]) % 256,
+                        round(hs[1]),
+                        int(brightness * 100 / self._upper_brightness)
+                ])
+            ).decode("ascii")
+            self._hs = hs
+        elif self.__is_color_rgb_encoded():
+            rgb = color_util.color_hsv_to_RGB(
+                hs[0], hs[1], int(brightness * 100 / self._upper_brightness)
+            )
+            color = "{:02x}{:02x}{:02x}{:04x}{:02x}{:02x}".format(
+                round(rgb[0]),
+                round(rgb[1]),
+                round(rgb[2]),
+                round(hs[0]),
+                round(hs[1] * 255 / 100),
+                brightness,
+            )
+        else:
+            color = "{:04x}{:04x}{:04x}".format(
+                round(hs[0]), round(hs[1] * 10.0), brightness
+            )
+        return color
+
     async def async_turn_on(self, **kwargs):
         """Turn on or control the light."""
         states = {}
@@ -428,28 +460,12 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
                 self._lower_brightness,
                 self._upper_brightness,
             )
+            if self._write_only: # BLE bulbs
+                self._brightness = brightness
             if self.is_white_mode or self.dp_value(CONF_COLOR) is None:
                 states[self._config.get(CONF_BRIGHTNESS)] = brightness
             else:
-                if self.__is_color_rgb_encoded():
-                    rgb = color_util.color_hsv_to_RGB(
-                        self._hs[0],
-                        self._hs[1],
-                        int(brightness * 100 / self._upper_brightness),
-                    )
-                    color = "{:02x}{:02x}{:02x}{:04x}{:02x}{:02x}".format(
-                        round(rgb[0]),
-                        round(rgb[1]),
-                        round(rgb[2]),
-                        round(self._hs[0]),
-                        round(self._hs[1] * 255 / 100),
-                        brightness,
-                    )
-                else:
-                    color = "{:04x}{:04x}{:04x}".format(
-                        round(self._hs[0]), round(self._hs[1] * 10.0), brightness
-                    )
-                states[self._config.get(CONF_COLOR)] = color
+                states[self._config.get(CONF_COLOR)] = self.__to_color(self._hs, brightness)
                 states[self._config.get(CONF_COLOR_MODE)] = self._modes.color
 
         if ATTR_HS_COLOR in kwargs and ColorMode.HS in color_modes:
@@ -460,23 +476,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
                 states[self._config.get(CONF_BRIGHTNESS)] = brightness
                 states[self._config.get(CONF_COLOR_MODE)] = self._modes.white
             else:
-                if self.__is_color_rgb_encoded():
-                    rgb = color_util.color_hsv_to_RGB(
-                        hs[0], hs[1], int(brightness * 100 / self._upper_brightness)
-                    )
-                    color = "{:02x}{:02x}{:02x}{:04x}{:02x}{:02x}".format(
-                        round(rgb[0]),
-                        round(rgb[1]),
-                        round(rgb[2]),
-                        round(hs[0]),
-                        round(hs[1] * 255 / 100),
-                        brightness,
-                    )
-                else:
-                    color = "{:04x}{:04x}{:04x}".format(
-                        round(hs[0]), round(hs[1] * 10.0), brightness
-                    )
-                states[self._config.get(CONF_COLOR)] = color
+                states[self._config.get(CONF_COLOR)] = self.__to_color(hs, brightness)
                 states[self._config.get(CONF_COLOR_MODE)] = self._modes.color
 
         if ATTR_COLOR_TEMP in kwargs and ColorMode.COLOR_TEMP in color_modes:
