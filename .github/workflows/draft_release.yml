@@ -25,7 +25,7 @@ env:
       {"section": "refactors",           "prefix": "refactor", "header": "♻️ Refactors"       }
       {"section": "chores",              "prefix": "chore",    "header": "🧹 Chores"          }
       {"section": "docs",                "prefix": "doc",      "header": "📚 Docs"            }
-      {"section": "revert",              "prefix": "revert",   "header": "🌀 Revert"          }
+      {"section": "revert",              "prefix": "revert",   "header": "🌀 Reverts"         }
       {"section": "cis",                 "prefix": "ci",       "header": "🛠️ CI"              }
       {"section": "tests",               "prefix": "test",     "header": "✅ Tests"           }
       {"section": "more",                "prefix": "",         "header": "➕ More"            }
