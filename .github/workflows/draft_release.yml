@@ -54,7 +54,7 @@ jobs:
       - name: Get commits from latest release to HEAD
         run: |
           git fetch --tags
-          git log ${{ env.latest_tag }}..HEAD --pretty=format:'%s by: @%ae in [`%h`](https://github.com/${{github.repository}}/commit/%H)' --reverse > commits.md
+          git log ${{ env.latest_tag }}..HEAD --pretty=format:'%s by: @%an-%ae in [`%h`](https://github.com/${{github.repository}}/commit/%H)' --reverse > commits.md
           echo "" >> commits.md
 
           while IFS= read -r line; do
