@@ -26,6 +26,7 @@ env:
       {"section": "refactors",           "prefix": "refactor", "header": "♻️ Refactors"       }
       {"section": "chores",              "prefix": "chore",    "header": "🧹 Chores"          }
       {"section": "docs",                "prefix": "doc",      "header": "📚 Docs"            }
+      {"section": "revert",              "prefix": "revert",   "header": "🌀 Revert"          }
       {"section": "cis",                 "prefix": "ci",       "header": "🛠️ CI"              }
       {"section": "tests",               "prefix": "test",     "header": "✅ Tests"           }
       {"section": "more",                "prefix": "",         "header": "➕ More"            }
@@ -60,7 +61,7 @@ jobs:
                     commit_hash=$(echo $line | awk '{print $1}')
                     email=$(echo $line | awk -F"by: @" '{print (NF>1)? $NF : ""}'| awk '{print $1}')
                     
-                    if [[ "$email" =~ ([0-9]+)\+([a-zA-Z0-9_-]+)@users\.noreply\.github\.com ]]; then
+                    if [[ "$email" =~ ([0-9]+)\+([a-zA-Z0-9_-]+)@ ]]; then
                       username="${BASH_REMATCH[2]}"
                       sed -i "s#$email#$username#g" "commits.md"
                     fi
