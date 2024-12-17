@@ -59,6 +59,7 @@ SCENE_MUSIC = "Music"
 
 MODES_SET = {"Colour, Music, Scene and White": 0, "Manual, Music, Scene and White": 1}
 
+# https://developer.tuya.com/en/docs/iot/dj?id=K9i5ql3v98hn3#title-10-scene_data
 SCENE_LIST_RGBW_255 = {
     "Night": "bd76000168ffff",
     "Read": "fffcf70168ffff",
@@ -69,6 +70,8 @@ SCENE_LIST_RGBW_255 = {
     "Scenario 3": "scene_3",
     "Scenario 4": "scene_4",
 }
+
+# https://developer.tuya.com/en/docs/iot/dj?id=K9i5ql3v98hn3#title-11-scene_data_v2
 SCENE_LIST_RGBW_1000 = {
     "Night": "000e0d0000000000000000c80000",
     "Read": "010e0d0000000000000003e801f4",
@@ -99,13 +102,15 @@ SCENE_LIST_RGB_1000 = {
     + "0000000",
 }
 
+# BASE64-encoded 1-byte numbers.
+# Other numbers up to 0x10 were tested to no avail.
 SCENE_LIST_RGBW_BLE = {
-    "Good Night": "AA==",
-    "Leisure": "Aw==",
-    "Gorgeous": "Bw==",
-    "Dream": "HA==",
-    "Sunflower": "GA==",
-    "Grassland": "BA==",
+    "Good Night": "AA==", # 00
+    "Leisure":    "Aw==", # 01
+    "Gorgeous":   "Bw==", # 07
+    "Dream":      "HA==", # 1C
+    "Sunflower":  "GA==", # 18
+    "Grassland":  "BA==", # 04
 }
 
 @dataclass(frozen=True)
@@ -395,8 +400,10 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         )
 
     def __to_color(self, hs, brightness):
+        """Converts HSB values to a string."""
         if self._write_only: # BLE bulbs
             color = base64.b64encode(
+# BASE64-encoded 4-byte value: HHSL
                 bytes([
                         round(hs[0]) // 256,
                         round(hs[0]) % 256,
@@ -406,6 +413,8 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             ).decode("ascii")
             self._hs = hs
         elif self.__is_color_rgb_encoded():
+# It is not
+# https://developer.tuya.com/en/docs/iot/dj?id=K9i5ql3v98hn3#title-8-colour_data
             rgb = color_util.color_hsv_to_RGB(
                 hs[0], hs[1], int(brightness * 100 / self._upper_brightness)
             )
@@ -418,6 +427,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
                 brightness,
             )
         else:
+# https://developer.tuya.com/en/docs/iot/dj?id=K9i5ql3v98hn3#title-9-colour_data_v2
             color = "{:04x}{:04x}{:04x}".format(
                 round(hs[0]), round(hs[1] * 10.0), brightness
             )
