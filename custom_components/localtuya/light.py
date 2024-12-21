@@ -21,6 +21,7 @@ from homeassistant.components.light import (
 )
 from homeassistant.const import CONF_BRIGHTNESS, CONF_COLOR_TEMP, CONF_SCENE
 
+from .core.ha_entities.base import DPCode
 from .config_flow import col_to_select
 from .entity import LocalTuyaEntity, async_setup_entry
 from .const import (
@@ -177,7 +178,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         super().__init__(device, config_entry, lightid, _LOGGER, **kwargs)
         # Light is an active device (mains powered). It should be able
         # to respond at any time. But Tuya BLE bulbs are write-only.
-        self._write_only = self.is_ble
+        self._write_only = self._is_write_only
         if self._write_only:
             self._device.write_only = self._write_only
 
@@ -211,14 +212,24 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
                 values_list = list(self._config.get(CONF_SCENE_VALUES))
                 values_name = list(self._config.get(CONF_SCENE_VALUES).values())
                 self._scenes = dict(zip(values_name, values_list))
-            elif self._write_only: # BLE bulbs
-                self._scenes = SCENE_LIST_RGBW_BLE
-            elif int(self._config.get(CONF_SCENE)) < 20:
-                self._scenes = SCENE_LIST_RGBW_255
-            elif self._config.get(CONF_BRIGHTNESS) is None:
-                self._scenes = SCENE_LIST_RGB_1000
             else:
-                self._scenes = SCENE_LIST_RGBW_1000
+                scene_code = self.dp_code(CONF_SCENE)
+                if scene_code is None:
+                    # Using fuzzy logic to detect scene data format
+                    if self._write_only: # BLE bulbs
+                        self._scenes = SCENE_LIST_RGBW_BLE
+                    elif int(self._config.get(CONF_SCENE)) < 20:
+                        self._scenes = SCENE_LIST_RGBW_255
+                    elif self._config.get(CONF_BRIGHTNESS) is None:
+                        self._scenes = SCENE_LIST_RGB_1000
+                    else:
+                        self._scenes = SCENE_LIST_RGBW_1000
+                elif scene_code == DPCode.SCENE_DATA_V2:
+                    self._scenes = SCENE_LIST_RGBW_1000
+                elif scene_code == DPCode.SCENE_DATA_RAW:
+                    self._scenes = SCENE_LIST_RGBW_BLE
+                elif scene_code == DPCode.SCENE_DATA:
+                    self._scenes = SCENE_LIST_RGBW_255
 
             self._scenes = {**self._modes.as_dict(), **self._scenes}
 
@@ -230,12 +241,34 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         if self._config.get(CONF_MUSIC_MODE):
             self._effect_list.append(SCENE_MUSIC)
 
+        if self.has_config(CONF_COLOR):
+            color_code = self.dp_code(CONF_COLOR)
+            if color_code is None:
+                self.__to_color = self.__to_color_common
+                self.__from_color = self.__from_color_common
+            elif color_code in (DPCode.COLOUR_DATA_V2, DPCode.COLOR_DATA_V2):
+                self.__to_color = self.__to_color_v2
+                self.__from_color = self.__from_color_v2
+            elif color_code == DPCode.COLOUR_DATA_RAW:
+                self.__to_color = self.__to_color_raw
+                self.__from_color = self.__from_color_raw
+            elif color_code == DPCode.COLOUR_DATA:
+                self.__to_color = self.__to_color_
+                self.__from_color = self.__from_color_
+            else:
+                self.__to_color = self.__to_color_common
+                self.__from_color = self.__from_color_common
+
     @property
-    def is_ble(self):
-        """Return if this sub-device is BLE."""
-        # BLE bulbs don't have status, we can rely on status to detect that but this workaround works fine.
-        # we can also add status check this way even if somehow 0 was added by mistake it still works.
-        return self._device.is_subdevice and "0" in self._device._device_config.manual_dps.split(",")
+    def _is_write_only(self):
+        """Return if this sub-device is write-only (BLE)."""
+        if not self._device.is_subdevice:
+            return False
+        for dp in self._device_config.dps_strings:
+            all = dp.split(" ")
+            if all[0] == self._dp_id:
+                return "write-only" in all or "cloud" in all
+        return False
 
     @property
     def is_on(self):
@@ -402,27 +435,41 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             else self._modes.white
         )
 
-    def __to_color(self, hs, brightness):
-        """Converts HSB values to a string."""
-        # FIXME: the format should be selected by DP name, not a fuzzy logic
-        if self._write_only: # BLE bulbs
-            color = base64.b64encode(
+    def __to_color_raw(self, hs, brightness):
+        return base64.b64encode(
 # BASE64-encoded 4-byte value: HHSL
-                bytes([
-                        round(hs[0]) // 256,
-                        round(hs[0]) % 256,
-                        round(hs[1]),
-                        round(brightness * 100 / self._upper_brightness)
-                ])
-            ).decode("ascii")
-            self._hs = hs
-        elif self.__is_color_rgb_encoded():
-# It is not
+            bytes([
+                    round(hs[0]) // 256,
+                    round(hs[0]) % 256,
+                    round(hs[1]),
+                    round(brightness * 100 / self._upper_brightness)
+            ])
+        ).decode("ascii")
+
+    def __to_color_(self, hs, brightness):
 # https://developer.tuya.com/en/docs/iot/dj?id=K9i5ql3v98hn3#title-8-colour_data
+        return "{:04x}{:02x}{:02x}".format(
+            round(hs[0]),
+            round(hs[1] * 255 / 100),
+            round(brightness * 255 / self._upper_brightness)
+        )
+
+    def __to_color_v2(self, hs, brightness):
+# https://developer.tuya.com/en/docs/iot/dj?id=K9i5ql3v98hn3#title-9-colour_data_v2
+        return "{:04x}{:04x}{:04x}".format(
+            round(hs[0]),
+            round(hs[1] * 10.0),
+            brightness
+        )
+
+    def __to_color_common(self, hs, brightness):
+        """Converts HSB values to a string."""
+        if self.__is_color_rgb_encoded():
+            # Not documented format
             rgb = color_util.color_hsv_to_RGB(
                 hs[0], hs[1], int(brightness * 100 / self._upper_brightness)
             )
-            color = "{:02x}{:02x}{:02x}{:04x}{:02x}{:02x}".format(
+            return "{:02x}{:02x}{:02x}{:04x}{:02x}{:02x}".format(
                 round(rgb[0]),
                 round(rgb[1]),
                 round(rgb[2]),
@@ -431,35 +478,45 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
                 brightness,
             )
         else:
-# https://developer.tuya.com/en/docs/iot/dj?id=K9i5ql3v98hn3#title-9-colour_data_v2
-            color = "{:04x}{:04x}{:04x}".format(
-                round(hs[0]), round(hs[1] * 10.0), brightness
-            )
-        return color
+            return self.__to_color_v2(hs, brightness)
 
-    def __from_color(self, color):
+    def __from_color_raw(self, color):
+# BASE64-encoded 4-byte value: HHSL
+        hsl = int.from_bytes(
+            base64.b64decode(color), byteorder='big', signed=False
+        )
+        hue = hsl // 65536
+        sat = (hsl // 256) % 256
+        value = (hsl % 256) * self._upper_brightness / 100
+        self._hs = [hue, sat]
+        self._brightness = value
+
+    def __from_color_(self, color):
+# https://developer.tuya.com/en/docs/iot/dj?id=K9i5ql3v98hn3#title-8-colour_data
+        hue, sat, value = [
+            int(value, 16) for value in textwrap.wrap(color, 4)
+        ]
+        self._hs = [hue, sat * 100 / 255]
+        self._brightness = value * self._upper_brightness / 100
+
+    def __from_color_v2(self, color):
+# https://developer.tuya.com/en/docs/iot/dj?id=K9i5ql3v98hn3#title-9-colour_data_v2
+        hue, sat, value = [
+            int(value, 16) for value in textwrap.wrap(color, 4)
+        ]
+        self._hs = [hue, sat / 10.0]
+        self._brightness = value
+
+    def __from_color_common(self, color):
         """Convert a string to HSL values."""
-        if self._write_only: # BLE bulbs
-            hsl = int.from_bytes(
-                base64.b64decode(color), byteorder='big', signed=False
-            )
-            hue = hsl // 65536
-            sat = (hsl // 256) % 256
-            value = (hsl % 256) * self._upper_brightness / 100
-            self._hs = [hue, sat]
-            self._brightness = value
-        elif self.__is_color_rgb_encoded():
+        if self.__is_color_rgb_encoded():
             hue = int(color[6:10], 16)
             sat = int(color[10:12], 16)
             value = int(color[12:14], 16)
             self._hs = [hue, sat]
             self._brightness = value
         else:
-            hue, sat, value = [
-                int(value, 16) for value in textwrap.wrap(color, 4)
-            ]
-            self._hs = [hue, sat / 10.0]
-            self._brightness = value
+            self.__from_color_v2(color)
 
     async def async_turn_on(self, **kwargs):
         """Turn on or control the light."""
