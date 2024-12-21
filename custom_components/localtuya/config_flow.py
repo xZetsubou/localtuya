@@ -1104,7 +1104,10 @@ def dps_string_list(dps_data: dict[str, dict], cloud_dp_codes: dict[str, dict]) 
         add_dp = dp not in dps_data or dps_data.get(dp) == -1
         if add_dp:
             value = func.get("value", "null")
-            dps_data[dp] = f"{value}, cloud pull"
+            if func.get("accessMode", "null") == "wr":
+                dps_data[dp] = f"{value}, write-only"
+            else:
+                dps_data[dp] = f"{value}, cloud pull"
 
     for dp, value in dps_data.items():
         if (dp_data := cloud_dp_codes.get(dp)) and (code := dp_data.get("code")):
