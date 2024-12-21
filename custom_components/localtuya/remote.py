@@ -133,14 +133,13 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
         else:
             return ControlType.JSON
 
-    @staticmethod
     def rf_decode_button(base64_code):
         try:
-            jstr = base64.b64decode
+            jstr = base64.b64decode(base64_code)
             jdata = json.loads(jstr)
             return jdata
         except:
-            return None
+            return {}
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on the remote."""
@@ -178,13 +177,13 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
         #     pulses = self.pronto_to_pulses(option_value)
         #     base64_code = "1" + self.pulses_to_base64(pulses)
         for command in commands:
-            code, is_rf = self._get_code(device, command)
+            code = self._get_code(device, command)
 
-            base64_code = "1" + code
+            base64_code = code
             if repeats:
                 current_repeat = 0
                 while current_repeat < repeats:
-                    await self.send_signal(ControlMode.SEND_IR, base64_code, rf=is_rf)
+                    await self.send_signal(ControlMode.SEND_IR, base64_code)
                     if repeats_delay:
                         await asyncio.sleep(repeats_delay)
                     current_repeat += 1
@@ -270,6 +269,8 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             await self._delete_command(device, command)
 
     async def send_signal(self, control, base64_code=None, rf=False):
+        rf_data = self.rf_decode_button(base64_code)
+
         if self._ir_control_type == ControlType.ENUM:
             command = {self._dp_id: control}
             if control == ControlMode.SEND_IR:
@@ -277,39 +278,43 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
                 command[self._dp_key_study] = base64_code
                 command["13"] = 0
         else:
-            command = {NSDP_CONTROL: control if not rf else MODE_IR_TO_RF.get(control)}
-            if rf:
+            command = {
+                NSDP_CONTROL: MODE_IR_TO_RF.get(control) if (rf_data or rf) else control
+            }
+            if rf_data or rf:
+                if freq := rf_data.get(ATTR_STUDY_FREQ):
+                    command[ATTR_STUDY_FREQ] = freq
+                if ver := rf_data.get(ATTR_VER):
+                    command[ATTR_VER] = ver
+
                 for attr, default_value in (
                     (ATTR_RF_TYPE, "sub_2g"),
                     (ATTR_VER, "2"),
+                    (ATTR_STUDY_FREQ, "433"),
                 ):
                     if attr not in command:
                         command[attr] = default_value
+
                 if control == ControlMode.SEND_IR:
+                    command[NSDP_KEY1] = {"code": base64_code}
                     for attr, default_value in (
-                        (ATTR_TIMES, "1"),
+                        (ATTR_TIMES, "6"),
                         (ATTR_DELAY, "0"),
                         (ATTR_INTERVALS, "0"),
-                        (ATTR_FEQ, "0"),
                     ):
-                        command[NSDP_KEY1] = {}
                         if attr not in command[NSDP_KEY1]:
                             command[NSDP_KEY1][attr] = default_value
-                if control in (ControlMode.STUDY, ControlMode.STUDY_EXIT):
-                    if ATTR_STUDY_FREQ not in command:
-                        command[ATTR_STUDY_FREQ] = "0"
             else:
                 if control == ControlMode.SEND_IR:
                     command[NSDP_TYPE] = 0
                     command[NSDP_HEAD] = ""  # also known as ir_code
-                    command[NSDP_KEY1] = base64_code  # also code: key_code
+                    command[NSDP_KEY1] = "1" + base64_code  # also code: key_code
 
             command = {self._dp_id: json.dumps(command)}
 
         self.debug(f"Sending Command: {command}")
-        if rf and base64_code:
-            decoded_code = self.rf_decode_button(base64_code)
-            self.debug(f"Decoded RF Button: {decoded_code}")
+        if rf_data:
+            self.debug(f"Decoded RF Button: {rf_data}")
 
         await self._device.set_dps(command)
 
@@ -319,7 +324,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
         ir_controller = self._device_id
         devices_data = self._global_codes
 
-        if ir_controller in codes_data:
+        if ir_controller in codes_data and device in codes_data[ir_controller]:
             devices_data = codes_data[ir_controller]
 
         if device not in devices_data:
@@ -383,7 +388,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
         ir_controller = self._device_id
         devices_data = self._global_codes
 
-        if ir_controller in codes_data:
+        if ir_controller in codes_data and device in codes_data[ir_controller]:
             devices_data = codes_data[ir_controller]
 
         if device not in devices_data:
@@ -399,9 +404,8 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             )
 
         command = devices_data[device][command]
-        is_rf = devices_data[device].get("rf")
 
-        return command, is_rf
+        return command
 
     async def _async_migrate_func(self, old_major_version, old_minor_version, old_data):
         """Migrate to the new version."""
