@@ -90,6 +90,15 @@ def flow_schema(dps):
     }
 
 
+def rf_decode_button(base64_code):
+    try:
+        jstr = base64.b64decode(base64_code)
+        jdata = json.loads(jstr)
+        return jdata
+    except:
+        return {}
+
+
 class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
     """Representation of a Tuya remote."""
 
@@ -132,14 +141,6 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             return ControlType.ENUM
         else:
             return ControlType.JSON
-
-    def rf_decode_button(base64_code):
-        try:
-            jstr = base64.b64decode(base64_code)
-            jdata = json.loads(jstr)
-            return jdata
-        except:
-            return {}
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on the remote."""
