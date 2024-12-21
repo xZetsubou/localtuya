@@ -393,7 +393,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         return next(
             (item for item in self._effect_list if self._scenes.get(item) == data),
             None,
-        )
+        ) if data is not None else None
 
     def __get_color_mode(self):
         return (
