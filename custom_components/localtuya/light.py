@@ -565,18 +565,15 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             self._color_temp = self.dp_value(CONF_COLOR_TEMP)
 
         if self.is_scene_mode and supported & LightEntityFeature.EFFECT:
-            if self.dp_value(CONF_COLOR_MODE) != self._modes.scene:
-                self._effect = self.__find_scene_by_scene_data(
-                    self.dp_value(CONF_COLOR_MODE)
-                )
+            color_mode = self.dp_value(CONF_COLOR_MODE)
+            if color_mode != self._modes.scene:
+                self._effect = self.__find_scene_by_scene_data(color_mode)
             else:
                 self._effect = self.__find_scene_by_scene_data(
                     self.dp_value(CONF_SCENE)
                 )
                 if self._effect is None:
-                    self._effect = self.__find_scene_by_scene_data(
-                        self._modes.scene
-                    )
+                    self._effect = self.__find_scene_by_scene_data(color_mode)
 
         if self.is_music_mode and supported & LightEntityFeature.EFFECT:
             self._effect = SCENE_MUSIC
