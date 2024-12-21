@@ -34,7 +34,6 @@ from .const import (
     CONF_COLOR_TEMP_REVERSE,
     CONF_MUSIC_MODE,
     CONF_SCENE_VALUES,
-    CONF_WRITE_ONLY,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -161,7 +160,6 @@ def flow_schema(dps):
         vol.Optional(CONF_SCENE): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_SCENE_VALUES, default={}): selector.ObjectSelector(),
         vol.Optional(CONF_MUSIC_MODE, default=False): selector.BooleanSelector(),
-        vol.Optional(CONF_WRITE_ONLY, default=False): selector.BooleanSelector(),
     }
 
 
@@ -179,7 +177,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         super().__init__(device, config_entry, lightid, _LOGGER, **kwargs)
         # Light is an active device (mains powered). It should be able
         # to respond at any time. But Tuya BLE bulbs are write-only.
-        self._write_only = self._config.get(CONF_WRITE_ONLY, False)
+        self._write_only = self.is_ble
         if self._write_only:
             self._device.write_only = self._write_only
 
@@ -231,6 +229,13 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
 
         if self._config.get(CONF_MUSIC_MODE):
             self._effect_list.append(SCENE_MUSIC)
+
+    @property
+    def is_ble(self):
+        """Return if this sub-device is BLE."""
+        # BLE bulbs don't have status, we can rely on status to detect that but this workaround works fine.
+        # we can also add status check this way even if somehow 0 was added by mistake it still works.
+        return self._device.is_subdevice and "0" in self._device._device_config.manual_dps.split(",")
 
     @property
     def is_on(self):
