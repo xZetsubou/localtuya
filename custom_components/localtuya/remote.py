@@ -270,7 +270,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             await self._delete_command(device, command)
 
     async def send_signal(self, control, base64_code=None, rf=False):
-        rf_data = self.rf_decode_button(base64_code)
+        rf_data = rf_decode_button(base64_code)
 
         if self._ir_control_type == ControlType.ENUM:
             command = {self._dp_id: control}
