@@ -115,6 +115,7 @@ SUPPORTED_TEMPERATURES = {
     f"Target Temperature: {UnitOfTemperature.CELSIUS} | Current Temperature {UnitOfTemperature.FAHRENHEIT}": SupportedTemps.C_F,
     f"Target Temperature: {UnitOfTemperature.FAHRENHEIT} | Current Temperature {UnitOfTemperature.CELSIUS}": SupportedTemps.F_C,
 }
+SUPPORTED_PRECISIONS = [0.01, PRECISION_TENTHS, PRECISION_HALVES, PRECISION_WHOLE]
 
 DEFAULT_TEMPERATURE_UNIT = SupportedTemps.C
 DEFAULT_PRECISION = PRECISION_TENTHS
@@ -136,11 +137,11 @@ def flow_schema(dps):
         vol.Optional(CONF_MIN_TEMP, default=DEFAULT_MIN_TEMP): vol.Coerce(float),
         vol.Optional(CONF_MAX_TEMP, default=DEFAULT_MAX_TEMP): vol.Coerce(float),
         vol.Optional(CONF_PRECISION, default=str(DEFAULT_PRECISION)): col_to_select(
-            [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
+            SUPPORTED_PRECISIONS
         ),
         vol.Optional(
             CONF_TARGET_PRECISION, default=str(DEFAULT_PRECISION)
-        ): col_to_select([PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]),
+        ): col_to_select(SUPPORTED_PRECISIONS),
         vol.Optional(CONF_HVAC_MODE_DP): col_to_select(dps, is_dps=True),
         vol.Optional(
             CONF_HVAC_MODE_SET, default=HVAC_MODE_SETS
