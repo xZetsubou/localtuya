@@ -5,7 +5,6 @@ import json
 import base64
 import logging
 from functools import partial
-import struct
 from enum import StrEnum
 from typing import Any, Iterable
 from .config_flow import col_to_select
@@ -118,6 +117,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
 
         self._device_id = self._device_config.id
         self._lock = asyncio.Lock()
+        self._event = asyncio.Event()
 
         # self._attr_activity_list: list = []
         # self._attr_current_activity: str | None = None
@@ -217,7 +217,6 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
 
         async with self._lock:
             for command in commands:
-                last_code = self._last_code
                 await self.send_signal(ControlMode.STUDY, rf=is_rf)
                 persistent_notification.async_create(
                     self.hass,
@@ -228,20 +227,12 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
 
                 try:
                     self.debug(f"Waiting for code from DP: {self._dp_recieve}")
-                    while now < timeout:
-                        if last_code != (dp_code := self.dp_value(self._dp_recieve)):
-                            self._last_code = dp_code
-                            sucess = True
-                            await self.send_signal(ControlMode.STUDY_EXIT, rf=is_rf)
-                            break
-
-                        now += 1
-                        await asyncio.sleep(1)
-
-                    if not sucess:
-                        raise ServiceValidationError(f"Failed to learn: {command}")
-
+                    await asyncio.wait_for(self._event.wait(), timeout)
+                    await self._save_new_command(device, command, self._last_code)
+                except TimeoutError:
+                    raise ServiceValidationError(f"Timeout: Failed to learn: {command}")
                 finally:
+                    self._event.clear()
                     await self.send_signal(ControlMode.STUDY_EXIT, rf=is_rf)
                     persistent_notification.async_dismiss(
                         self.hass, notification_id="learn_command"
@@ -249,7 +240,6 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
 
                 # code retrive sucess and it's sotred in self._last_code
                 # we will store the codes.
-                await self._save_new_command(device, command, self._last_code)
 
                 if command != commands[-1]:
                     await asyncio.sleep(1)
@@ -290,8 +280,8 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
 
                 for attr, default_value in (
                     (ATTR_RF_TYPE, "sub_2g"),
+                    (ATTR_STUDY_FREQ, "433.92"),
                     (ATTR_VER, "2"),
-                    (ATTR_STUDY_FREQ, "433"),
                 ):
                     if attr not in command:
                         command[attr] = default_value
@@ -415,6 +405,9 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
     def status_updated(self):
         """Device status was updated."""
         state = self.dp_value(self._dp_id)
+        if (dp_recv := self.dp_value(self._dp_recieve)) != self._last_code:
+            self._last_code = dp_recv
+            self._event.set()
 
     def status_restored(self, stored_state: State) -> None:
         """Device status was restored.."""
