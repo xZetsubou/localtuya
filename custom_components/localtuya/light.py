@@ -257,9 +257,6 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             self._scenes = {**self._modes.as_dict(), **self._scenes}
 
             self._effect_list = list(self._scenes.keys())
-        elif self._write_only and self._config.get(CONF_MUSIC_MODE):
-            # BLE bulbs with no scene value DP configured
-            self._scenes = self._modes.as_dict()
 
         if self._config.get(CONF_MUSIC_MODE):
             self._effect_list.append(SCENE_MUSIC)
