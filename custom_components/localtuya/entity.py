@@ -139,6 +139,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         self._last_state = None
         self._stored_states: State | None = None
         self._hass = device._hass
+        self._loaded = False
 
         # Default value is available to be provided by Platform entities if required
         self._default_value = self._config.get(CONF_DEFAULT_VALUE)
@@ -160,23 +161,20 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
             self._stored_states = stored_data
             self.status_restored(stored_data)
 
-        def _update_handler(new_status: dict | None):
+        def _update_handler(status: dict | None):
             """Update entity state when status was updated."""
-            status = self._status.clear() if new_status is None else new_status.copy()
+            last_status = self._status.copy()
 
-            if status == RESTORE_STATES and stored_data and not self._status:
-                if stored_data.state not in (STATE_UNAVAILABLE, STATE_UNKNOWN):
-                    self.debug(f"{self.name}: Restore state: {stored_data.state}")
-                    status[self._dp_id] = stored_data.state
+            self._status = {} if status is None else {**self._status, **status}
 
-            if self._status != status:
+            if not self._loaded:
+                self._loaded = True
+                self.connection_made()
+
+            if status != last_status:
                 if status:
-                    # Pop the special DPs
-                    status.pop("0", None)
-                    self._status.update(status)
                     self.status_updated()
 
-                # Update HA
                 self.schedule_update_ha_state()
 
         signal = f"localtuya_{self._device_config.id}"
@@ -297,17 +295,32 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         if (state is not None) and (not self._device.is_connecting):
             self._last_state = state
 
-    def status_restored(self, stored_state) -> None:
+    def status_restored(self, stored_state: State) -> None:
         """Device status was restored.
 
         Override in subclasses and update entity specific state.
         """
         raw_state = stored_state.attributes.get(ATTR_STATE)
+        self.debug(f"The states  attrs is: {stored_state.attributes}")
         if raw_state is not None:
             self._last_state = raw_state
             self.debug(
                 f"Restoring state for entity: {self.name} - state: {str(self._last_state)}"
             )
+
+    def connection_made(self):
+        """The connection has made with the device and status retrieved. configure entity based on it.
+
+        Override in subclasses and update entity initialization based on detected DPS.
+        """
+        stored_data = self._stored_states
+        if self._status == RESTORE_STATES and stored_data:
+            self._status.pop("0", True)
+            if self._dp_id in self._status:
+                return
+            if stored_data.state not in (STATE_UNAVAILABLE, STATE_UNKNOWN):
+                self.debug(f"{self.name}: Restore state: {stored_data.state}")
+                self._status[self._dp_id] = stored_data.state
 
     def default_value(self):
         """Return default value of this entity.
