@@ -287,8 +287,12 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         for dp in self._device_config.dps_strings:
             all = dp.split(" ")
             if all[0] == self._dp_id:
-                return "write-only" in all or "cloud" in all
-        return False
+                if "write-only" in all or "cloud" in all:
+                    return True
+                else:
+                    break
+        # Setup without cloud?
+        return "0" in self._device_config.manual_dps.split(",")
 
     @property
     def is_on(self):
