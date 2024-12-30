@@ -270,7 +270,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
                 command["13"] = 0
         else:
             command = {
-                NSDP_CONTROL: MODE_IR_TO_RF.get(control) if (rf_data or rf) else control
+                NSDP_CONTROL: MODE_IR_TO_RF[control] if (rf_data or rf) else control
             }
             if rf_data or rf:
                 if freq := rf_data.get(ATTR_STUDY_FREQ):
@@ -282,6 +282,9 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
                     (ATTR_RF_TYPE, "sub_2g"),
                     (ATTR_STUDY_FREQ, "433.92"),
                     (ATTR_VER, "2"),
+                    ("feq", "0"),
+                    ("rate", "0"),
+                    ("mode", "0"),
                 ):
                     if attr not in command:
                         command[attr] = default_value
