@@ -20,7 +20,7 @@ from homeassistant.helpers.selector import (
     SelectOptionDict,
 )
 import voluptuous as vol
-from homeassistant import config_entries, core, exceptions
+from homeassistant import exceptions
 from homeassistant.const import (
     CONF_CLIENT_ID,
     CONF_CLIENT_SECRET,
@@ -39,7 +39,8 @@ from homeassistant.const import (
     CONF_USERNAME,
     EntityCategory,
 )
-from homeassistant.core import callback
+from homeassistant.core import callback, HomeAssistant
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
 
 from .coordinator import pytuya, TuyaCloudApi
 from .core.cloud_api import TUYA_ENDPOINTS
@@ -166,11 +167,10 @@ MASS_CONFIGURE_SCHEMA = {vol.Optional(CONF_MASS_CONFIGURE, default=False): bool}
 CUSTOM_DEVICE = {"Add Device Manually": "..."}
 
 
-class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class LocaltuyaConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for LocalTuya integration."""
 
     VERSION = ENTRIES_VERSION
-    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     @staticmethod
     @callback
@@ -235,12 +235,11 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
 
-class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
+class LocalTuyaOptionsFlowHandler(OptionsFlow):
     """Handle options flow for LocalTuya integration."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry):
+    def __init__(self, config_entry: ConfigEntry):
         """Initialize localtuya options flow."""
-        self.config_entry = config_entry
         self._entry_id = config_entry.entry_id
 
         self.selected_device = None
@@ -875,7 +874,7 @@ class EmptyDpsList(exceptions.HomeAssistantError):
 
 
 async def setup_localtuya_devices(
-    hass: config_entries.HomeAssistant,
+    hass: HomeAssistant,
     entry_id: str,
     discovered_devices: dict,
     devices_cloud_data: dict,
@@ -1144,7 +1143,7 @@ def merge_dps_manual_strings(manual_dps: list, dps_strings: list):
 
 
 async def platform_schema(
-    hass: core.HomeAssistant, platform, dps_strings, allow_id=True, yaml=False
+    hass: HomeAssistant, platform, dps_strings, allow_id=True, yaml=False
 ):
     """Generate input validation schema for a platform."""
     # decide default value of device by platform.
@@ -1184,7 +1183,7 @@ def flow_schema(platform, dps_strings):
     return import_module("." + platform, integration_module).flow_schema(dps_strings)
 
 
-async def validate_input(hass: core.HomeAssistant, entry_id, data):
+async def validate_input(hass: HomeAssistant, entry_id, data):
     """Validate the user input allows us to connect."""
     logger = pytuya.ContextualLogger()
     logger.set_logger(_LOGGER, data[CONF_DEVICE_ID], True, data[CONF_FRIENDLY_NAME])
