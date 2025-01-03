@@ -301,7 +301,6 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         Override in subclasses and update entity specific state.
         """
         raw_state = stored_state.attributes.get(ATTR_STATE)
-        self.debug(f"The states  attrs is: {stored_state.attributes}")
         if raw_state is not None:
             self._last_state = raw_state
             self.debug(
