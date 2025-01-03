@@ -11,6 +11,7 @@ from homeassistant.helpers import selector
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
     ATTR_COLOR_TEMP,
+    ATTR_WHITE,
     ATTR_EFFECT,
     ATTR_HS_COLOR,
     DOMAIN,
@@ -26,6 +27,7 @@ from .const import (
     CONF_BRIGHTNESS_LOWER,
     CONF_BRIGHTNESS_UPPER,
     CONF_COLOR,
+    CONF_COLOR_HAS_WHITE_CHANNEL,
     CONF_COLOR_MODE,
     CONF_COLOR_MODE_SET,
     CONF_COLOR_TEMP_MAX_KELVIN,
@@ -143,6 +145,9 @@ def flow_schema(dps):
         vol.Optional(CONF_COLOR_TEMP_MAX_KELVIN, default=DEFAULT_MAX_KELVIN): vol.All(
             vol.Coerce(int), vol.Range(min=1500, max=8000)
         ),
+        vol.Optional(
+            CONF_COLOR_HAS_WHITE_CHANNEL, default=False
+        ): selector.BooleanSelector(),
         vol.Optional(CONF_COLOR_TEMP_REVERSE, default=DEFAULT_COLOR_TEMP_REVERSE): bool,
         vol.Optional(CONF_SCENE): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_SCENE_VALUES, default={}): selector.ObjectSelector(),
@@ -300,6 +305,8 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             color_modes.add(ColorMode.COLOR_TEMP)
         if self.has_config(CONF_COLOR):
             color_modes.add(ColorMode.HS)
+        if self.has_config(CONF_COLOR_HAS_WHITE_CHANNEL):
+            color_modes.add(ColorMode.WHITE)
 
         if not color_modes and self.has_config(CONF_BRIGHTNESS):
             return {ColorMode.BRIGHTNESS}
@@ -349,6 +356,8 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
 
         if self.is_color_mode:
             return ColorMode.HS
+        if self.is_white_mode and self.has_config(CONF_COLOR_HAS_WHITE_CHANNEL):
+            return ColorMode.WHITE
         if self.is_white_mode:
             return ColorMode.COLOR_TEMP
         if self._brightness:
@@ -480,6 +489,10 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             states[self._config.get(CONF_COLOR_MODE)] = self._modes.white
             states[self._config.get(CONF_BRIGHTNESS)] = brightness
             states[self._config.get(CONF_COLOR_TEMP)] = color_temp
+
+        if ATTR_WHITE in kwargs and ColorMode.WHITE in color_modes:
+            states[self._config.get(CONF_COLOR_MODE)] = self._modes.white
+            states[self._config.get(CONF_BRIGHTNESS)] = brightness
 
         await self._device.set_dps(states)
 
