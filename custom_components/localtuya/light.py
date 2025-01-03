@@ -27,7 +27,7 @@ from .const import (
     CONF_BRIGHTNESS_LOWER,
     CONF_BRIGHTNESS_UPPER,
     CONF_COLOR,
-    CONF_COLOR_HAS_WHITE_CHANNEL,
+    CONF_COLOR_HAS_SINGLE_WHITE_CHANNEL,
     CONF_COLOR_MODE,
     CONF_COLOR_MODE_SET,
     CONF_COLOR_TEMP_MAX_KELVIN,
@@ -146,7 +146,7 @@ def flow_schema(dps):
             vol.Coerce(int), vol.Range(min=1500, max=8000)
         ),
         vol.Optional(
-            CONF_COLOR_HAS_WHITE_CHANNEL, default=False
+            CONF_COLOR_HAS_SINGLE_WHITE_CHANNEL, default=False
         ): selector.BooleanSelector(),
         vol.Optional(CONF_COLOR_TEMP_REVERSE, default=DEFAULT_COLOR_TEMP_REVERSE): bool,
         vol.Optional(CONF_SCENE): col_to_select(dps, is_dps=True),
@@ -305,7 +305,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             color_modes.add(ColorMode.COLOR_TEMP)
         if self.has_config(CONF_COLOR):
             color_modes.add(ColorMode.HS)
-        if self.has_config(CONF_COLOR_HAS_WHITE_CHANNEL):
+        if self.has_config(CONF_COLOR_HAS_SINGLE_WHITE_CHANNEL):
             color_modes.add(ColorMode.WHITE)
 
         if not color_modes and self.has_config(CONF_BRIGHTNESS):
@@ -356,7 +356,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
 
         if self.is_color_mode:
             return ColorMode.HS
-        if self.is_white_mode and self.has_config(CONF_COLOR_HAS_WHITE_CHANNEL):
+        if self.is_white_mode and self.has_config(CONF_COLOR_HAS_SINGLE_WHITE_CHANNEL):
             return ColorMode.WHITE
         if self.is_white_mode:
             return ColorMode.COLOR_TEMP
