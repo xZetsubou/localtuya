@@ -358,8 +358,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         if self.is_white_mode:
             if self.has_config(CONF_COLOR_TEMP):
                 return ColorMode.COLOR_TEMP
-            if not self.has_config(CONF_COLOR_TEMP):
-                return ColorMode.WHITE
+            return ColorMode.WHITE
         if self._brightness:
             return ColorMode.BRIGHTNESS
 
