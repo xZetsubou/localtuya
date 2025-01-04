@@ -1,0 +1,17 @@
+- light:
+    brightness: '22'
+    brightness_lower: 10
+    brightness_upper: 1000
+    color: '24'
+    color_mode: '21'
+    color_temp: '23'
+    color_temp_max_kelvin: 6500
+    color_temp_min_kelvin: 2700
+    color_temp_reverse: false
+    entity_category: None
+    friendly_name: rgbcct
+    icon: ''
+    id: '20'
+    music_mode: false
+    platform: light
+    scene_values: {}

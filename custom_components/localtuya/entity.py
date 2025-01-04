@@ -264,7 +264,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     def has_config(self, attr) -> bool:
         """Return if a config parameter has a valid value."""
         value = self._config.get(attr, "-1")
-        return value is not None and value is not False and value != "-1"
+        return value is not None and value != "-1"
 
     def dp_value(self, key, default=None) -> Any | None:
         """Return cached value for DPS index or Entity Config Key. else default None"""

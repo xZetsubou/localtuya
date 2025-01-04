@@ -191,7 +191,6 @@
                     "color_temp_reverse": "Reverse Color Temperature?",
                     "color": "Color",
                     "color_mode": "Color Mode aka Work Mode",
-                    "color_has_single_white_channel": "Has Single White Channel",
                     "color_temp_min_kelvin": "Minimum Color Temperature in K",
                     "color_temp_max_kelvin": "Maximum Color Temperature in K",
                     "music_mode": "Music mode available?",
