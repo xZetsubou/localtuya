@@ -70,8 +70,8 @@ class LocalTuyaFan(LocalTuyaEntity, FanEntity):
         self._direction = None
         self._percentage = None
         self._speed_range = (
-            self._config.get(CONF_FAN_SPEED_MIN),
-            self._config.get(CONF_FAN_SPEED_MAX),
+            int(self._config.get(CONF_FAN_SPEED_MIN)),
+            int(self._config.get(CONF_FAN_SPEED_MAX)),
         )
         self._ordered_list = self._config.get(CONF_FAN_ORDERED_LIST).split(",")
 
