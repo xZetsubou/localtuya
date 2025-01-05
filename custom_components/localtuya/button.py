@@ -5,6 +5,7 @@ from functools import partial
 
 import voluptuous as vol
 from homeassistant.components.button import DOMAIN, ButtonEntity
+from homeassistant.util import dt as dt_util
 
 from .entity import LocalTuyaEntity, async_setup_entry
 from .const import CONF_PASSIVE_ENTITY
@@ -37,5 +38,11 @@ class LocalTuyaButton(LocalTuyaEntity, ButtonEntity):
         """Press the button."""
         await self._device.set_dp(True, self._dp_id)
 
+    def status_updated(self):
+        """Device status was updated."""
+        super().status_updated()
+        state = str(self.dp_value(self._dp_id)).lower()
+        self._ButtonEntity__set_state(f"{state}_{dt_util.utcnow().isoformat()}")
+        self._status.pop(self._dp_id, None)
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaButton, flow_schema)
