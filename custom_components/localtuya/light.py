@@ -297,11 +297,12 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         """Flag supported color modes."""
         color_modes: set[ColorMode] = set()
 
-        if self.has_config(CONF_BRIGHTNESS):
-            if self.has_config(CONF_COLOR_TEMP):
-                color_modes.add(ColorMode.COLOR_TEMP)
-            else:
-                color_modes.add(ColorMode.WHITE)
+        if self.has_config(CONF_COLOR_TEMP):
+            color_modes.add(ColorMode.COLOR_TEMP)
+        elif self.has_config(CONF_BRIGHTNESS):
+            color_modes.add(ColorMode.WHITE)
+        if self.has_config(CONF_COLOR):
+            color_modes.add(ColorMode.HS)
 
         if self.has_config(CONF_COLOR):
             color_modes.add(ColorMode.HS)
