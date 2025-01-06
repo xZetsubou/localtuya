@@ -59,18 +59,21 @@ jobs:
 
           while IFS= read -r line; do
                     commit_hash=$(echo $line | awk '{print $1}')
-                    email=$(echo $line | awk -F"by @" '{print (NF>1)? $NF : ""}'| awk '{print $1}')
+                    name_email=$(echo $line | awk -F"by @" '{print (NF>1)? $NF : ""}'| awk '{print $1}')
+                    email=$(echo "$name_email" | cut -d'-' -f2)
 
-                    echo "email before IF: $email"
-                    if [[ "$email" =~ @?([a-zA-Z]+)\-([0-9]+)?\+?([a-zA-Z]+) ]]; then
+
+                    echo "email before IF: $name_email"
+                    if [[ "$name_email" =~ @?([a-zA-Z]+)\-([0-9]+)?\+?([a-zA-Z]+) ]]; then
                       name="${BASH_REMATCH[1]}"; id="${BASH_REMATCH[2]}"; mail_name="${BASH_REMATCH[3]}";
                       username=$name && [[ -n $id ]] && username=$mail_name
                       echo "name: $name"
-                      echo "email: $email"
+                      echo "name_email after: $name_email"
                       echo "id: $id"
                       echo "mail_name: $mail_name"
                       echo "Username: $username"
-                      sed -i "s#$email#$username#g" "commits.md"
+                      echo "Username: $email"
+                      sed -i "s#$name_email#$username#g" "commits.md"
                     fi
           done < commits.md
 
