@@ -34,7 +34,7 @@ def flow_schema(dps):
         vol.Optional(CONF_STATE_CLASS): col_to_select(
             [sc.value for sc in SensorStateClass]
         ),
-        vol.Optional(CONF_SCALING): vol.All(
+        vol.Optional(CONF_SCALING, default=1.0): vol.All(
             vol.Coerce(float), vol.Range(min=-1000000.0, max=1000000.0)
         ),
     }
@@ -75,15 +75,18 @@ class LocalTuyaSensor(LocalTuyaEntity, SensorEntity):
         return self._config.get(CONF_UNIT_OF_MEASUREMENT)
 
     def status_updated(self):
-        """Device status was updated."""
-        state = self.dp_value(self._dp_id)
+        """Update sensor state with scaled value."""
+        raw_state = self.dp_value(self._dp_id)
+        self._state = self._scale_value(raw_state)
 
-        self._state = self.scale(state)
-
-    # No need to restore state for a sensor
-    async def restore_state_when_connected(self):
-        """Do nothing for a sensor."""
-        return
+    def _scale_value(self, value):
+        """Scale the raw value using configured scaling."""
+        scaling_factor = self._config.get(CONF_SCALING, 1.0)
+        try:
+            return round(value * scaling_factor, DEFAULT_PRECISION)
+        except (TypeError, ValueError) as e:
+            _LOGGER.warning("Failed to scale value %s: %s", value, e)
+            return STATE_UNKNOWN
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaSensor, flow_schema)
