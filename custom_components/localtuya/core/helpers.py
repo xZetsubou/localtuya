@@ -24,7 +24,6 @@ _LOGGER = logging.getLogger(__name__)
 #          Templates          #
 ###############################
 class templates:
-
     def yaml_dump(config, fname: str | None = None) -> JSON_TYPE:
         """Save yaml config."""
         try:

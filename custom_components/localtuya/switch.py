@@ -69,22 +69,28 @@ class LocalTuyaSwitch(LocalTuyaEntity, SwitchEntity):
     @property
     def extra_state_attributes(self):
         """Return device state attributes."""
-        attrs = {}
-        if self.has_config(CONF_CURRENT):
-            attrs[ATTR_CURRENT] = self.dp_value(self._config[CONF_CURRENT])
-        if self.has_config(CONF_CURRENT_CONSUMPTION):
-            val_cc = self.dp_value(self._config[CONF_CURRENT_CONSUMPTION])
-            attrs[ATTR_CURRENT_CONSUMPTION] = None if val_cc is None else val_cc / 10
-        if self.has_config(CONF_VOLTAGE):
-            val_vol = self.dp_value(self._config[CONF_VOLTAGE])
-            attrs[ATTR_VOLTAGE] = None if val_vol is None else val_vol / 10
+        attrs = {
+            ATTR_CURRENT: self._get_attribute_value(CONF_CURRENT),
+            ATTR_CURRENT_CONSUMPTION: self._get_scaled_value(
+                CONF_CURRENT_CONSUMPTION, scale=10
+            ),
+            ATTR_VOLTAGE: self._get_scaled_value(CONF_VOLTAGE, scale=10),
+            ATTR_STATE: self._state or self._last_state,
+        }
+        return {k: v for k, v in attrs.items() if v is not None}
 
-        # Store the state
-        if self._state is not None:
-            attrs[ATTR_STATE] = self._state
-        elif self._last_state is not None:
-            attrs[ATTR_STATE] = self._last_state
-        return attrs
+    def _get_attribute_value(self, config_key):
+        """Helper to get attribute value if configured."""
+        return (
+            self.dp_value(self._config[config_key])
+            if self.has_config(config_key)
+            else None
+        )
+
+    def _get_scaled_value(self, config_key, scale=1):
+        """Helper to get and scale attribute value."""
+        value = self._get_attribute_value(config_key)
+        return None if value is None else value / scale
 
     async def async_turn_on(self, **kwargs):
         """Turn Tuya switch on."""

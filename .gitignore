@@ -3,3 +3,5 @@ __pycache__
 .tox
 tuyadebug/
 .pre-commit-config.yaml
+venv/
+.mypy_cache

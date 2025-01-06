@@ -160,9 +160,9 @@ PROTOCOL_33_HEADER = PROTOCOL_VERSION_BYTES_33 + PROTOCOL_3x_HEADER
 PROTOCOL_34_HEADER = PROTOCOL_VERSION_BYTES_34 + PROTOCOL_3x_HEADER
 PROTOCOL_35_HEADER = PROTOCOL_VERSION_BYTES_35 + PROTOCOL_3x_HEADER
 MESSAGE_RECV_HEADER_FMT = ">5I"  # 4*uint32: prefix, seqno, cmd, length, retcode
-MESSAGE_HEADER_FMT = MESSAGE_HEADER_FMT_55AA = (
-    ">4I"  # 4*uint32: prefix, seqno, cmd, length [, retcode]
-)
+MESSAGE_HEADER_FMT = (
+    MESSAGE_HEADER_FMT_55AA
+) = ">4I"  # 4*uint32: prefix, seqno, cmd, length [, retcode]
 MESSAGE_HEADER_FMT_6699 = ">IHIII"  # 4*uint32: prefix, unknown, seqno, cmd, length
 MESSAGE_RETCODE_FMT = ">I"  # retcode for received messages
 MESSAGE_END_FMT = MESSAGE_END_FMT_55AA = ">2I"  # 2*uint32: crc, suffix
