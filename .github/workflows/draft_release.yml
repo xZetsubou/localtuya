@@ -63,7 +63,7 @@ jobs:
                     email=$(echo "$name_email" | cut -d'-' -f2)
 
 
-                    echo "email before IF: $name_email"
+                    echo "email before IF: $email"
                     if [[ "$name_email" =~ @?([a-zA-Z]+)\-([0-9]+)?\+?([a-zA-Z]+) ]]; then
                       name="${BASH_REMATCH[1]}"; id="${BASH_REMATCH[2]}"; mail_name="${BASH_REMATCH[3]}";
                       username=$name && [[ -n $id ]] && username=$mail_name
