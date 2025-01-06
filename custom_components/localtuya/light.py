@@ -117,10 +117,11 @@ MAP_MODE_SET = {0: Mode(), 1: Mode(color=MODE_MANUAL)}
 
 
 def map_range(value, from_lower, from_upper, to_lower=0, to_upper=255, reverse=False):
-    """Map a value in one range to another."""
-    if reverse:
-        value = from_upper - value + from_lower
-    mapped = value * to_upper / from_upper
+    """Map a value from one range to another, with optional reverse scaling."""
+    adjusted_value = from_upper - value + from_lower if reverse else value
+    mapped = (
+        adjusted_value * (to_upper - to_lower) / (from_upper - from_lower) + to_lower
+    )
     return min(max(round(mapped), to_lower), to_upper)
 
 
@@ -299,11 +300,8 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
 
         if self.has_config(CONF_COLOR_TEMP):
             color_modes.add(ColorMode.COLOR_TEMP)
-        elif self.has_config(CONF_BRIGHTNESS):
+        if self.has_config(CONF_BRIGHTNESS):
             color_modes.add(ColorMode.WHITE)
-        if self.has_config(CONF_COLOR):
-            color_modes.add(ColorMode.HS)
-
         if self.has_config(CONF_COLOR):
             color_modes.add(ColorMode.HS)
 
@@ -512,19 +510,8 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
 
         if ColorMode.HS in self.supported_color_modes:
             color = self.dp_value(CONF_COLOR)
-            if color is not None and not self.is_white_mode:
-                if self.__is_color_rgb_encoded():
-                    hue = int(color[6:10], 16)
-                    sat = int(color[10:12], 16)
-                    value = int(color[12:14], 16)
-                    self._hs = [hue, (sat * 100 / 255)]
-                    self._brightness = value
-                else:
-                    hue, sat, value = [
-                        int(value, 16) for value in textwrap.wrap(color, 4)
-                    ]
-                    self._hs = [hue, sat / 10.0]
-                    self._brightness = value
+            if color and not self.is_white_mode:
+                self._hs, self._brightness = self._decode_color(color)
             elif self._brightness is None:
                 self._brightness = 20
 
@@ -548,6 +535,16 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
 
         if self.is_music_mode and supported & LightEntityFeature.EFFECT:
             self._effect = SCENE_MUSIC
+
+    def _decode_color(self, color):
+        """Decode RGB or HSV color from the device."""
+        if self.__is_color_rgb_encoded():
+            hue = int(color[6:10], 16)
+            sat = int(color[10:12], 16)
+            value = int(color[12:14], 16)
+            return [hue, (sat * 100 / 255)], value
+        hue, sat, value = [int(value, 16) for value in textwrap.wrap(color, 4)]
+        return [hue, sat / 10.0], value
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaLight, flow_schema)
