@@ -82,7 +82,7 @@ jobs:
                     if [[ "$email" =~ @?([a-zA-Z]+[0-9]+)?([0-9]+())? ]]; then
                       mail_name="${BASH_REMATCH[1]}"; id="${BASH_REMATCH[2]}";
                       username=$name && [[ -n $id ]] && username=$mail_name
-                      echo "username -- $username id -- $id"
+                      echo "username -- $username id -- $id mail_name -- $mail_name info: ---- $email"
                       sed -i "s#$author_info#$username#g" "commits.md"
                     fi
           done < commits.md
