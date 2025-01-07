@@ -48,21 +48,17 @@ class LocalTuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
         return self._is_on
 
     def status_updated(self):
-        """Device status was updated."""
+        """Update device status and determine if sensor is on."""
         super().status_updated()
 
         state = str(self.dp_value(self._dp_id)).lower()
-        # users may set wrong on states, But we assume that must devices use this on states.
-        possible_on_states = ["true", "1", "pir", "on"]
-        if state == self._config[CONF_STATE_ON].lower() or state in possible_on_states:
-            self._is_on = True
-        else:
-            self._is_on = False
-
-    # No need to restore state for a sensor
-    async def restore_state_when_connected(self):
-        """Do nothing for a sensor."""
-        return
+        configured_on_state = self._config[CONF_STATE_ON].lower()
+        self._is_on = state == configured_on_state or state in {
+            "true",
+            "1",
+            "pir",
+            "on",
+        }
 
 
 async_setup_entry = partial(
