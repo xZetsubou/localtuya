@@ -64,18 +64,18 @@ jobs:
 
 
                     echo "author_info: $author_info"
-                    # if [[ "$email" != *"noreply"* ]]; then
-                    #   username=$(curl --silent --fail \
-                    #             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                    #             "https://api.github.com/search/users?q=$email+in:email" \
-                    #             | jq -r '.items[0].login')
-                    #   sed -i "s#$author_info#$username#g" "commits.md"
-                    #   echo "name $name -- email $email -- username $username"
-                    #   continue
-                    # fi
+                    if [[ "$email" != *"noreply"* ]]; then
+                      username=$(curl --silent --fail \
+                                -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                                "https://api.github.com/search/users?q=$email+in:email" \
+                                | jq -r '.items[0].login')
+                      sed -i "s#$author_info#$username#g" "commits.md"
+                      echo "name $name -- email $email -- username $username"
+                      continue
+                    fi
 
                     if [[ "$email" =~ @?([0-9]+)\+([a-zA-Z]+) ]]; then
-                      id="${BASH_REMATCH[1]}"; name="${BASH_REMATCH[2]}"; ";
+                      id="${BASH_REMATCH[1]}"; name="${BASH_REMATCH[2]}";
                       username=$name && [[ -n $id ]] && username=$name
                       echo "Username: $username"
                       sed -i "s#$author_info#$username#g" "commits.md"
