@@ -73,8 +73,10 @@ jobs:
                                   | jq -r '.items[0].login')
                                   cache_nickname[$email]=$username
                       fi
-                      sed -i "s#$author_info#$username#g" "commits.md"
-                      continue
+                      if [[ $username != null ]]; then
+                        sed -i "s#$author_info#$username#g" "commits.md"
+                        continue
+                      fi
                     fi
 
                     if [[ "$email" =~ @?([0-9]+)\+([a-zA-Z]+) ]]; then
