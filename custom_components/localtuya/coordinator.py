@@ -423,6 +423,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             try:
                 await self._interface.set_dps(payload, cid=self._node_id)
                 # bluetooth devices usually does not send updated status payload.
+                # NOTE: This will override the status if the BLE device fails to receive the signal.
                 if self.is_ble:
                     self.status_updated(payload)
             except Exception as ex:  # pylint: disable=broad-except
