@@ -99,7 +99,9 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         self._default_reset_dpids: list | None = None
         dev = self._device_config
         if reset_dps := dev.reset_dps:
-            self._default_reset_dpids = [int(id.strip()) for id in reset_dps.split(",")]
+            self._default_reset_dpids = list(
+                map(int, map(str.strip, reset_dps.split(",")))
+            )
 
         # This has to be done in case the device type is type_0d
         self.dps_to_request = {}
@@ -488,7 +490,8 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                     or (attempts > MIN_OFFLINE_EVENTS)
                     else 1
                 )
-                await asyncio.sleep(scale * RECONNECT_INTERVAL.total_seconds())
+                await asyncio.sleep(RECONNECT_INTERVAL.total_seconds() * scale)
+
             except asyncio.CancelledError as e:
                 self.debug(f"Reconnect task has been canceled: {e}", force=True)
                 break
@@ -570,18 +573,17 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         if self._fake_gateway:
             # Fake gateways are only used to pass commands no need to update status.
             return
-        self._last_update_time = int(time.time())
-
-        self._handle_event(self._status, status)
-        self._status.update(status)
-        self._dispatch_status()
+        self._last_update_time = time.time()
+        if status != self._status:
+            self._handle_event(self._status, status)
+            self._status.update(status)
+            self._dispatch_status()
 
     @callback
     def disconnected(self, exc=""):
         """Device disconnected."""
-        if not self._interface:
-            return
-        self._interface = None
+        if self._interface:
+            self._interface = None
 
         if self._unsub_refresh:
             self._unsub_refresh()
@@ -638,9 +640,9 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
     def filter_subdevices(self):
         """Remove closed subdevices that are closed."""
-        self.sub_devices = dict(
-            filter(lambda dev: not dev[1].is_closing, self.sub_devices.items())
-        )
+        self.sub_devices = {
+            key: dev for key, dev in self.sub_devices.items() if not dev.is_closing
+        }
 
     def _get_gateway(self):
         """Return the gateway device of this sub device."""
