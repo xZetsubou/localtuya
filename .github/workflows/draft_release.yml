@@ -60,7 +60,7 @@ jobs:
           while IFS= read -r line; do
                     commit_hash=$(echo $line | awk '{print $1}')
                     author_info=$(echo $line | awk -F"by @" '{print (NF>1)? $NF : ""}'| awk '{print $1}')
-                    IFS=',' read -r name email third <<< "$string"
+                    IFS=',' read -r name email third <<< "$author_info"
 
 
                     echo "author_info: $author_info"
