@@ -73,15 +73,14 @@ class LocalTuyaNumber(LocalTuyaEntity, NumberEntity):
         self._step_size = self.scale(self._config.get(CONF_STEPSIZE, DEFAULT_STEP))
 
         # Override standard default value handling to cast to a float
-        default_value = self._config.get(CONF_DEFAULT_VALUE)
-        if default_value is not None:
-            self._default_value = float(default_value)
+        self._default_value = float(
+            self._config.get(CONF_DEFAULT_VALUE, self._min_value)
+        )
 
     @property
     def native_value(self) -> float:
-        """Return sensor state."""
-        self._state = self.scale(self._state)
-        return self._state
+        """Return the scaled sensor state."""
+        return self.scale(self._state)
 
     @property
     def native_min_value(self) -> float:
@@ -109,11 +108,10 @@ class LocalTuyaNumber(LocalTuyaEntity, NumberEntity):
         return self._config.get(CONF_DEVICE_CLASS)
 
     async def async_set_native_value(self, value: float) -> None:
-        """Update the current value."""
-        if scale_factor := self._config.get(CONF_SCALING):
-            value = value / float(scale_factor)
-
-        await self._device.set_dp(int(value), self._dp_id)
+        """Set the scaled value to the device."""
+        scale_factor = self._config.get(CONF_SCALING, 1.0)
+        scaled_value = value / scale_factor
+        await self._device.set_dp(int(scaled_value), self._dp_id)
 
     # Default value is the minimum value
     def entity_default_value(self):
