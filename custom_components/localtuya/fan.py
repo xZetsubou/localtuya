@@ -70,15 +70,12 @@ class LocalTuyaFan(LocalTuyaEntity, FanEntity):
         self._direction = None
         self._percentage = None
         self._speed_range = (
-            int(self._config.get(CONF_FAN_SPEED_MIN, 1)),
-            int(self._config.get(CONF_FAN_SPEED_MAX, 9)),
+            self._config.get(CONF_FAN_SPEED_MIN, 1),
+            self._config.get(CONF_FAN_SPEED_MAX, 9),
         )
-        self._ordered_list = self._config.get(CONF_FAN_ORDERED_LIST).split(",")
 
-        if isinstance(self._ordered_list, list) and len(self._ordered_list) > 1:
-            self._use_ordered_list = True
-        else:
-            self._use_ordered_list = False
+    self._ordered_list = self._config.get(CONF_FAN_ORDERED_LIST, "").split(",")
+    self._use_ordered_list = len(self._ordered_list) > 1
 
     @property
     def oscillating(self):
@@ -126,11 +123,11 @@ class LocalTuyaFan(LocalTuyaEntity, FanEntity):
         """Set the speed of the fan."""
         _LOGGER.debug("Fan async_set_percentage: %s", percentage)
 
-        if percentage is not None:
-            if percentage == 0:
-                return await self.async_turn_off()
-            if not self.is_on:
-                await self.async_turn_on()
+        if percentage == 0:
+            return await self.async_turn_off()
+
+        if not self.is_on:
+            await self.async_turn_on()
 
             if self._use_ordered_list:
                 await self._device.set_dp(
@@ -172,11 +169,12 @@ class LocalTuyaFan(LocalTuyaEntity, FanEntity):
         """Set the direction of the fan."""
         _LOGGER.debug("Fan async_set_direction: %s", direction)
 
-        if direction == DIRECTION_FORWARD:
-            value = self._config.get(CONF_FAN_DIRECTION_FWD)
+        value = (
+            self._config.get(CONF_FAN_DIRECTION_FWD)
+            if direction == DIRECTION_FORWARD
+            else self._config.get(CONF_FAN_DIRECTION_REV)
+        )
 
-        if direction == DIRECTION_REVERSE:
-            value = self._config.get(CONF_FAN_DIRECTION_REV)
         await self._device.set_dp(value, self._config.get(CONF_FAN_DIRECTION))
         self.schedule_update_ha_state()
 
