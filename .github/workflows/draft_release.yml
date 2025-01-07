@@ -60,11 +60,18 @@ jobs:
           while IFS= read -r line; do
                     commit_hash=$(echo $line | awk '{print $1}')
                     author_info=$(echo $line | awk -F"by @" '{print (NF>1)? $NF : ""}'| awk '{print $1}')
-                    email=$(echo "$name_email" | cut -d'-' -f2)
+                    IFS=',' read -r name email third <<< "$string"
 
 
                     echo "author_info: $author_info"
-                    if [[ "$author_info" =~ @?([a-zA-Z]+)\-([0-9]+)?\+?([a-zA-Z]+) ]]; then
+                    if [[ "$email" != *"noreply"* ]]; then
+                      username=$(curl -s "https://api.github.com/search/users?q=$email+in:email" | jq -r '.items[0].login')
+                      sed -i "s#$author_info#$username#g" "commits.md"
+                      echo "username -- username -- $username"
+                      continue
+                    fi
+
+                    if [[ "$email" =~ @?([a-zA-Z]+)\-([0-9]+)?\+?([a-zA-Z]+) ]]; then
                       name="${BASH_REMATCH[1]}"; id="${BASH_REMATCH[2]}"; mail_name="${BASH_REMATCH[3]}";
                       username=$name && [[ -n $id ]] && username=$mail_name
                       echo "name: $name"
