@@ -439,7 +439,8 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         if self.is_white_mode:
             if self.has_config(CONF_COLOR_TEMP):
                 return ColorMode.COLOR_TEMP
-            return ColorMode.WHITE
+            else:
+                return ColorMode.WHITE
         if self._brightness:
             return ColorMode.BRIGHTNESS
 
@@ -604,6 +605,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
                 color_mode = self._modes.color
 
         if ATTR_COLOR_TEMP in kwargs and ColorMode.COLOR_TEMP in color_modes:
+            self.error(f"ATTR_COLOR_TEMP: {ATTR_COLOR_TEMP}")
             if brightness is None:
                 brightness = self._brightness
             mired = int(kwargs[ATTR_COLOR_TEMP])
@@ -625,7 +627,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         if ATTR_WHITE in kwargs and ColorMode.WHITE in color_modes:
             if brightness is None:
                 brightness = self._brightness
-            states[self._config.get(CONF_COLOR_MODE)] = self._modes.white
+            color_mode = self._modes.white
             states[self._config.get(CONF_BRIGHTNESS)] = brightness
 
         if color_mode is not None:
