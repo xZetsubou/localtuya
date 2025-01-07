@@ -70,12 +70,15 @@ class LocalTuyaFan(LocalTuyaEntity, FanEntity):
         self._direction = None
         self._percentage = None
         self._speed_range = (
-            self._config.get(CONF_FAN_SPEED_MIN, 1),
-            self._config.get(CONF_FAN_SPEED_MAX, 9),
+            int(self._config.get(CONF_FAN_SPEED_MIN, 1)),
+            int(self._config.get(CONF_FAN_SPEED_MAX, 9)),
         )
+        self._ordered_list = self._config.get(CONF_FAN_ORDERED_LIST, "").split(",")
 
-    self._ordered_list = self._config.get(CONF_FAN_ORDERED_LIST, "").split(",")
-    self._use_ordered_list = len(self._ordered_list) > 1
+        if isinstance(self._ordered_list, list) and len(self._ordered_list) > 1:
+            self._use_ordered_list = True
+        else:
+            self._use_ordered_list = False
 
     @property
     def oscillating(self):
