@@ -10,7 +10,7 @@ from functools import partial
 from homeassistant.helpers import selector
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
-    ATTR_COLOR_TEMP,
+    ATTR_COLOR_TEMP_KELVIN,
     ATTR_WHITE,
     ATTR_EFFECT,
     ATTR_HS_COLOR,
@@ -468,10 +468,10 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
                 states[self._config.get(CONF_COLOR)] = color
                 states[self._config.get(CONF_COLOR_MODE)] = self._modes.color
 
-        if ATTR_COLOR_TEMP in kwargs and ColorMode.COLOR_TEMP in color_modes:
+        if ATTR_COLOR_TEMP_KELVIN in kwargs and ColorMode.COLOR_TEMP in color_modes:
             if brightness is None:
                 brightness = self._brightness
-            mired = int(kwargs[ATTR_COLOR_TEMP])
+            mired = int(kwargs[ATTR_COLOR_TEMP_KELVIN])
             if self._color_temp_reverse:
                 mired = self.max_mireds - (mired - self.min_mireds)
             if mired < self.min_mireds:
