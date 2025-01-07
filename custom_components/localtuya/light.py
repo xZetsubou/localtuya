@@ -240,6 +240,9 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         if self._config.get(CONF_MUSIC_MODE):
             self._effect_list.append(SCENE_MUSIC)
 
+        self.__to_color = self.__to_color_common
+        self.__from_color = self.__from_color_common
+
     def connection_made(self):
         """The connection has made with the device and status retrieved, Configure the entity based on its reserved status."""
         super().connection_made()
