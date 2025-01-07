@@ -65,7 +65,7 @@ jobs:
 
                     if [[ "$email" != *"noreply"* ]]; then
                       if [[ -v cache_nickname[$email] ]]; then
-                        echo "User existed: cache_nickname[$email]"
+                        echo "User existed: ${cache_nickname[$email]}"
                       fi
                       username=$(curl --silent --fail \
                                 -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
