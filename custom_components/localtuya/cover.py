@@ -276,9 +276,10 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
         # Handle position update
         if self.has_config(CONF_CURRENT_POSITION_DP):
             curr_pos = self.dp_value(CONF_CURRENT_POSITION_DP)
-            self._current_cover_position = (
-                100 - curr_pos if self._position_inverted else curr_pos
-            )
+            if self._position_inverted:
+                self._current_cover_position = 100 - curr_pos
+            else:
+                self._current_cover_position = curr_pos
 
         if (
             self._config[CONF_POSITIONING_MODE] == MODE_TIME_BASED
