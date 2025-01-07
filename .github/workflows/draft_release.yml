@@ -68,7 +68,7 @@ jobs:
                       username=$(curl --silent --fail \
                                 -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                                 "https://api.github.com/search/users?q=$email+in:email" \
-                                | jq -r '.items[0].login)
+                                | jq -r '.items[0].login')
                       sed -i "s#$author_info#$username#g" "commits.md"
                       echo "name $name -- email $email -- username $username"
                       continue
