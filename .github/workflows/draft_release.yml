@@ -74,6 +74,7 @@ jobs:
                                   cache_nickname[$email]=$username
                       fi
                       if [[ $username != null ]]; then
+                        echo "Username 2222: $username info is: $author_info"
                         sed -i "s#$author_info#$username#g" "commits.md"
                         continue
                       fi
