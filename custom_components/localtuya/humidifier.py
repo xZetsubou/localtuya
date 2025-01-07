@@ -127,30 +127,28 @@ class LocalTuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
 
     @property
     def available_modes(self):
-        """Return the list of presets that this device supports."""
-        if modes := self._config.get(self._available_modes, {}).values():
-            modes = list(modes)
-        return modes
+        """Return the list of available modes for this device."""
+        return list(self._config.get(self._available_modes, {}).values())
 
     async def async_set_mode(self, mode):
         """Set new target preset mode."""
-        set_mode_dp = self._config.get(self._dp_mode, None)
-        if set_mode_dp is None:
-            return None
+        if not (set_mode_dp := self._config.get(self._dp_mode)):
+            _LOGGER.warning("Mode DP not configured for device.")
+            return
 
-        set_mode = self._mode_name_to_value.get(mode)
+        if (set_mode := self._mode_name_to_value.get(mode)) is None:
+            _LOGGER.warning("Invalid mode: %s", mode)
+            return
+
         await self._device.set_dp(set_mode, set_mode_dp)
 
     def status_updated(self):
-        """Device status was updated."""
+        """Update device status and current mode."""
         super().status_updated()
         current_mode = self.dp_value(self._dp_mode)
-        for mode, mode_name in self._config.get(self._available_modes, {}).items():
-            if mode == current_mode:
-                self._current_mode = mode_name
-                break
-            else:
-                self._current_mode = "unknown"
+        self._current_mode = self._config.get(self._available_modes, {}).get(
+            current_mode, "unknown"
+        )
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaHumidifier, flow_schema)
