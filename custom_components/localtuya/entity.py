@@ -277,11 +277,18 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     def dp_value(self, key, default=None) -> Any:
         """Return cached DPS value or entity config value, fallback to default."""
         requested_dp = str(key)
-        return (
-            self._status.get(requested_dp)
-            or self._status.get(self._config.get(requested_dp))
-            or default
-        )
+
+        value = self._status.get(requested_dp)
+        if value is not None:
+            return value
+
+        conf_key = self._config.get(requested_dp)
+        if conf_key is not None:
+            value = self._status.get(conf_key)
+            if value is not None:
+                return value
+
+        return default
 
     def status_updated(self) -> None:
         """Update entity state when device status changes."""
