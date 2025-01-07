@@ -74,13 +74,12 @@ jobs:
                                   cache_nickname[$email]=$username
                       fi
                       if [[ $username != null ]]; then
-                        echo "Username 2222: $username info is: $author_info"
                         sed -i "s#$author_info#$username#g" "commits.md"
                         continue
                       fi
                     fi
 
-                    if [[ "$email" =~ @?([0-9]+)\+([a-zA-Z]+) ]]; then
+                    if [[ "$email" =~ @?([0-9]+)?\+?([a-zA-Z]+) ]]; then
                       id="${BASH_REMATCH[1]}"; name="${BASH_REMATCH[2]}";
                       username=$name && [[ -n $id ]] && username=$name
                       echo "Username: $username info is: $author_info"
@@ -138,16 +137,16 @@ jobs:
 
           echo -e $notes > commits.md
 
-      # - name: Remove old Draft
-      #   id: remove_drafts
-      #   continue-on-error: true
-      #   run:
-      #     gh release delete "Draft Latest version"
+      - name: Remove old Draft
+        id: remove_drafts
+        continue-on-error: true
+        run:
+          gh release delete "Draft Latest version"
 
-      # - name: Create Release Draft
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     name: "Draft Latest version"  
-      #     tag_name: "Draft Latest version"  
-      #     body_path: commits.md 
-      #     draft: true
+      - name: Create Release Draft
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "Draft Latest version"  
+          tag_name: "Draft Latest version"  
+          body_path: commits.md 
+          draft: true
