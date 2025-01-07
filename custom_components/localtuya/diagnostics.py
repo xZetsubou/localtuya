@@ -35,10 +35,10 @@ async def async_get_config_entry_diagnostics(
     for field in [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID]:
         data[field] = obfuscate(data[field])
     data[CONF_DEVICES] = copy.deepcopy(entry.data[CONF_DEVICES])
-    for dev_id, dev in data[CONF_DEVICES].items():
-        local_key = dev[CONF_LOCAL_KEY]
-        local_key_obfuscated = obfuscate(local_key)
-        dev[CONF_LOCAL_KEY] = local_key_obfuscated
+
+    for dev in data[CONF_DEVICES].values():
+        dev[CONF_LOCAL_KEY] = obfuscate(dev[CONF_LOCAL_KEY])
+
     data[CLOUD_DEVICES] = copy.deepcopy(tuya_api.device_list)
     for dev_id, dev in data[CLOUD_DEVICES].items():
         for obf, obf_len in DATA_OBFUSCATE.items():
@@ -62,9 +62,15 @@ async def async_get_device_diagnostics(
     tuya_api = hass_localtuya.cloud_data
     if dev_id in tuya_api.device_list:
         data[DEVICE_CLOUD_INFO] = copy.deepcopy(tuya_api.device_list[dev_id])
-        for obf, obf_len in DATA_OBFUSCATE.items():
-            if ob := data[DEVICE_CLOUD_INFO].get(obf):
-                data[DEVICE_CLOUD_INFO][obf] = obfuscate(ob, obf_len, obf_len)
+        data[DEVICE_CLOUD_INFO] = {
+            obf: (
+                obfuscate(dev, obf_len, obf_len)
+                if (dev := data[DEVICE_CLOUD_INFO].get(obf))
+                else None
+            )
+            for obf, obf_len in DATA_OBFUSCATE.items()
+        }
+
         # NOT censoring private information on device diagnostic data
         # local_key = data[DEVICE_CLOUD_INFO][CONF_LOCAL_KEY]
         # local_key_obfuscated = "{local_key[0:3]}...{local_key[-3:]}"
@@ -74,9 +80,8 @@ async def async_get_device_diagnostics(
     return data
 
 
-def obfuscate(key, start_characters=3, end_characters=3) -> str:
-    """Return obfuscated text by removing characters between [start_characters and end_characters]"""
-    if start_characters <= 0 and end_characters <= 0:
-        return ""
-
-    return f"{key[0:start_characters]}...{key[-end_characters:]}"
+def obfuscate(key: str, start_characters: int = 3, end_characters: int = 3) -> str:
+    """Obfuscate text by replacing middle characters with ellipsis."""
+    if len(key) <= start_characters + end_characters:
+        return key
+    return f"{key[:start_characters]}...{key[-end_characters:]}"
