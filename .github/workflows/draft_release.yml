@@ -62,25 +62,24 @@ jobs:
                     author_info=$(echo $line | awk -F"by @" '{print (NF>1)? $NF : ""}'| awk '{print $1}')
                     IFS=',' read -r name email mail_name <<< "$author_info"
 
-
-                    echo "author_info: $author_info"
+                    declare -A cache_nickname;
                     if [[ "$email" != *"noreply"* ]]; then
+                      if [[ -v cache_nickname[$email] ]]; then
+                        echo "User existed: cache_nickname[$email]"
+                      fi
                       username=$(curl --silent --fail \
                                 -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                                 "https://api.github.com/search/users?q=$email+in:email" \
                                 | jq -r '.items[0].login')
                       sed -i "s#$author_info#$username#g" "commits.md"
-                      echo "name $name -- email $email -- username $username"
-                      continue
+                      cache_nickname[$email] = true && continue
                     fi
 
                     if [[ "$email" =~ @?([0-9]+)\+([a-zA-Z]+) ]]; then
                       id="${BASH_REMATCH[1]}"; name="${BASH_REMATCH[2]}";
                       username=$name && [[ -n $id ]] && username=$name
-                      echo "Username: $username"
                       sed -i "s#$author_info#$username#g" "commits.md"
                     fi
-                    echo "------------------------------------------------------"
           done < commits.md
 
           
