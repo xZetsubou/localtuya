@@ -60,26 +60,24 @@ jobs:
           while IFS= read -r line; do
                     commit_hash=$(echo $line | awk '{print $1}')
                     author_info=$(echo $line | awk -F"by @" '{print (NF>1)? $NF : ""}'| awk '{print $1}')
-                    IFS=',' read -r name email third <<< "$author_info"
+                    IFS=',' read -r name email mail_name <<< "$author_info"
 
 
                     echo "author_info: $author_info"
                     if [[ "$email" != *"noreply"* ]]; then
-                      username=$(curl -s "https://api.github.com/search/users?q=$email+in:email" | jq -r '.items[0].login')
+                      username=$(curl --silent --fail \
+                                -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                                "https://api.github.com/search/users?q=$email+in:email" \
+                                | jq -r '.items[0].login)
                       sed -i "s#$author_info#$username#g" "commits.md"
                       echo "name $name -- email $email -- username $username"
                       continue
                     fi
 
-                    if [[ "$email" =~ @?([a-zA-Z]+)\-([0-9]+)?\+?([a-zA-Z]+) ]]; then
-                      name="${BASH_REMATCH[1]}"; id="${BASH_REMATCH[2]}"; mail_name="${BASH_REMATCH[3]}";
-                      username=$name && [[ -n $id ]] && username=$mail_name
-                      echo "name: $name"
-                      echo "author_info after: $author_info"
-                      echo "id: $id"
-                      echo "mail_name: $mail_name"
+                    if [[ "$email" =~ @?([0-9]+)\+([a-zA-Z]+) ]]; then
+                      id="${BASH_REMATCH[1]}"; name="${BASH_REMATCH[2]}"; ";
+                      username=$name && [[ -n $id ]] && username=$name
                       echo "Username: $username"
-                      echo "Username: $email"
                       sed -i "s#$author_info#$username#g" "commits.md"
                     fi
                     echo "------------------------------------------------------"
