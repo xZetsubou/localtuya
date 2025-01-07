@@ -88,7 +88,13 @@ async def async_setup_entry(
                 # Add DPS used by this platform to the request list
                 for dp_conf in dps_config_fields:
                     if dp_conf in entity_config:
-                        device.dps_to_request[entity_config[dp_conf]] = None
+                        # Ensure that the value used as a key is hashable (e.g., str or int)
+                        dp_key = entity_config[dp_conf]
+                        if isinstance(dp_key, dict):
+                            dp_key = dp_key.get(
+                                "id", ""
+                            )  # Adjust according to actual data structure
+                        device.dps_to_request[dp_key] = None
 
                 entities.append(
                     entity_class(
