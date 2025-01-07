@@ -54,9 +54,11 @@ class LocalTuyaSelect(LocalTuyaEntity, SelectEntity):
                 f"{self.name} DPiD: {self._dp_id}: Options configured incorrectly! It must be in the format of key-value pairs, where each line follows the structure [device_value: friendly name]"
             )
             config_options = {}
-        for k, v in config_options.items():
-            options_values.append(k)
-            options_display_name.append(v if v else k.replace("_", "").capitalize())
+        self._valid_options = list(config_options.keys())
+        self._display_options = [
+            v if v else k.replace("_", "").capitalize()
+            for k, v in config_options.items()
+        ]
 
         self._valid_options = options_values
         self._display_options = options_display_name
@@ -86,24 +88,25 @@ class LocalTuyaSelect(LocalTuyaEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Update the current value."""
-        option_value = self._valid_options[self._display_options.index(option)]
-        _LOGGER.debug("Sending Option: " + option + " -> " + option_value)
-        await self._device.set_dp(option_value, self._dp_id)
+        try:
+            option_value = self._valid_options[self._display_options.index(option)]
+            _LOGGER.debug("Sending Option: %s -> %s", option, option_value)
+            await self._device.set_dp(option_value, self._dp_id)
+        except ValueError:
+            _LOGGER.error("Invalid option selected: %s", option)
 
     def status_updated(self):
         """Device status was updated."""
         super().status_updated()
 
         state = self.dp_value(self._dp_id)
-
-        # Check that received status update for this entity.
         if state is not None:
-            try:
+            if state in self._valid_options:
                 self._state_friendly = self._display_options[
                     self._valid_options.index(state)
                 ]
-            except Exception:  # pylint: disable=broad-except
-                # Friendly value couldn't be mapped
+            else:
+                _LOGGER.warning("Unrecognized state received: %s", state)
                 self._state_friendly = state
 
     # Default value is the first option
