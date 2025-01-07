@@ -52,7 +52,10 @@ CONF_TUYA_GWID = "gwId"
 CONF_TUYA_VERSION = "version"
 
 # Status Payloads.
-RESTORE_STATES = {"0": "restore"}
+RESTORE_STATES = {
+    "0": "restore",
+    "1": "reset",
+}
 
 
 # config flow
@@ -217,7 +220,7 @@ class DeviceConfig:
         self.id: str = self.device_config[CONF_DEVICE_ID]
         self.host: str = self.device_config[CONF_HOST]
         self.local_key: str = self.device_config[CONF_LOCAL_KEY]
-        self.entities: list = self.device_config[CONF_ENTITIES]
+        self.entities: list[dict[str, Any]] = self.device_config[CONF_ENTITIES]
         self.protocol_version: str = self.device_config[CONF_PROTOCOL_VERSION]
         self.sleep_time: int = self.device_config.get(CONF_DEVICE_SLEEP_TIME, 0)
         self.scan_interval: int = self.device_config.get(CONF_SCAN_INTERVAL, 0)
