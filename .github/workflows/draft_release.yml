@@ -11,7 +11,6 @@ on:
     workflow_dispatch:
     branches:
       - master  # Adjust this to the branch you want to track
-      - fix_pr_author_name
 
 permissions:
   contents: write
@@ -82,7 +81,6 @@ jobs:
                     if [[ "$email" =~ (^[0-9]+)?\+?([a-zA-Z0-9]+)@ ]]; then
                       id="${BASH_REMATCH[1]}"; mail_name="${BASH_REMATCH[2]}";
                       username=$name && [[ -n $id ]] && username=$mail_name
-                      echo "username -- $username id -- $id mail_name -- $mail_name info: ---- $email"
                     fi
                     sed -i "s#$author_info#$username#g" "commits.md"
           done < commits.md
