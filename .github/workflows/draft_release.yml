@@ -82,6 +82,7 @@ jobs:
                     if [[ "$email" =~ @?([a-zA-Z]+[0-9]+)?([0-9]+())? ]]; then
                       mail_name="${BASH_REMATCH[1]}"; id="${BASH_REMATCH[2]}";
                       username=$name && [[ -n $id ]] && username=$mail_name
+                      echo "username -- $username id -- $id"
                       sed -i "s#$author_info#$username#g" "commits.md"
                     fi
           done < commits.md
@@ -136,16 +137,16 @@ jobs:
 
           echo -e $notes > commits.md
 
-      - name: Remove old Draft
-        id: remove_drafts
-        continue-on-error: true
-        run:
-          gh release delete "Draft Latest version"
+      # - name: Remove old Draft
+      #   id: remove_drafts
+      #   continue-on-error: true
+      #   run:
+      #     gh release delete "Draft Latest version"
 
-      - name: Create Release Draft
-        uses: softprops/action-gh-release@v1
-        with:
-          name: "Draft Latest version"  
-          tag_name: "Draft Latest version"  
-          body_path: commits.md 
-          draft: true
+      # - name: Create Release Draft
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     name: "Draft Latest version"  
+      #     tag_name: "Draft Latest version"  
+      #     body_path: commits.md 
+      #     draft: true
