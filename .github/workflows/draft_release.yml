@@ -65,16 +65,16 @@ jobs:
 
                     if [[ "$email" != *"noreply"* ]]; then
                       if [[ -v cache_nickname[$email] ]]; then
-                        echo "User existed: ${cache_nickname[$email]}"
-                        echo cache_nickname[$email]
+                        username="${cache_nickname[$email]}"
+                      else
+                        username=$(curl --silent --fail \
+                                  -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                                  "https://api.github.com/search/users?q=$email+in:email" \
+                                  | jq -r '.items[0].login')
+                                  cache_nickname[$email]=$username
                       fi
-                      username=$(curl --silent --fail \
-                                -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                                "https://api.github.com/search/users?q=$email+in:email" \
-                                | jq -r '.items[0].login')
                       sed -i "s#$author_info#$username#g" "commits.md"
-                      echo cache_nickname[$email]
-                      cache_nickname[$email]=$username && continue
+                      continue
                     fi
 
                     if [[ "$email" =~ @?([0-9]+)\+([a-zA-Z]+) ]]; then
@@ -134,16 +134,16 @@ jobs:
 
           echo -e $notes > commits.md
 
-      # - name: Remove old Draft
-      #   id: remove_drafts
-      #   continue-on-error: true
-      #   run:
-      #     gh release delete "Draft Latest version"
+      - name: Remove old Draft
+        id: remove_drafts
+        continue-on-error: true
+        run:
+          gh release delete "Draft Latest version"
 
-      # - name: Create Release Draft
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     name: "Draft Latest version"  
-      #     tag_name: "Draft Latest version"  
-      #     body_path: commits.md 
-      #     draft: true
+      - name: Create Release Draft
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "Draft Latest version"  
+          tag_name: "Draft Latest version"  
+          body_path: commits.md 
+          draft: true
