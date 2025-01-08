@@ -469,6 +469,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
                 states[self._config.get(CONF_COLOR_MODE)] = self._modes.color
 
         if ATTR_COLOR_TEMP_KELVIN in kwargs and ColorMode.COLOR_TEMP in color_modes:
+            self.error(f"ATTR_COLOR_TEMP_KELVIN: {ATTR_COLOR_TEMP_KELVIN}")
             if brightness is None:
                 brightness = self._brightness
             mired = int(kwargs[ATTR_COLOR_TEMP_KELVIN])

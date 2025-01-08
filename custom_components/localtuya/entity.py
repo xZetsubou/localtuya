@@ -88,13 +88,7 @@ async def async_setup_entry(
                 # Add DPS used by this platform to the request list
                 for dp_conf in dps_config_fields:
                     if dp_conf in entity_config:
-                        # Ensure that the value used as a key is hashable (e.g., str or int)
-                        dp_key = entity_config[dp_conf]
-                        if isinstance(dp_key, dict):
-                            dp_key = dp_key.get(
-                                "id", ""
-                            )  # Adjust according to actual data structure
-                        device.dps_to_request[dp_key] = None
+                        device.dps_to_request[entity_config[dp_conf]] = None
 
                 entities.append(
                     entity_class(
@@ -110,12 +104,10 @@ async def async_setup_entry(
 
 
 def get_dps_for_platform(flow_schema):
-    """Return configuration keys for platform-specific datapoints."""
-    return (
-        key.schema
-        for key, value in flow_schema(None).items()
-        if getattr(value, "container", None) is None
-    )
+    """Return config keys for all platform keys that depends on a datapoint."""
+    for key, value in flow_schema(None).items():
+        if hasattr(value, "container") and value.container is None:
+            yield key.schema
 
 
 def get_entity_config(config_entry, dp_id) -> dict:
@@ -274,28 +266,36 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         value = self._config.get(attr, "-1")
         return value is not None and value != "-1"
 
-    def dp_value(self, key, default=None) -> Any:
-        """Return cached DPS value or entity config value, fallback to default."""
+    def dp_value(self, key, default=None) -> Any | None:
+        """Return cached value for DPS index or Entity Config Key. else default None"""
         requested_dp = str(key)
-
-        value = self._status.get(requested_dp)
-        if value is not None:
+        # If requested_dp in DP ID, get cached value.
+        if (value := self._status.get(requested_dp)) or value is not None:
             return value
 
-        conf_key = self._config.get(requested_dp)
-        if conf_key is not None:
-            value = self._status.get(conf_key)
-            if value is not None:
+        # If requested_dp is an config key get config dp then get cached value.
+        if (conf_key := self._config.get(requested_dp)) or conf_key is not None:
+            if (value := self._status.get(conf_key)) or value is not None:
                 return value
 
-        return default
+        if value is None:
+            value = default
+            # self.debug(f"{self.name}: is requesting unknown DP Value {key}", force=True)
+
+        return value
 
     def status_updated(self) -> None:
-        """Update entity state when device status changes."""
-        if (state := self.dp_value(self._dp_id)) is not None:
-            self._state = state
-            if not self._device.is_connecting:
-                self._last_state = state
+        """Device status was updated.
+
+        Override in subclasses and update entity specific state.
+        """
+        state = self.dp_value(self._dp_id)
+        self._state = state
+
+        # Keep record in last_state as long as not during connection/re-connection,
+        # as last state will be used to restore the previous state
+        if (state is not None) and (not self._device.is_connecting):
+            self._last_state = state
 
     def status_restored(self, stored_state) -> None:
         """Device status was restored.
@@ -310,11 +310,21 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
             )
 
     def default_value(self):
-        """Return default value for the entity, fallback to entity-specific default."""
-        return self._default_value or self.entity_default_value()
+        """Return default value of this entity.
 
-    def entity_default_value(self) -> Any:
-        """Default value for this entity type. Can be overridden by subclasses."""
+        Override in subclasses to specify the default value for the entity.
+        """
+        # Check if default value has been set - if not, default to the entity defaults.
+        if self._default_value is None:
+            self._default_value = self.entity_default_value()
+
+        return self._default_value
+
+    def entity_default_value(self):  # pylint: disable=no-self-use
+        """Return default value of the entity type.
+
+        Override in subclasses to specify the default value for the entity.
+        """
         return 0
 
     def scale(self, value):
