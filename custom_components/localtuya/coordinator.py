@@ -142,6 +142,14 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
         return device_sleep > 0 and is_sleep
 
+    @property
+    def is_write_only(self):
+        """Return if this sub-device is BLE. We uses 0 in manual dps as mark for BLE devices.
+
+        NOTE: this may not be the best way to detect if this device is BLE
+        """
+        return self.is_subdevice and "0" in self._device_config.manual_dps.split(",")
+
     def add_entities(self, entities):
         """Set the entities associated with this device."""
         self._entities.extend(entities)
@@ -416,6 +424,10 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             payload, self._pending_status = self._pending_status.copy(), {}
             try:
                 await self._interface.set_dps(payload, cid=self._node_id)
+                # bluetooth devices usually does not send updated status payload.
+                # NOTE: This will override the status if the BLE device fails to receive the signal.
+                if self.is_write_only:
+                    self.status_updated(payload)
             except Exception as ex:  # pylint: disable=broad-except
                 self.debug(f"Failed to set values {payload} --> {ex}", force=True)
         elif not self.connected:
