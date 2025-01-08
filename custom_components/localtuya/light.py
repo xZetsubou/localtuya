@@ -209,7 +209,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         super().__init__(device, config_entry, lightid, _LOGGER, **kwargs)
         # Light is an active device (mains powered). It should be able
         # to respond at any time. But Tuya BLE bulbs are write-only.
-        self._write_only = self._device.is_ble
+        self._write_only = self._device.is_write_only
 
         self._state = None
         self._color_temp = None
@@ -246,14 +246,14 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
     def connection_made(self):
         """The connection has made with the device and status retrieved, Configure the entity based on its reserved status."""
         super().connection_made()
-        is_ble = self._write_only
+        is_write_only = self._write_only
 
         if self.has_config(CONF_SCENE):
             if (scenes := self._config.get(CONF_SCENE_VALUES, {})) and len(scenes):
                 self._scenes = {v: k for k, v in scenes.items()}
             else:
                 scene_value = self.dp_value(CONF_SCENE)
-                if is_ble and not scene_value:
+                if is_write_only and not scene_value:
                     self._scenes = SCENE_LIST_RGBW_BLE
                 elif scene_value and len(scene_value) <= 20:
                     self._scenes = SCENE_LIST_RGBW_255
@@ -267,14 +267,14 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
 
         if self.has_config(CONF_COLOR):
             color_data = self.dp_value(CONF_COLOR)
-            if is_ble and not color_data:
+            if is_write_only and not color_data:
                 self.__to_color = self.__to_color_raw
                 self.__from_color = self.__from_color_raw
             else:
                 self.__to_color = self.__to_color_common
                 self.__from_color = self.__from_color_common
 
-        if is_ble and self._cached_status:
+        if is_write_only and self._cached_status:
             self._status.update(self._cached_status)
 
     @property
