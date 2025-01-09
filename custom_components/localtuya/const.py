@@ -52,10 +52,7 @@ CONF_TUYA_GWID = "gwId"
 CONF_TUYA_VERSION = "version"
 
 # Status Payloads.
-RESTORE_STATES = {
-    "0": "restore",
-    "1": "reset",
-}
+RESTORE_STATES = {"0": "restore"}
 
 
 # config flow

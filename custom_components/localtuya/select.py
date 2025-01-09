@@ -88,12 +88,9 @@ class LocalTuyaSelect(LocalTuyaEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Update the current value."""
-        try:
-            option_value = self._valid_options[self._display_options.index(option)]
-            _LOGGER.debug("Sending Option: %s -> %s", option, option_value)
-            await self._device.set_dp(option_value, self._dp_id)
-        except ValueError:
-            _LOGGER.error("Invalid option selected: %s", option)
+        option_value = self._valid_options[self._display_options.index(option)]
+        _LOGGER.debug("Sending Option: " + option + " -> " + option_value)
+        await self._device.set_dp(option_value, self._dp_id)
 
     def status_updated(self):
         """Device status was updated."""

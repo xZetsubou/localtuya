@@ -132,14 +132,11 @@ class LocalTuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
 
     async def async_set_mode(self, mode):
         """Set new target preset mode."""
-        if not (set_mode_dp := self._config.get(self._dp_mode)):
-            _LOGGER.warning("Mode DP not configured for device.")
-            return
+        set_mode_dp = self._config.get(self._dp_mode, None)
+        if set_mode_dp is None:
+            return None
 
-        if (set_mode := self._mode_name_to_value.get(mode)) is None:
-            _LOGGER.warning("Invalid mode: %s", mode)
-            return
-
+        set_mode = self._mode_name_to_value.get(mode)
         await self._device.set_dp(set_mode, set_mode_dp)
 
     def status_updated(self):

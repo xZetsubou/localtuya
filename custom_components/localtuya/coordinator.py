@@ -573,11 +573,11 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         if self._fake_gateway:
             # Fake gateways are only used to pass commands no need to update status.
             return
-        self._last_update_time = time.time()
-        if status != self._status:
-            self._handle_event(self._status, status)
-            self._status.update(status)
-            self._dispatch_status()
+        self._last_update_time = int(time.time())
+
+        self._handle_event(self._status, status)
+        self._status.update(status)
+        self._dispatch_status()
 
     @callback
     def disconnected(self, exc=""):

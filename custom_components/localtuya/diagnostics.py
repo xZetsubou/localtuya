@@ -62,15 +62,9 @@ async def async_get_device_diagnostics(
     tuya_api = hass_localtuya.cloud_data
     if dev_id in tuya_api.device_list:
         data[DEVICE_CLOUD_INFO] = copy.deepcopy(tuya_api.device_list[dev_id])
-        data[DEVICE_CLOUD_INFO] = {
-            obf: (
-                obfuscate(dev, obf_len, obf_len)
-                if (dev := data[DEVICE_CLOUD_INFO].get(obf))
-                else None
-            )
-            for obf, obf_len in DATA_OBFUSCATE.items()
-        }
-
+        for obf, obf_len in DATA_OBFUSCATE.items():
+            if ob := data[DEVICE_CLOUD_INFO].get(obf):
+                data[DEVICE_CLOUD_INFO][obf] = obfuscate(ob, obf_len, obf_len)
         # NOT censoring private information on device diagnostic data
         # local_key = data[DEVICE_CLOUD_INFO][CONF_LOCAL_KEY]
         # local_key_obfuscated = "{local_key[0:3]}...{local_key[-3:]}"

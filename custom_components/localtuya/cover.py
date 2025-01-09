@@ -275,10 +275,7 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
 
         # Handle position update
         if self.has_config(CONF_CURRENT_POSITION_DP):
-            curr_pos = self.dp_value(CONF_CURRENT_POSITION_DP)
-            if curr_pos is None:
-                curr_pos = 0  # or an appropriate default value
-
+            curr_pos = self.dp_value(CONF_CURRENT_POSITION_DP, 0)
             self._position = 100 - curr_pos if self._position_inverted else curr_pos
 
         if (
