@@ -53,18 +53,36 @@ jobs:
       - name: Get commits from latest release to HEAD
         run: |
           git fetch --tags
-          git log ${{ env.latest_tag }}..HEAD --pretty=format:'%s by @%an-%ae in [`%h`](https://github.com/${{github.repository}}/commit/%H)' --reverse > commits.md
+          git log ${{ env.latest_tag }}..HEAD --pretty=format:'%s by @%an,%ae,%cL in [`%h`](https://github.com/${{github.repository}}/commit/%H)' --reverse > commits.md
           echo "" >> commits.md
 
+          declare -A cache_nickname;
           while IFS= read -r line; do
                     commit_hash=$(echo $line | awk '{print $1}')
-                    email=$(echo $line | awk -F"by @" '{print (NF>1)? $NF : ""}'| awk '{print $1}')
+                    author_info=$(echo $line | awk -F"by @" '{print (NF>1)? $NF : ""}'| awk '{print $1}')
+                    IFS=',' read -r name email mail_name <<< "$author_info"
 
-                    if [[ "$email" =~ @?([a-zA-Z]+)\-([0-9]+)?\+?([a-zA-Z]+) ]]; then
-                      name="${BASH_REMATCH[1]}"; id="${BASH_REMATCH[2]}"; mail_name="${BASH_REMATCH[3]}";
-                      username=$name && [[ -n $id ]] && username=$mail_name
-                      sed -i "s#$email#$username#g" "commits.md"
+                    if [[ "$email" != *"noreply"* ]]; then
+                      if [[ -v cache_nickname[$email] ]]; then
+                        username="${cache_nickname[$email]}"
+                      else
+                        username=$(curl --silent --fail \
+                                  -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                                  "https://api.github.com/search/users?q=$email+in:email" \
+                                  | jq -r '.items[0].login')
+                                  cache_nickname[$email]=$username
+                      fi
+                      if [[ $username != null ]]; then
+                        sed -i "s#$author_info#$username#g" "commits.md"
+                        continue
+                      fi
                     fi
+
+                    if [[ "$email" =~ (^[0-9]+)?\+?([a-zA-Z0-9]+)@ ]]; then
+                      id="${BASH_REMATCH[1]}"; mail_name="${BASH_REMATCH[2]}";
+                      username=$name && [[ -n $id ]] && username=$mail_name
+                    fi
+                    sed -i "s#$author_info#$username#g" "commits.md"
           done < commits.md
 
           
