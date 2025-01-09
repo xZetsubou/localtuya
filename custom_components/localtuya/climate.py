@@ -323,7 +323,6 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
             if self._hvac_mode == HVACMode.FAN_ONLY:
                 self._hvac_action = HVACAction.FAN
 
-        # This exists from upstream, not sure the use case of this.
         if self._config.get(CONF_HEURISTIC_ACTION, False):
             if self._hvac_mode == HVACMode.HEAT:
                 if self._current_temperature < (
