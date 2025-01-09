@@ -263,21 +263,20 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
                 self.debug("Restored cover position %s", self._current_cover_position)
 
     def status_updated(self):
-        """Update device status and handle position changes."""
+        """Device status was updated."""
         self._previous_state = self._state
         self._state = self.dp_value(self._dp_id)
-
-        # Update command cases
         if self._state and self._state.isupper():
-            self._open_cmd, self._close_cmd, self._stop_cmd = (
-                cmd.upper() for cmd in (self._open_cmd, self._close_cmd, self._stop_cmd)
-            )
+            self._open_cmd = self._open_cmd.upper()
+            self._close_cmd = self._close_cmd.upper()
+            self._stop_cmd = self._stop_cmd.upper()
 
-        # Handle position update
         if self.has_config(CONF_CURRENT_POSITION_DP):
-            curr_pos = self.dp_value(CONF_CURRENT_POSITION_DP, 0)
-            self._position = 100 - curr_pos if self._position_inverted else curr_pos
-
+            curr_pos = self.dp_value(CONF_CURRENT_POSITION_DP)
+            if self._position_inverted:
+                self._current_cover_position = 100 - curr_pos
+            else:
+                self._current_cover_position = curr_pos
         if (
             self._config[CONF_POSITIONING_MODE] == MODE_TIME_BASED
             and self._state != self._previous_state
@@ -309,23 +308,26 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
             self._last_state = self._state
 
     def update_state(self, action, position=None):
-        """Update cover current state and handle position-based actions."""
-        self._current_state_action = (
-            action if position is None else self._determine_action(position)
-        )
+        """Update cover current states."""
+        state = self._current_state_action
+        # using Commands.
+        if position is None:
+            self._current_state_action = action
+        # Set position cmd, check if target position weither close or open
+        if action == STATE_SET_CMD and position is not None:
+            curr_pos = self.current_cover_position
+            self._set_new_position = position
+            pos_diff = position - curr_pos
+            # Prevent stuck state when interrupted on middle of cmd
+            if state == STATE_STOPPED:
+                if pos_diff > 0:
+                    self._current_state_action = STATE_SET_OPENING
+                elif pos_diff < 0:
+                    self._current_state_action = STATE_SET_CLOSING
+            else:
+                self._current_state_action = STATE_STOPPED
+        # Write state data.
         self.async_write_ha_state()
-
-    def _determine_action(self, position):
-        """Determine cover action based on position difference."""
-        curr_pos = self.current_cover_position
-        self._set_new_position = position
-        pos_diff = position - curr_pos
-        if self._current_state_action == STATE_STOPPED:
-            if pos_diff > 0:
-                return STATE_SET_OPENING
-            elif pos_diff < 0:
-                return STATE_SET_CLOSING
-        return STATE_STOPPED
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaCover, flow_schema)
