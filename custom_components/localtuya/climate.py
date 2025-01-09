@@ -115,7 +115,6 @@ SUPPORTED_TEMPERATURES = {
     f"Target Temperature: {UnitOfTemperature.CELSIUS} | Current Temperature {UnitOfTemperature.FAHRENHEIT}": SupportedTemps.C_F,
     f"Target Temperature: {UnitOfTemperature.FAHRENHEIT} | Current Temperature {UnitOfTemperature.CELSIUS}": SupportedTemps.F_C,
 }
-SUPPORTED_PRECISIONS = [0.01, PRECISION_TENTHS, PRECISION_HALVES, PRECISION_WHOLE]
 
 DEFAULT_TEMPERATURE_UNIT = SupportedTemps.C
 DEFAULT_PRECISION = PRECISION_TENTHS
@@ -137,11 +136,11 @@ def flow_schema(dps):
         vol.Optional(CONF_MIN_TEMP, default=DEFAULT_MIN_TEMP): vol.Coerce(float),
         vol.Optional(CONF_MAX_TEMP, default=DEFAULT_MAX_TEMP): vol.Coerce(float),
         vol.Optional(CONF_PRECISION, default=str(DEFAULT_PRECISION)): col_to_select(
-            SUPPORTED_PRECISIONS
+            [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
         vol.Optional(
             CONF_TARGET_PRECISION, default=str(DEFAULT_PRECISION)
-        ): col_to_select(SUPPORTED_PRECISIONS),
+        ): col_to_select([PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]),
         vol.Optional(CONF_HVAC_MODE_DP): col_to_select(dps, is_dps=True),
         vol.Optional(
             CONF_HVAC_MODE_SET, default=HVAC_MODE_SETS
@@ -320,25 +319,47 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
                 self._hvac_action = HVACAction.HEATING
             if self._hvac_mode == HVACMode.DRY:
                 self._hvac_action = HVACAction.DRYING
+            if self._hvac_mode == HVACMode.FAN_ONLY:
+                self._hvac_action = HVACAction.FAN
 
-        # This exists from upstream, not sure the use case of this.
+        # This feature calculates HVAC Action (from HVACMode and target/current temperatures) if the device is unable to do it. 
+        # Useful when you operate real device, like air-vales, heater, cooler, etc.
         if self._config.get(CONF_HEURISTIC_ACTION, False):
             if self._hvac_mode == HVACMode.HEAT:
                 if self._current_temperature < (
                     self._target_temperature - self._precision
                 ):
-                    self._hvac_action = HVACMode.HEAT
-                if self._current_temperature == (
-                    self._target_temperature - self._precision
-                ):
-                    if self._hvac_action == HVACMode.HEAT:
-                        self._hvac_action = HVACMode.HEAT
-                    if self._hvac_action == HVACAction.IDLE:
-                        self._hvac_action = HVACAction.IDLE
+                    self._hvac_action = HVACAction.HEATING
                 if (
                     self._current_temperature + self._precision
                 ) > self._target_temperature:
                     self._hvac_action = HVACAction.IDLE
+            if self._hvac_mode == HVACMode.COOL:
+                if self._current_temperature > (
+                    self._target_temperature - self._precision
+                ):
+                    self._hvac_action = HVACAction.COOLING
+                if (
+                    self._current_temperature + self._precision
+                ) < self._target_temperature:
+                    self._hvac_action = HVACAction.IDLE
+            if self._hvac_mode == HVACMode.HEAT_COOL:
+                if self._current_temperature < (
+                    self._target_temperature - self._precision
+                ):
+                    self._hvac_action = HVACAction.HEATING
+                if self._current_temperature == (
+                    self._target_temperature - self._precision
+                ):
+                    self._hvac_action = HVACAction.IDLE
+                if (
+                    self._current_temperature + self._precision
+                ) > self._target_temperature:
+                    self._hvac_action = HVACAction.COOLING
+            if self._hvac_mode == HVACMode.DRY:
+                self._hvac_action = HVACAction.DRYING
+            if self._hvac_mode == HVACMode.FAN_ONLY:
+                self._hvac_action = HVACAction.FAN
             return self._hvac_action
         return self._hvac_action
 
