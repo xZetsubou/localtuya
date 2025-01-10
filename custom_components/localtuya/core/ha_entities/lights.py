@@ -7,9 +7,10 @@
 """
 
 from typing import Any
-from .base import DPCode, LocalTuyaEntity, EntityCategory, CLOUD_VALUE
-from homeassistant.const import CONF_BRIGHTNESS, CONF_COLOR_TEMP, CONF_SCENE
 
+from homeassistant.const import CONF_BRIGHTNESS
+
+from .base import DPCode, LocalTuyaEntity, EntityCategory, CLOUD_VALUE
 from ...const import (
     CONF_BRIGHTNESS_LOWER,
     CONF_BRIGHTNESS_UPPER,

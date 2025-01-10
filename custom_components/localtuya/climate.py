@@ -2,11 +2,8 @@
     # PRESETS and HVAC_MODE Needs to be handle in better way.
 """
 
-import asyncio
 import logging
 from functools import partial
-from .config_flow import col_to_select
-from homeassistant.helpers import selector
 
 import voluptuous as vol
 from homeassistant.components.climate import (
@@ -32,8 +29,9 @@ from homeassistant.const import (
     PRECISION_WHOLE,
     UnitOfTemperature,
 )
-from homeassistant.util.unit_system import US_CUSTOMARY_SYSTEM
-from .entity import LocalTuyaEntity, async_setup_entry
+from homeassistant.helpers import selector
+
+from .config_flow import col_to_select
 from .const import (
     CONF_CURRENT_TEMPERATURE_DP,
     CONF_ECO_DP,
@@ -55,6 +53,7 @@ from .const import (
     CONF_FAN_SPEED_DP,
     CONF_FAN_SPEED_LIST,
 )
+from .entity import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 

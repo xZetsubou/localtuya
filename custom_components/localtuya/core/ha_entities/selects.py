@@ -9,7 +9,6 @@
 from .base import (
     DPCode,
     LocalTuyaEntity,
-    CONF_DEVICE_CLASS,
     EntityCategory,
     CLOUD_VALUE,
 )

@@ -5,7 +5,7 @@
     Modified by: xZetsubou
 """
 
-from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
+from .base import DPCode, LocalTuyaEntity, EntityCategory
 
 BUTTONS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # Scene Switch

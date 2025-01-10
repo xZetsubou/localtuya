@@ -2,8 +2,6 @@
 
 import logging
 from functools import partial
-from .config_flow import col_to_select
-from homeassistant.helpers import selector
 
 import voluptuous as vol
 from homeassistant.components.water_heater import (
@@ -13,14 +11,6 @@ from homeassistant.components.water_heater import (
     WaterHeaterEntity,
     WaterHeaterEntityFeature,
 )
-from homeassistant.components.water_heater.const import (
-    STATE_ECO,
-    STATE_ELECTRIC,
-    STATE_PERFORMANCE,
-    STATE_HIGH_DEMAND,
-    STATE_HEAT_PUMP,
-    STATE_GAS,
-)
 from homeassistant.const import (
     ATTR_TEMPERATURE,
     CONF_TEMPERATURE_UNIT,
@@ -29,7 +19,9 @@ from homeassistant.const import (
     PRECISION_WHOLE,
     UnitOfTemperature,
 )
-from .entity import LocalTuyaEntity, async_setup_entry
+from homeassistant.helpers import selector
+
+from .config_flow import col_to_select
 from .const import (
     CONF_TARGET_TEMPERATURE_DP,
     CONF_CURRENT_TEMPERATURE_DP,
@@ -42,6 +34,7 @@ from .const import (
     CONF_TARGET_TEMPERATURE_LOW_DP,
     CONF_TARGET_TEMPERATURE_HIGH_DP,
 )
+from .entity import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -9,10 +9,6 @@
 from homeassistant.components.climate import (
     HVACMode,
     HVACAction,
-    DEFAULT_MAX_TEMP,
-    DEFAULT_MIN_TEMP,
-    ATTR_MAX_TEMP,
-    ATTR_MIN_TEMP,
 )
 from homeassistant.const import CONF_TEMPERATURE_UNIT
 
@@ -35,7 +31,6 @@ from ...const import (
     CONF_TARGET_TEMPERATURE_DP,
     CONF_PRESET_DP,
 )
-
 
 UNIT_C = "celsius"
 UNIT_F = "fahrenheit"

@@ -8,12 +8,9 @@
 
 from homeassistant.components.sensor import SensorStateClass, SensorDeviceClass
 from homeassistant.const import (
-    PERCENTAGE,
-    UnitOfTime,
     UnitOfPower,
     PERCENTAGE,
     UnitOfElectricCurrent,
-    UnitOfElectricPotential,
     UnitOfTime,
     CONF_UNIT_OF_MEASUREMENT,
     UnitOfTemperature,

@@ -5,14 +5,13 @@
     Modified by: xZetsubou
 """
 
+from homeassistant.components.fan import DIRECTION_FORWARD, DIRECTION_REVERSE
+
 from .base import (
     DPCode,
     LocalTuyaEntity,
-    CONF_DEVICE_CLASS,
-    EntityCategory,
     CLOUD_VALUE,
 )
-from homeassistant.components.fan import DIRECTION_FORWARD, DIRECTION_REVERSE
 
 # from const.py this is temporarily
 CONF_FAN_SPEED_CONTROL = "fan_speed_control"

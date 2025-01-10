@@ -1,33 +1,23 @@
 """Tuya Device API"""
 
 from __future__ import annotations
+
 import asyncio
 import errno
 import logging
 import time
 from datetime import timedelta
 from typing import Any, NamedTuple
-from functools import partial
 
-
-from homeassistant.core import HomeAssistant, CALLBACK_TYPE, callback, State
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_ID, CONF_DEVICES, CONF_HOST, CONF_DEVICE_ID
-from homeassistant.helpers.event import async_track_time_interval, async_call_later
+from homeassistant.const import CONF_DEVICES, CONF_HOST, CONF_DEVICE_ID
+from homeassistant.core import HomeAssistant, CALLBACK_TYPE, callback
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
-    async_dispatcher_send,
     dispatcher_send,
 )
+from homeassistant.helpers.event import async_track_time_interval
 
-from .core import pytuya
-from .core.cloud_api import TuyaCloudApi
-from .core.pytuya import (
-    HEARTBEAT_INTERVAL,
-    TuyaListener,
-    ContextualLogger,
-    SubdeviceState,
-)
 from .const import (
     ATTR_UPDATED_AT,
     CONF_GATEWAY_ID,
@@ -38,6 +28,14 @@ from .const import (
     DOMAIN,
     DeviceConfig,
     RESTORE_STATES,
+)
+from .core import pytuya
+from .core.cloud_api import TuyaCloudApi
+from .core.pytuya import (
+    HEARTBEAT_INTERVAL,
+    TuyaListener,
+    ContextualLogger,
+    SubdeviceState,
 )
 
 _LOGGER = logging.getLogger(__name__)

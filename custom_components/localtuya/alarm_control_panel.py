@@ -1,12 +1,10 @@
 """Platform to present any Tuya DP as a Alarm."""
 
-from enum import StrEnum
 import logging
+from enum import StrEnum
 from functools import partial
-from .config_flow import col_to_select
 
 import voluptuous as vol
-from homeassistant.helpers import selector
 from homeassistant.components.alarm_control_panel import (
     DOMAIN,
     AlarmControlPanelEntity,
@@ -14,9 +12,10 @@ from homeassistant.components.alarm_control_panel import (
     AlarmControlPanelEntityFeature,
     AlarmControlPanelState,
 )
+from homeassistant.helpers import selector
 
-from .entity import LocalTuyaEntity, async_setup_entry
 from .const import CONF_ALARM_SUPPORTED_STATES
+from .entity import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 

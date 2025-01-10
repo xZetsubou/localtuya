@@ -2,17 +2,12 @@
 
 import logging
 from functools import partial
-from .config_flow import col_to_select
-from homeassistant.helpers import selector
 
 import voluptuous as vol
-from homeassistant.const import CONF_DEVICE_CLASS
 from homeassistant.components.humidifier import (
     DOMAIN,
-    HumidifierDeviceClass,
     DEVICE_CLASSES_SCHEMA,
     HumidifierEntity,
-    HumidifierEntityDescription,
     HumidifierEntityFeature,
 )
 from homeassistant.components.humidifier.const import (
@@ -21,6 +16,10 @@ from homeassistant.components.humidifier.const import (
     DEFAULT_MAX_HUMIDITY,
     DEFAULT_MIN_HUMIDITY,
 )
+from homeassistant.const import CONF_DEVICE_CLASS
+from homeassistant.helpers import selector
+
+from .config_flow import col_to_select
 
 CONF_HUMIDIFIER_SET_HUMIDITY_DP = "humidifier_set_humidity_dp"
 CONF_HUMIDIFIER_CURRENT_HUMIDITY_DP = "humidifier_current_humidity_dp"

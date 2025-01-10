@@ -4,23 +4,17 @@ import asyncio
 import errno
 import logging
 import time
-from importlib import import_module
-from functools import partial
 from collections.abc import Coroutine
-from typing import Any
 from copy import deepcopy
-
+from functools import partial
+from importlib import import_module
+from typing import Any
 
 import homeassistant.helpers.config_validation as cv
 import homeassistant.helpers.entity_registry as er
-from homeassistant.helpers.selector import (
-    SelectSelector,
-    SelectSelectorConfig,
-    SelectSelectorMode,
-    SelectOptionDict,
-)
 import voluptuous as vol
 from homeassistant import exceptions
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
 from homeassistant.const import (
     CONF_CLIENT_ID,
     CONF_CLIENT_SECRET,
@@ -40,12 +34,13 @@ from homeassistant.const import (
     EntityCategory,
 )
 from homeassistant.core import callback, HomeAssistant
-from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
-from markdown_it.common.entities import entities
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+    SelectOptionDict,
+)
 
-from .coordinator import pytuya, TuyaCloudApi
-from .core.cloud_api import TUYA_ENDPOINTS
-from .core.helpers import templates, get_gateway_by_deviceid, gen_localtuya_entities
 from .const import (
     ATTR_UPDATED_AT,
     CONF_ADD_DEVICE,
@@ -76,6 +71,9 @@ from .const import (
     SUPPORTED_PROTOCOL_VERSIONS,
     CONF_DEVICE_SLEEP_TIME,
 )
+from .coordinator import pytuya, TuyaCloudApi
+from .core.cloud_api import TUYA_ENDPOINTS
+from .core.helpers import templates, get_gateway_by_deviceid, gen_localtuya_entities
 from .discovery import discover
 
 _LOGGER = logging.getLogger(__name__)

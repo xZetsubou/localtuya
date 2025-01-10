@@ -14,8 +14,6 @@ from homeassistant.const import CONF_TEMPERATURE_UNIT
 
 from .base import DPCode, LocalTuyaEntity, CLOUD_VALUE
 from ...const import (
-    CONF_TARGET_TEMPERATURE_LOW_DP,
-    CONF_TARGET_TEMPERATURE_HIGH_DP,
     CONF_PRECISION,
     CONF_TARGET_PRECISION,
     CONF_CURRENT_TEMPERATURE_DP,
@@ -25,7 +23,6 @@ from ...const import (
     CONF_MODES,
     CONF_MODE_DP,
 )
-
 
 UNIT_C = "celsius"
 UNIT_F = "fahrenheit"

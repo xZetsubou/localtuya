@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from typing import Any
+
 from homeassistant.const import (
     CONF_DEVICE_ID,
     CONF_ENTITIES,

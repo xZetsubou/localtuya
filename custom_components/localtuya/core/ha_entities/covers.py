@@ -5,8 +5,9 @@
     Modified by: xZetsubou
 """
 
-from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
 from homeassistant.components.cover import CoverDeviceClass
+
+from .base import DPCode, LocalTuyaEntity
 
 # from const.py this is temporarily.
 CONF_COMMANDS_SET = "commands_set"

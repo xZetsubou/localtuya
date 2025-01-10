@@ -2,24 +2,22 @@
 
 import logging
 from functools import partial
-from .config_flow import col_to_select
 
 import voluptuous as vol
 from homeassistant.components.sensor import (
     DEVICE_CLASSES_SCHEMA,
     DOMAIN,
-    STATE_CLASSES_SCHEMA,
     SensorStateClass,
     SensorEntity,
 )
 from homeassistant.const import (
     CONF_DEVICE_CLASS,
     CONF_UNIT_OF_MEASUREMENT,
-    STATE_UNKNOWN,
 )
 
-from .entity import LocalTuyaEntity, async_setup_entry
+from .config_flow import col_to_select
 from .const import CONF_SCALING, CONF_STATE_CLASS
+from .entity import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 

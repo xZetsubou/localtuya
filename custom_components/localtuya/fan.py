@@ -3,7 +3,6 @@
 import logging
 import math
 from functools import partial
-from .config_flow import col_to_select
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
@@ -22,18 +21,18 @@ from homeassistant.util.percentage import (
     ranged_value_to_percentage,
 )
 
-from .entity import LocalTuyaEntity, async_setup_entry
+from .config_flow import col_to_select
 from .const import (
     CONF_FAN_DIRECTION,
     CONF_FAN_DIRECTION_FWD,
     CONF_FAN_DIRECTION_REV,
-    CONF_FAN_DPS_TYPE,
     CONF_FAN_ORDERED_LIST,
     CONF_FAN_OSCILLATING_CONTROL,
     CONF_FAN_SPEED_CONTROL,
     CONF_FAN_SPEED_MAX,
     CONF_FAN_SPEED_MIN,
 )
+from .entity import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 

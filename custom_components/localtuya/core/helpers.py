@@ -2,16 +2,14 @@
 Helpers functions for HASS-LocalTuya.
 """
 
-import asyncio
 import logging
 import os.path
 from enum import Enum
 from fnmatch import fnmatch
 from typing import NamedTuple
 
-from homeassistant.util.yaml import load_yaml, dump
 from homeassistant.const import CONF_PLATFORM, CONF_ENTITIES
-
+from homeassistant.util.yaml import load_yaml, dump
 
 import custom_components.localtuya.templates as templates_dir
 
@@ -113,4 +111,3 @@ def get_gateway_by_deviceid(device_id: str, cloud_data: dict) -> GATEWAY:
 ###############################
 #    Auto configure device    #
 ###############################
-from .ha_entities import gen_localtuya_entities

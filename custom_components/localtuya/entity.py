@@ -3,9 +3,7 @@
 import logging
 from typing import Any
 
-from homeassistant.core import HomeAssistant, State
 from homeassistant.config_entries import ConfigEntry
-
 from homeassistant.const import (
     CONF_DEVICES,
     CONF_DEVICE_CLASS,
@@ -14,24 +12,21 @@ from homeassistant.const import (
     CONF_FRIENDLY_NAME,
     CONF_HOST,
     CONF_ICON,
-    CONF_ID,
     CONF_PLATFORM,
     EntityCategory,
     STATE_UNAVAILABLE,
     STATE_UNKNOWN,
     ATTR_VIA_DEVICE,
 )
+from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
 )
-
-from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.restore_state import RestoreEntity
 
-from .core import pytuya
-from .coordinator import HassLocalTuyaData, TuyaDevice
 from .const import (
     ATTR_STATE,
     CONF_DEFAULT_VALUE,
@@ -44,6 +39,8 @@ from .const import (
     RESTORE_STATES,
     DeviceConfig,
 )
+from .coordinator import HassLocalTuyaData, TuyaDevice
+from .core import pytuya
 
 _LOGGER = logging.getLogger(__name__)
 
