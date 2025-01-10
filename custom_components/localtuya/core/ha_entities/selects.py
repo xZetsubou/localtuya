@@ -531,7 +531,7 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
             name="Record Mode",
             custom_configs=localtuya_selector(
-                {"1": "Record Events Only", "2": "Allways Record"}
+                {"1": "Record Events Only", "2": "Always Record"}
             ),
         ),
         LocalTuyaEntity(
@@ -710,7 +710,7 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Direction",
             custom_configs=localtuya_selector(
                 {
-                    "foward": "Forward",
+                    "forward": "Forward",
                     "backward": "Backward",
                     "turn_left": "Left",
                     "turn_right": "Right",
@@ -811,7 +811,7 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
             icon="mdi:cog-transfer",
             custom_configs=localtuya_selector(
-                {"contiuation": "Auto", "point": "Manual"}
+                {"continuation": "Auto", "point": "Manual"}
             ),
         ),
         LocalTuyaEntity(

@@ -170,7 +170,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             raise ServiceValidationError(f"Remote {self.entity_id} is turned off")
 
         now, timeout = 0, kwargs.get(ATTR_TIMEOUT, 30)
-        sucess = False
+        success = False
 
         device = kwargs.get(ATTR_DEVICE)
         commands = kwargs.get(ATTR_COMMAND)
@@ -204,14 +204,14 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
                             and dp_code is not None
                         ):
                             self._last_code = dp_code
-                            sucess = True
+                            success = True
                             await self.send_signal(ControlMode.STUDY_EXIT)
                             break
 
                         now += 1
                         await asyncio.sleep(1)
 
-                    if not sucess:
+                    if not success:
                         await self.send_signal(ControlMode.STUDY_EXIT)
                         raise ServiceValidationError(f"Failed to learn: {command}")
 
@@ -220,7 +220,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
                         self.hass, notification_id="learn_command"
                     )
 
-                # code retrive sucess and it's sotred in self._last_code
+                # code retrieve success and it's sorted in self._last_code
                 # we will store the codes.
                 await self._save_new_command(device, command, self._last_code)
 

@@ -23,7 +23,7 @@ class CLOUD_VALUE:
     `value_key(str)`: The "key" name of the targeted value.\n
     `prefer_type`: Convert values
             Integer: Type(value) ( int, float or str ).\n
-            Enums: convert the values to [dict or str splitted by comma, default is list].\n
+            Enums: convert the values to [dict or str split by comma, default is list].\n
     `remap_values(dict)`: Used to remap dict values, if prefer_type is dict.\n
     `reverse_dict(bool)`: Reverse dict keys, value, if prefer_type is dict.\n
     `scale(bool)`: For integers, scale final value.\n

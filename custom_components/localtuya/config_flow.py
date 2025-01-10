@@ -41,6 +41,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback, HomeAssistant
 from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
+from markdown_it.common.entities import entities
 
 from .coordinator import pytuya, TuyaCloudApi
 from .core.cloud_api import TUYA_ENDPOINTS
@@ -337,7 +338,7 @@ class LocalTuyaOptionsFlowHandler(OptionsFlow):
                     for fail_dev in fails.values():
                         devices_fails += f"\n{fail_dev['name']}: {fail_dev['reason']}"
 
-                    msg = f"Sucessed devices: ``{len(devices)}``\n ```{devices_sucessed}\n```"
+                    msg = f"Succeeded devices: ``{len(devices)}``\n ```{devices_sucessed}\n```"
                     if fails:
                         msg += f" \n Failed devices: ``{len(fails)}``\n ```{devices_fails}\n```"
 
@@ -610,7 +611,7 @@ class LocalTuyaOptionsFlowHandler(OptionsFlow):
         errors = {}
         placeholders = {}
 
-        # Gather the informations
+        # Gather the information
         is_cloud = not self.config_entry.data.get(CONF_NO_CLOUD)
         dev_id = self.selected_device
         category = None
@@ -750,8 +751,8 @@ class LocalTuyaOptionsFlowHandler(OptionsFlow):
                     dev_id = self.device_data[CONF_DEVICE_ID]
                     new_data = self.config_entry.data.copy()
                     entry_id = self.config_entry.entry_id
-                    # Removing the unwanted entites.
-                    entitesNames = [
+                    # Removing the unwanted entities.
+                    entities_names = [
                         name.get(CONF_FRIENDLY_NAME)
                         for name in self.device_data[CONF_ENTITIES]
                     ]
@@ -760,7 +761,7 @@ class LocalTuyaOptionsFlowHandler(OptionsFlow):
                         ent.unique_id: ent.entity_id
                         for ent in er.async_entries_for_config_entry(ent_reg, entry_id)
                         if dev_id in ent.unique_id
-                        and ent.original_name not in entitesNames
+                        and ent.original_name not in entities_names
                     }
                     for entity_id in reg_entities.values():
                         ent_reg.async_remove(entity_id)
@@ -1315,7 +1316,7 @@ async def validate_input(hass: HomeAssistant, entry_id, data):
     # won't work in this case
     if not bypass_connection and error:
         raise error
-    # If bypass handshake. otherwise raise faild to make handshake with device.
+    # If bypass handshake. otherwise raise failed to make handshake with device.
     # --- Cloud: We will use the DPS found on cloud if exists.
     # --- No cloud: user will have to input the DPS manually.
     if not detected_dps_device and not (
