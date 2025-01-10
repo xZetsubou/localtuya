@@ -28,4 +28,4 @@ jobs:
         python -m pip install --upgrade setuptools pip
         python -m pip install tox-gh-actions
     - name: Run tox
-      run: tox -q -p auto
+      run: tox
