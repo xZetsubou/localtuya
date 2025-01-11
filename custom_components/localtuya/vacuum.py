@@ -144,7 +144,7 @@ class LocalTuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
         return supported_features
 
     @property
-    def state(self):
+    def activity(self) -> VacuumActivity | None:
         """Return the vacuum state."""
         return self._state
 
@@ -222,9 +222,9 @@ class LocalTuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
 
     def status_updated(self):
         """Device status was updated."""
-        state_value = str(self.dp_value(self._dp_id))
+        state_value = self.dp_value(self._dp_id)
 
-        if state_value == "None":
+        if state_value is None:
             self._state = None
         elif state_value in self._idle_status_list:
             self._state = VacuumActivity.IDLE
