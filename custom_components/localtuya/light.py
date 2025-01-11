@@ -11,14 +11,14 @@ from functools import partial
 from homeassistant.helpers import selector
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
-    ATTR_COLOR_TEMP,
-    ATTR_WHITE,
+    ATTR_COLOR_TEMP_KELVIN,
     ATTR_EFFECT,
     ATTR_HS_COLOR,
-    DOMAIN,
-    LightEntityFeature,
+    ATTR_WHITE,
     ColorMode,
+    DOMAIN,
     LightEntity,
+    LightEntityFeature,
 )
 from homeassistant.const import CONF_BRIGHTNESS, CONF_COLOR_TEMP, CONF_SCENE
 
@@ -44,7 +44,7 @@ DEFAULT_MAX_KELVIN = 6500  # MIRED 153
 
 DEFAULT_COLOR_TEMP_REVERSE = False
 
-DEFAULT_LOWER_BRIGHTNESS = 29
+DEFAULT_LOWER_BRIGHTNESS = 10
 DEFAULT_UPPER_BRIGHTNESS = 1000
 
 MODE_MANUAL = "manual"
@@ -160,12 +160,24 @@ class Mode:
 MAP_MODE_SET = {0: Mode(), 1: Mode(color=MODE_MANUAL)}
 
 
-def map_range(value, from_lower, from_upper, to_lower=0, to_upper=255, reverse=False):
-    """Map a value in one range to another."""
+def map_range(
+    value: int, from_min: int, from_max: int, to_min=0, to_max=255, reverse=False
+):
+    """Maps a value from one range to another."""
+
     if reverse:
-        value = from_upper - value + from_lower
-    mapped = value * to_upper / from_upper
-    return min(max(round(mapped), to_lower), to_upper)
+        value = from_max - (value + from_min)
+
+    scale = (to_max - to_min) / (from_max - from_min)
+    mapped_value = to_min + (value - from_min) * scale
+
+    return min(max(round(mapped_value), to_min), to_max)
+
+
+def map_value_by_percent(value: int, value_max: int, target_max: int, percentage=100):
+    """Convert a value from one range to another based on percentage."""
+    raw_percent = (value / value_max) * percentage
+    return round((raw_percent / percentage) * target_max)
 
 
 def flow_schema(dps):
@@ -221,15 +233,8 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         )
         self._brightness = None if not self._write_only else self._upper_brightness
         self._upper_color_temp = self._upper_brightness
-        self._min_kelvin = int(
-            self._config.get(CONF_COLOR_TEMP_MIN_KELVIN, DEFAULT_MIN_KELVIN)
-        )
-        self._max_kelvin = int(
-            self._config.get(CONF_COLOR_TEMP_MAX_KELVIN, DEFAULT_MAX_KELVIN)
-        )
-        self._color_temp_reverse = self._config.get(
-            CONF_COLOR_TEMP_REVERSE, DEFAULT_COLOR_TEMP_REVERSE
-        )
+
+        self._color_temp_reverse = self._config.get(CONF_COLOR_TEMP_REVERSE, False)
         self._modes = MAP_MODE_SET[int(self._config.get(CONF_COLOR_MODE_SET, 0))]
         self._hs = None
         self._effect = None
@@ -239,6 +244,13 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
 
         if self._config.get(CONF_MUSIC_MODE):
             self._effect_list.append(SCENE_MUSIC)
+
+        self._attr_min_color_temp_kelvin = int(
+            self._config.get(CONF_COLOR_TEMP_MIN_KELVIN, DEFAULT_MIN_KELVIN)
+        )
+        self._attr_max_color_temp_kelvin = int(
+            self._config.get(CONF_COLOR_TEMP_MAX_KELVIN, DEFAULT_MAX_KELVIN)
+        )
 
         self.__to_color = self.__to_color_common
         self.__from_color = self.__from_color_common
@@ -304,18 +316,8 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         """Return the brightness of the light."""
         brightness = self._brightness
         if brightness is not None and (self.is_color_mode or self.is_white_mode):
-            if self._upper_brightness >= 1000:
-                # Round to the nearest 10th, since Tuya does that.
-                # If the value is less than 5, it will round down to 0.
-                # So instead, we take _lower_brightness, which is < 5 in this case.
-                brightness = (
-                    (brightness + 5) // 10 * 10
-                    if brightness >= 5
-                    else self._lower_brightness
-                )
-            return map_range(
-                brightness, self._lower_brightness, self._upper_brightness, 0, 255
-            )
+            return map_value_by_percent(brightness, self._upper_brightness, 255)
+
         return None
 
     @property
@@ -331,34 +333,17 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         return None
 
     @property
-    def color_temp(self):
+    def color_temp_kelvin(self):
         """Return the color_temp of the light."""
-        if self._color_temp is None:
-            return None
-        if self.has_config(CONF_COLOR_TEMP):
-            color_temp = (
-                self._upper_color_temp - self._color_temp
-                if self._color_temp_reverse
-                else self._color_temp
+        if self._color_temp is not None:
+            return map_range(
+                self._color_temp,
+                self._lower_brightness,
+                self._upper_brightness,
+                self.min_color_temp_kelvin,
+                self.max_color_temp_kelvin,
+                self._color_temp_reverse,
             )
-            return int(
-                self.max_mireds
-                - (
-                    ((self.max_mireds - self.min_mireds) / self._upper_color_temp)
-                    * color_temp
-                )
-            )
-        return None
-
-    @property
-    def min_mireds(self):
-        """Return color temperature min mireds."""
-        return color_util.color_temperature_kelvin_to_mired(self._max_kelvin)
-
-    @property
-    def max_mireds(self):
-        """Return color temperature max mireds."""
-        return color_util.color_temperature_kelvin_to_mired(self._min_kelvin)
 
     @property
     def effect(self):
@@ -579,12 +564,9 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             or self.has_config(CONF_BRIGHTNESS)
             or self.has_config(CONF_COLOR)
         ):
-            brightness = map_range(
-                int(kwargs[ATTR_BRIGHTNESS]),
-                0,
-                255,
-                self._lower_brightness,
-                self._upper_brightness,
+
+            brightness = map_value_by_percent(
+                int(kwargs[ATTR_BRIGHTNESS]), 255, self._upper_brightness
             )
 
             if self.is_color_mode and self._hs is not None:
@@ -607,22 +589,19 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
                 states[self._config.get(CONF_COLOR)] = self.__to_color(hs, brightness)
                 color_mode = self._modes.color
 
-        if ATTR_COLOR_TEMP in kwargs and ColorMode.COLOR_TEMP in color_modes:
-            self.error(f"ATTR_COLOR_TEMP: {ATTR_COLOR_TEMP}")
+        if ATTR_COLOR_TEMP_KELVIN in kwargs and ColorMode.COLOR_TEMP in color_modes:
             if brightness is None:
                 brightness = self._brightness
-            mired = int(kwargs[ATTR_COLOR_TEMP])
-            if self._color_temp_reverse:
-                mired = self.max_mireds - (mired - self.min_mireds)
-            if mired < self.min_mireds:
-                mired = self.min_mireds
-            elif mired > self.max_mireds:
-                mired = self.max_mireds
-            color_temp = int(
-                self._upper_color_temp
-                - (self._upper_color_temp / (self.max_mireds - self.min_mireds))
-                * (mired - self.min_mireds)
+
+            color_temp = map_range(
+                int(kwargs[ATTR_COLOR_TEMP_KELVIN]),
+                self.min_color_temp_kelvin,
+                self.max_color_temp_kelvin,
+                self._lower_brightness,
+                self._upper_color_temp,
+                self._color_temp_reverse,
             )
+
             color_mode = self._modes.white
             states[self._config.get(CONF_BRIGHTNESS)] = brightness
             states[self._config.get(CONF_COLOR_TEMP)] = color_temp
@@ -648,7 +627,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         supported = self.supported_features
         self._effect = None
 
-        if brightness_dp_value := self.dp_value(CONF_BRIGHTNESS, None):
+        if (brightness_dp_value := self.dp_value(CONF_BRIGHTNESS)) is not None:
             self._brightness = brightness_dp_value
 
         if ColorMode.HS in self.supported_color_modes:
