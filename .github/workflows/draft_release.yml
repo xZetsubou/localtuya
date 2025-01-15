@@ -71,8 +71,9 @@ jobs:
                                   -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                                   "https://api.github.com/search/users?q=$email+in:email" \
                                   | jq -r '.items[0].login')
-                        echo "Username $username email $username"
-                        cache_nickname[$email]=$username
+                        if [[ -z $username && -z $email ]]; then
+                          cache_nickname[$email]=$username
+                        fi
                       fi
                       if [[ $username != null ]]; then
                         sed -i "s#$author_info#$username#g" "commits.md"
