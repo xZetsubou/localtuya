@@ -71,7 +71,8 @@ jobs:
                                   -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                                   "https://api.github.com/search/users?q=$email+in:email" \
                                   | jq -r '.items[0].login')
-                        if [[ -z $username && -z $email ]]; then
+                        echo "Username $username email $email"
+                        if [[ -z $username || -z $email ]]; then
                           cache_nickname[$email]=$username
                         fi
                       fi
