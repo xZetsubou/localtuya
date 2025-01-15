@@ -11,6 +11,7 @@ on:
     workflow_dispatch:
     branches:
       - master  # Adjust this to the branch you want to track
+      - fix-draft-release-bad-array-subscript
 
 permissions:
   contents: write
@@ -70,7 +71,8 @@ jobs:
                                   -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                                   "https://api.github.com/search/users?q=$email+in:email" \
                                   | jq -r '.items[0].login')
-                                  cache_nickname[$email]=$username
+                        echo "Username $username email $username"
+                        cache_nickname[$email]=$username
                       fi
                       if [[ $username != null ]]; then
                         sed -i "s#$author_info#$username#g" "commits.md"
