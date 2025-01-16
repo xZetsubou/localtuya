@@ -59,9 +59,8 @@ jobs:
 
           declare -A cache_nickname;
           while IFS= read -r line; do
-                    commit_hash=$(echo $line | awk '{print $1}')
-                    author_info=$(echo $line | awk -F"by @" '{print (NF>1)? $NF : ""}'| awk '{print $1}')
-                    IFS=',' read -r name email mail_name <<< "$author_info"
+                    author_info=$(echo "$line" | awk -F 'by @|,| in' '{print $2 "," $3 "," $4}')
+                    IFS=$',' read -r name email mail_name <<< "$author_info"
 
                     if [[ "$email" != *"noreply"* ]]; then
                       if [[ -v cache_nickname[$email] ]]; then
