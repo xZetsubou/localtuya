@@ -59,7 +59,7 @@ jobs:
 
           declare -A cache_nickname;
           while IFS= read -r line; do
-                    author_info=$(echo "$line" | awk -F 'by @| in*' '{print $2 "," $3 "," $4}')
+                    author_info=$(echo "$line" | grep -oP 'by @\K.*?(?= in)')
                     IFS=$',' read -r name email mail_name _ <<< "$author_info"
 
                     if [[ "$email" != *"noreply"* ]]; then
@@ -71,10 +71,10 @@ jobs:
                                   -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                                   "https://api.github.com/search/users?q=$email+in:email" \
                                   | jq -r '.items[0].login')
-                        echo "Username $username email $email"
                         cache_nickname[$email]=$username
                       fi
                       if [[ $username != null ]]; then
+                        echo "Username $username email $email"
                         sed -i "s#$author_info#$username#g" "commits.md"
                         continue
                       fi
