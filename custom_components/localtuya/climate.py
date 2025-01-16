@@ -113,7 +113,7 @@ SUPPORTED_TEMPERATURES = {
     UnitOfTemperature.CELSIUS: SupportedTemps.C,
     UnitOfTemperature.FAHRENHEIT: SupportedTemps.F,
     f"Target Temperature: {UnitOfTemperature.CELSIUS} | Current Temperature {UnitOfTemperature.FAHRENHEIT}": SupportedTemps.C_F,
-    f"Target Temperature: {UnitOfTemperature.FAHRENHEIT} | Current Temperature {UnitOfTemperature.CELSIUS}": SupportedTemps.F_C,
+    f"Current Temperature {UnitOfTemperature.CELSIUS} | Target Temperature: {UnitOfTemperature.FAHRENHEIT} ": SupportedTemps.F_C,
 }
 SUPPORTED_PRECISIONS = [0.01, PRECISION_TENTHS, PRECISION_HALVES, PRECISION_WHOLE]
 
@@ -192,8 +192,9 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         """Initialize a new LocalTuyaClimate."""
         super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
         self._state = None
+        self._state_on, self._state_off = True, False
         self._target_temperature = None
-        self._target_temp_forced_to_celsius = False
+        self._target_temp_forced_to_celsius = None
         self._current_temperature = None
         self._hvac_mode = None
         self._preset_mode = None
@@ -245,7 +246,17 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._max_temp = self._config.get(CONF_MAX_TEMP, DEFAULT_MAX_TEMP)
 
         # Temperture unit
-        self._temperature_unit = UnitOfTemperature.CELSIUS
+        config_temp_unit = self._config.get(CONF_TEMPERATURE_UNIT, "")
+        target_unit, *current_unit = config_temp_unit.split("/")
+        set_temp_unit = UnitOfTemperature.CELSIUS
+        if current_unit:
+            self._target_temp_forced_to_celsius = target_unit == SupportedTemps.F
+            if self._target_temp_forced_to_celsius:
+                self._min_temp = f_to_c(self._min_temp)
+                self._max_temp = f_to_c(self._max_temp)
+        else:
+            set_temp_unit = config_unit(config_temp_unit)
+        self._temperature_unit = set_temp_unit
 
     @property
     def supported_features(self):
@@ -407,7 +418,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     async def async_set_fan_mode(self, fan_mode):
         """Set new target fan mode."""
         if not self._state:
-            await self._device.set_dp(True, self._dp_id)
+            await self._device.set_dp(self._state_on, self._dp_id)
 
         await self._device.set_dp(fan_mode, self._fan_speed_dp)
 
@@ -415,9 +426,9 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         """Set new target operation mode."""
         new_states = {}
         if not self._state:
-            new_states[self._dp_id] = True
+            new_states[self._dp_id] = self._state_on
         elif hvac_mode == HVACMode.OFF and HVACMode.OFF not in self._hvac_mode_set:
-            new_states[self._dp_id] = False
+            new_states[self._dp_id] = self._state_off
 
         if hvac_mode in self._hvac_mode_set:
             new_states[self._hvac_mode_dp] = self._hvac_mode_set[hvac_mode]
@@ -426,11 +437,11 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
 
     async def async_turn_on(self) -> None:
         """Turn the entity on."""
-        await self._device.set_dp(True, self._dp_id)
+        await self._device.set_dp(self._state_on, self._dp_id)
 
     async def async_turn_off(self) -> None:
         """Turn the entity off."""
-        await self._device.set_dp(False, self._dp_id)
+        await self._device.set_dp(self._state_off, self._dp_id)
 
     async def async_set_preset_mode(self, preset_mode):
         """Set new target preset mode."""
@@ -440,6 +451,20 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
 
         preset_value = self._preset_name_to_value.get(preset_mode)
         await self._device.set_dp(preset_value, self._preset_dp)
+
+    def connection_made(self):
+        """The connection has made with the device and status retrieved. configure entity based on it."""
+        super().connection_made()
+
+        switch_value = self.dp_value(self._dp_id)
+        if isinstance(switch_value, str):
+            if switch_value.lower() in ("on", "off"):
+                self._state_on = "ON" if switch_value.isupper() else "on"
+                self._state_off = "OFF" if switch_value.isupper() else "off"
+        elif isinstance(switch_value, int):
+            if switch_value in (0, 1):
+                self._state_on = 1
+                self._state_off = 0
 
     def status_updated(self):
         """Device status was updated."""
@@ -458,22 +483,10 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
             self._current_temperature = current_dp_temp * self._precision
 
         # Force the Current temperature and Target temperature to matching the unit.
-        config_temp_unit = self._config.get(CONF_TEMPERATURE_UNIT, "")
-        target_unit, *current_unit = config_temp_unit.split("/")
-
-        if current_unit:
-            set_temp_unit = UnitOfTemperature.CELSIUS
-            if target_unit == SupportedTemps.F:
-                self._target_temperature = f_to_c(self._target_temperature)
-                if not self._target_temp_forced_to_celsius:
-                    self._target_temp_forced_to_celsius = True
-                    self._min_temp = f_to_c(self._min_temp)
-                    self._max_temp = f_to_c(self._max_temp)
-            else:
-                self._current_temperature = f_to_c(self._current_temperature)
-        else:
-            set_temp_unit = config_unit(config_temp_unit)
-        self._temperature_unit = set_temp_unit
+        if self._target_temp_forced_to_celsius:
+            self._target_temperature = f_to_c(self._target_temperature)
+        elif self._target_temp_forced_to_celsius is False:
+            self._current_temperature = f_to_c(self._current_temperature)
 
         # Update preset states
         if self._has_presets:
