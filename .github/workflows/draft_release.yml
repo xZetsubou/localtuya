@@ -10,7 +10,7 @@ on:
   push:
     workflow_dispatch:
     branches:
-      - master  # Adjust this to the branch you want to track
+      - master
 
 permissions:
   contents: write
@@ -58,19 +58,19 @@ jobs:
 
           declare -A cache_nickname;
           while IFS= read -r line; do
-                    commit_hash=$(echo $line | awk '{print $1}')
-                    author_info=$(echo $line | awk -F"by @" '{print (NF>1)? $NF : ""}'| awk '{print $1}')
-                    IFS=',' read -r name email mail_name <<< "$author_info"
+                    author_info=$(echo "$line" | grep -oP 'by @\K.*?(?= in)')
+                    IFS=$',' read -r name email mail_name _ <<< "$author_info"
 
                     if [[ "$email" != *"noreply"* ]]; then
                       if [[ -v cache_nickname[$email] ]]; then
+                        echo "cached $name -- $email -- $mail_name"
                         username="${cache_nickname[$email]}"
                       else
                         username=$(curl --silent --fail \
                                   -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                                   "https://api.github.com/search/users?q=$email+in:email" \
                                   | jq -r '.items[0].login')
-                                  cache_nickname[$email]=$username
+                        cache_nickname[$email]=$username
                       fi
                       if [[ $username != null ]]; then
                         sed -i "s#$author_info#$username#g" "commits.md"
