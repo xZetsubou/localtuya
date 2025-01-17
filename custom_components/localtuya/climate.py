@@ -357,7 +357,9 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     def preset_mode(self):
         """Return current preset."""
         mode = self.dp_value(CONF_HVAC_MODE_DP)
-        if mode in list(self._hvac_mode_set.values()):
+        if self._preset_dp == self._hvac_mode_dp and (
+            mode in list(self._hvac_mode_set.values())
+        ):
             return None
 
         return self._preset_mode
