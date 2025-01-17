@@ -159,6 +159,8 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def is_closed(self):
         """Return if the cover is closed or not."""
+        if isinstance(self._open_cmd, bool):
+            return self._state == self._close_cmd
         if self._config[CONF_POSITIONING_MODE] == MODE_NONE:
             return None
         return self.current_cover_position == 0 and self._current_state == STATE_STOPPED
@@ -318,6 +320,8 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
     def update_state(self, action, position=None):
         """Update cover current states."""
         state = self._current_state_action
+        if isinstance(self._open_cmd, bool):
+            return
         # using Commands.
         if position is None:
             self._current_state_action = action
