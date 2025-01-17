@@ -122,10 +122,8 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
         state = self._current_state_action
         curr_pos = self._current_cover_position
         # Reset STATE when cover is fully closed or fully opened.
-        if (
-            state == STATE_STOPPED
-            or (state == STATE_CLOSING and curr_pos == 0)
-            or (state == STATE_OPENING and curr_pos == 100)
+        if state == STATE_STOPPED or (
+            state in (STATE_CLOSING, STATE_OPENING) and curr_pos in (0, 100)
         ):
             self._current_state_action = STATE_STOPPED
         # in case cover moving by set position cmd.
@@ -286,7 +284,9 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
         if self.has_config(CONF_CURRENT_POSITION_DP):
             curr_pos = self.dp_value(CONF_CURRENT_POSITION_DP)
             if isinstance(curr_pos, bool):
-                curr_pos = 100 if curr_pos else 0
+                curr_pos = 0 if curr_pos else 100
+            elif isinstance(curr_pos, str):
+                curr_pos = 0 if curr_pos in ("fully_close") else 100
             if self._position_inverted:
                 curr_pos = 100 - curr_pos
 
