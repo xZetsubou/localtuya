@@ -456,13 +456,11 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         """The connection has made with the device and status retrieved. configure entity based on it."""
         super().connection_made()
 
-        switch_value = self.dp_value(self._dp_id)
-        if isinstance(switch_value, str):
-            if switch_value.lower() in ("on", "off"):
-                self._state_on = "ON" if switch_value.isupper() else "on"
-                self._state_off = "OFF" if switch_value.isupper() else "off"
-        elif isinstance(switch_value, int):
-            if switch_value in (0, 1):
+        match self.dp_value(self._dp_id):
+            case str() as i if i.lower() in ("on", "off"):
+                self._state_on = "ON" if i.isupper() else "on"
+                self._state_off = "OFF" if i.isupper() else "off"
+            case int() as i if not isinstance(i, bool) and i in (0, 1):
                 self._state_on = 1
                 self._state_off = 0
 
