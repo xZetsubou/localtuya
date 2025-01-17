@@ -487,6 +487,12 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
                 {"enabled_energy": "Enable", "forbidden_energy": "Disable"}
             ),
         ),
+        LocalTuyaEntity(
+            id=DPCode.NETWORK_MODEL,
+            name="Network",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_selector({"LAN": "LAN", "4G": "4G"}),
+        ),
     ),
     # Siren Alarm
     # https://developer.tuya.com/en/docs/iot/categorysgbj?id=Kaiuz37tlpbnu

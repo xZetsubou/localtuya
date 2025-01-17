@@ -759,16 +759,16 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         LocalTuyaEntity(
             id=DPCode.ELECTRICITY_PHASE_A,
             name="Electricity Phase A",
-            device_class=SensorDeviceClass.VOLTAGE,
+            device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.01),
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE, 0.01),
         ),
         LocalTuyaEntity(
             id=DPCode.ELECTRICITY_PHASE_B,
             name="Electricity Phase B",
-            device_class=SensorDeviceClass.VOLTAGE,
+            device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.01),
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE, 0.01),
         ),
         LocalTuyaEntity(
             id=DPCode.ELECTRICITY_PHASE_C,
@@ -806,11 +806,6 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         LocalTuyaEntity(
             id=DPCode.VERSION_NUMBER,
             name="Version",
-            entity_category=EntityCategory.DIAGNOSTIC,
-        ),
-        LocalTuyaEntity(
-            id=DPCode.NETWORK_MODEL,
-            name="Network",
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
     ),
