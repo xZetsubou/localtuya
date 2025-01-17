@@ -109,11 +109,11 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def supported_features(self):
         """Flag supported features."""
-        supported_features = (
-            CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.STOP
-        )
-        if self._config[CONF_POSITIONING_MODE] != MODE_NONE:
-            supported_features = supported_features | CoverEntityFeature.SET_POSITION
+        supported_features = CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE
+        if not isinstance(self._open_cmd, bool):
+            supported_features |= CoverEntityFeature.STOP
+            if self._config[CONF_POSITIONING_MODE] != MODE_NONE:
+                supported_features |= CoverEntityFeature.SET_POSITION
         return supported_features
 
     @property
@@ -273,7 +273,6 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
             case bool():
                 self._open_cmd = True
                 self._close_cmd = False
-                self._attr_supported_features &= ~CoverEntityFeature.STOP
 
     def status_updated(self):
         """Device status was updated."""
