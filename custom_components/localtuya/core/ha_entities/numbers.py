@@ -14,6 +14,7 @@ from homeassistant.const import (
     UnitOfTemperature,
     CONF_UNIT_OF_MEASUREMENT,
     UnitOfLength,
+    UnitOfElectricCurrent,
 )
 
 from .base import DPCode, LocalTuyaEntity, EntityCategory, CLOUD_VALUE
@@ -758,6 +759,28 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Timer",
             custom_configs=localtuya_numbers(0, 24, unit=UnitOfTime.HOURS),
             icon="mdi:timer-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
+    # Generic products, EV Charger
+    # https://support.tuya.com/en/help/_detail/K9g77zfmlnwal
+    "qt": (
+        LocalTuyaEntity(
+            id=DPCode.RATED_CURRENT,
+            name="Rated Current",
+            custom_configs=localtuya_numbers(
+                0, 20000, unit=UnitOfElectricCurrent.AMPERE, _scale=0.01
+            ),
+            icon="mdi:sine-wave",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.LOAD_BALANCING_CURRENT,
+            name="Load Balancing Current",
+            custom_configs=localtuya_numbers(
+                0, 20000, unit=UnitOfElectricCurrent.AMPERE, _scale=0.01
+            ),
+            icon="mdi:wave-undercurrent",
             entity_category=EntityCategory.CONFIG,
         ),
     ),

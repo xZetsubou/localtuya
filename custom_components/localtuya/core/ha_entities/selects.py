@@ -445,6 +445,49 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             custom_configs=localtuya_selector(COUNT_DOWN_HOURS),
         ),
     ),
+    # Generic products, EV Charger
+    # https://support.tuya.com/en/help/_detail/K9g77zfmlnwal
+    "qt": (
+        LocalTuyaEntity(
+            id=DPCode.CHARGE_PATTERN,
+            name="Charge Pattern",
+            icon="mdi:car-shift-pattern",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_selector(
+                {
+                    "netversion": "Netversion",
+                    "standalone": "Standalone",
+                    "standalone_reserved": "Standalone Reserved",
+                    "plug_and_charge": "Plug and Charge",
+                }
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.MEASUREMENT_MODEL,
+            name="Measurement Model",
+            icon="mdi:call-merge",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_selector(
+                {"internal_meter": "Internal", "external_meter": "External"}
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.EARTH_TEST,
+            name="Earch Test",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_selector(
+                {"enabled_energy": "Enable", "forbidden_energy": "Disable"}
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.PEN_PROTECT,
+            name="Pen Protect",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_selector(
+                {"enabled_energy": "Enable", "forbidden_energy": "Disable"}
+            ),
+        ),
+    ),
     # Siren Alarm
     # https://developer.tuya.com/en/docs/iot/categorysgbj?id=Kaiuz37tlpbnu
     "sgbj": (

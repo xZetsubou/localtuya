@@ -480,6 +480,15 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
         ),
     ),
+    # Generic products, EV Charger
+    # https://support.tuya.com/en/help/_detail/K9g77zfmlnwal
+    "qt": (
+        LocalTuyaEntity(
+            id=DPCode.CHARGING_STATE,
+            icon="mdi:ev-plug-tesla",
+            name="Charge",
+        ),
+    ),
     # Robot Vacuum
     # https://developer.tuya.com/en/docs/iot/fsd?id=K9gf487ck1tlo
     "sd": (

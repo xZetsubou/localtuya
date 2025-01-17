@@ -727,6 +727,93 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
         ),
     ),
+    # Generic products, EV Charger
+    # https://support.tuya.com/en/help/_detail/K9g77zfmlnwal
+    "qt": (
+        LocalTuyaEntity(
+            id=DPCode.IS_LOGIN,
+            name="Is login",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.VOLTAGE_PHASE_A,
+            name="Voltage Phase A",
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.01),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.VOLTAGE_PHASE_B,
+            name="Voltage Phase B",
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.01),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.VOLTAGE_PHASE_C,
+            name="Voltage Phase C",
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.01),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ELECTRICITY_PHASE_A,
+            name="Electricity Phase A",
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.01),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ELECTRICITY_PHASE_B,
+            name="Electricity Phase B",
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.01),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ELECTRICITY_PHASE_C,
+            name="Electricity Phase C",
+            device_class=SensorDeviceClass.CURRENT,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE, 0.01),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ELECTRICITY_TOTAL,
+            name="Electricity Total",
+            device_class=SensorDeviceClass.CURRENT,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE, 0.01),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.CHARGE_ELECTRIC_QUANTITY,
+            name="Charge Electric Quantity",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.01),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.CHARGE_MONEY,
+            name="Charge Money",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.CARD_BALANCE,
+            name="Card Balance",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.LOAD_BALANCING_STATE,
+            name="Load Balancing State",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.VERSION_NUMBER,
+            name="Version",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.NETWORK_MODEL,
+            name="Network",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+    ),
     # Gas Detector
     # https://developer.tuya.com/en/docs/iot/categoryrqbj?id=Kaiuz3d162ubw
     "rqbj": (
@@ -986,7 +1073,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_B,
-            name="Phase B",
+            name="Phase B Current",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
             custom_configs=localtuya_sensor(UnitOfElectricCurrent.MILLIAMPERE),
