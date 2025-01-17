@@ -273,6 +273,7 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
             case bool():
                 self._open_cmd = True
                 self._close_cmd = False
+                self._attr_supported_features &= ~CoverEntityFeature.STOP
 
     def status_updated(self):
         """Device status was updated."""
