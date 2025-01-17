@@ -109,11 +109,11 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def supported_features(self):
         """Flag supported features."""
-        supported_features = (
-            CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.STOP
-        )
-        if self._config[CONF_POSITIONING_MODE] != MODE_NONE:
-            supported_features = supported_features | CoverEntityFeature.SET_POSITION
+        supported_features = CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE
+        if not isinstance(self._open_cmd, bool):
+            supported_features |= CoverEntityFeature.STOP
+            if self._config[CONF_POSITIONING_MODE] != MODE_NONE:
+                supported_features |= CoverEntityFeature.SET_POSITION
         return supported_features
 
     @property
@@ -262,14 +262,22 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
                 self._current_cover_position = stored_pos
                 self.debug("Restored cover position %s", self._current_cover_position)
 
+    def connection_made(self):
+        super().connection_made()
+
+        match self.dp_value(self._dp_id):
+            case str() as i if i.upper():
+                self._open_cmd = self._open_cmd.upper()
+                self._close_cmd = self._close_cmd.upper()
+                self._stop_cmd = self._stop_cmd.upper()
+            case bool():
+                self._open_cmd = True
+                self._close_cmd = False
+
     def status_updated(self):
         """Device status was updated."""
         self._previous_state = self._state
         self._state = self.dp_value(self._dp_id)
-        if self._state and self._state.isupper():
-            self._open_cmd = self._open_cmd.upper()
-            self._close_cmd = self._close_cmd.upper()
-            self._stop_cmd = self._stop_cmd.upper()
 
         if self.has_config(CONF_CURRENT_POSITION_DP):
             curr_pos = self.dp_value(CONF_CURRENT_POSITION_DP)
