@@ -1100,8 +1100,8 @@ def dps_string_list(dps_data: dict[str, dict], cloud_dp_codes: dict[str, dict]) 
     # Merge DPs that found through cloud with local.
     for dp, func in cloud_dp_codes.items():
         # Default Manual dp value is -1, we will replace it if it in cloud.
-        add_dp = dp not in dps_data or dps_data.get(dp) == -1
-        if (value := func.get("value", "")) or add_dp:
+        if dp not in dps_data or dps_data.get(dp) == -1:
+            value = func.get("value", "")
             dps_data[dp] = f"{value}, cloud pull"
 
     for dp, value in dps_data.items():
