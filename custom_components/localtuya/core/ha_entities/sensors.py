@@ -788,7 +788,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.CHARGE_ELECTRIC_QUANTITY,
             name="Charge Electric Quantity",
             device_class=SensorDeviceClass.ENERGY,
-            state_class=SensorStateClass.MEASUREMENT,
+            state_class=SensorStateClass.TOTAL,
             custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.01),
         ),
         LocalTuyaEntity(
