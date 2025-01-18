@@ -11,6 +11,7 @@ on:
     workflow_dispatch:
     branches:
       - master
+      - ci_draft_release_use_commit_api_for_user_search #debug
 
 permissions:
   contents: write
@@ -59,17 +60,17 @@ jobs:
           declare -A cache_nickname;
           while IFS= read -r line; do
                     author_info=$(echo "$line" | grep -oP 'by @\K.*?(?= in)')
+                    commit=$(echo "$line" | grep -oP '/commit/\K[a-f0-9]+')
                     IFS=$',' read -r name email mail_name _ <<< "$author_info"
 
                     if [[ "$email" != *"noreply"* ]]; then
                       if [[ -v cache_nickname[$email] ]]; then
-                        echo "cached $name -- $email -- $mail_name"
                         username="${cache_nickname[$email]}"
                       else
                         username=$(curl --silent --fail \
                                   -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                                  "https://api.github.com/search/users?q=$email+in:email" \
-                                  | jq -r '.items[0].login')
+                                  "https://api.github.com/search/commits?q=$commit" \
+                                  | jq -r '.items[0].author.login')
                         cache_nickname[$email]=$username
                       fi
                       if [[ $username != null ]]; then
