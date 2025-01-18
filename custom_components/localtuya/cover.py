@@ -109,21 +109,21 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def supported_features(self):
         """Flag supported features."""
-        supported_features = (
-            CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.STOP
-        )
-        if self._config[CONF_POSITIONING_MODE] != MODE_NONE:
-            supported_features = supported_features | CoverEntityFeature.SET_POSITION
+        supported_features = CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE
+        if not isinstance(self._open_cmd, bool):
+            supported_features |= CoverEntityFeature.STOP
+            if self._config[CONF_POSITIONING_MODE] != MODE_NONE:
+                supported_features |= CoverEntityFeature.SET_POSITION
         return supported_features
 
     @property
     def _current_state(self) -> str:
         """Return the current state of the cover."""
         state = self._current_state_action
-        curr_pos = self.current_cover_position
+        curr_pos = self._current_cover_position
         # Reset STATE when cover is fully closed or fully opened.
-        if (state == STATE_CLOSING and curr_pos == 0) or (
-            state == STATE_OPENING and curr_pos == 100
+        if state == STATE_STOPPED or (
+            state in (STATE_CLOSING, STATE_OPENING) and curr_pos in (0, 100)
         ):
             self._current_state_action = STATE_STOPPED
         # in case cover moving by set position cmd.
@@ -147,18 +147,20 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def is_opening(self):
         """Return if cover is opening."""
-        state = self._current_state
-        return state == STATE_SET_OPENING or state == STATE_OPENING
+        return self._current_state in (STATE_OPENING, STATE_SET_OPENING)
 
     @property
     def is_closing(self):
         """Return if cover is closing."""
-        state = self._current_state
-        return state == STATE_SET_CLOSING or state == STATE_CLOSING
+        return self._current_state in (STATE_CLOSING, STATE_SET_CLOSING)
 
     @property
     def is_closed(self):
         """Return if the cover is closed or not."""
+        if isinstance(self._open_cmd, bool):
+            return self._current_cover_position == 0 and (
+                self._current_state == STATE_STOPPED
+            )
         if self._config[CONF_POSITIONING_MODE] == MODE_NONE:
             return None
         return self.current_cover_position == 0 and self._current_state == STATE_STOPPED
@@ -262,21 +264,33 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
                 self._current_cover_position = stored_pos
                 self.debug("Restored cover position %s", self._current_cover_position)
 
+    def connection_made(self):
+        super().connection_made()
+
+        match self.dp_value(self._dp_id):
+            case str() as i if i.isupper():
+                self._open_cmd = self._open_cmd.upper()
+                self._close_cmd = self._close_cmd.upper()
+                self._stop_cmd = self._stop_cmd.upper()
+            case bool():
+                self._open_cmd = True
+                self._close_cmd = False
+
     def status_updated(self):
         """Device status was updated."""
         self._previous_state = self._state
         self._state = self.dp_value(self._dp_id)
-        if self._state and self._state.isupper():
-            self._open_cmd = self._open_cmd.upper()
-            self._close_cmd = self._close_cmd.upper()
-            self._stop_cmd = self._stop_cmd.upper()
 
         if self.has_config(CONF_CURRENT_POSITION_DP):
             curr_pos = self.dp_value(CONF_CURRENT_POSITION_DP)
+            if isinstance(curr_pos, bool):
+                curr_pos = 0 if curr_pos else 100
+            elif isinstance(curr_pos, str):
+                curr_pos = 0 if curr_pos in ("fully_close") else 100
             if self._position_inverted:
-                self._current_cover_position = 100 - curr_pos
-            else:
-                self._current_cover_position = curr_pos
+                curr_pos = 100 - curr_pos
+
+            self._current_cover_position = curr_pos
         if (
             self._config[CONF_POSITIONING_MODE] == MODE_TIME_BASED
             and self._state != self._previous_state
