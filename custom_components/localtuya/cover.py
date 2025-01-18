@@ -120,7 +120,7 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
     def _current_state(self) -> str:
         """Return the current state of the cover."""
         state = self._current_state_action
-        curr_pos = self.current_cover_position
+        curr_pos = self._current_cover_position
         # Reset STATE when cover is fully closed or fully opened.
         if state == STATE_STOPPED or (
             state in (STATE_CLOSING, STATE_OPENING) and curr_pos in (0, 100)
