@@ -1,6 +1,7 @@
 """Platform to locally control Tuya-based climate devices."""
 
 import asyncio
+from enum import StrEnum
 import logging
 from functools import partial
 from .config_flow import col_to_select
@@ -97,7 +98,6 @@ HVAC_ACTION_SETS = {
     HVACAction.HEATING: "opened",
     HVACAction.IDLE: "closed",
 }
-from enum import StrEnum
 
 
 class SupportedTemps(StrEnum):
