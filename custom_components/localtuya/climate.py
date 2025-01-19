@@ -58,7 +58,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-HVAC_OFF = {HVACMode.OFF.value: "off"}
+HVAC_OFF = {HVACMode.OFF.value: "off"}  # Migrate to 3
 RENAME_HVAC_MODE_SETS = {  # Migrate to 3
     ("manual", "Manual", "hot", "m", "True"): HVACMode.HEAT.value,
     ("auto", "0", "p", "Program"): HVACMode.AUTO.value,
@@ -72,7 +72,7 @@ RENAME_ACTION_SETS = {  # Migrate to 3
     ("cooling"): HVACAction.COOLING.value,
     ("off"): HVACAction.OFF.value,
 }
-RENAME_PRESET_SETS = {
+RENAME_PRESET_SETS = {  # Migrate to 3
     "Holiday": (PRESET_AWAY),
     "Program": (PRESET_HOME),
     "Manual": (PRESET_NONE, "manual"),
