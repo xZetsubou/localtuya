@@ -1,6 +1,4 @@
-"""Platform to locally control Tuya-based climate devices.
-    # PRESETS and HVAC_MODE Needs to be handle in better way.
-"""
+"""Platform to locally control Tuya-based climate devices."""
 
 import asyncio
 import logging
@@ -259,6 +257,11 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._temperature_unit = set_temp_unit
 
     @property
+    def _is_on(self):
+        """Return if the device is on."""
+        return self._state and self._state != self._state_off
+
+    @property
     def supported_features(self):
         """Flag supported features."""
         supported_features = ClimateEntityFeature(0)
@@ -299,7 +302,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def hvac_mode(self):
         """Return current operation ie. heat, cool, idle."""
-        if not self._state:
+        if not self._is_on:
             return HVACMode.OFF
         if not self._hvac_mode_dp:
             return HVACMode.HEAT
@@ -321,7 +324,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def hvac_action(self):
         """Return the current running hvac operation if supported."""
-        if not self._state:
+        if not self._is_on:
             return HVACAction.OFF
 
         if not self._conf_hvac_action_dp:
@@ -419,7 +422,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
 
     async def async_set_fan_mode(self, fan_mode):
         """Set new target fan mode."""
-        if not self._state:
+        if not self._is_on:
             await self._device.set_dp(self._state_on, self._dp_id)
 
         await self._device.set_dp(fan_mode, self._fan_speed_dp)
@@ -427,7 +430,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     async def async_set_hvac_mode(self, hvac_mode: HVACMode):
         """Set new target operation mode."""
         new_states = {}
-        if not self._state:
+        if not self._is_on:
             new_states[self._dp_id] = self._state_on
         elif hvac_mode == HVACMode.OFF and HVACMode.OFF not in self._hvac_mode_set:
             new_states[self._dp_id] = self._state_off
@@ -501,7 +504,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
                     self._preset_mode = PRESET_NONE
 
         # If device is off there is no needs to check the states.
-        if not self._state:
+        if not self._is_on:
             return
 
         # Update the HVAC Mode
