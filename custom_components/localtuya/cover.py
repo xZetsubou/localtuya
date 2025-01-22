@@ -97,12 +97,12 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
         self._close_cmd = commands_set.split("_")[1]
         self._stop_cmd = commands_set.split("_")[2]
         self._timer_start = time.time()
-        self._state = self._stop_cmd
-        self._previous_state = self._state
+        self._state = None
+        self._previous_state = None
         self._current_cover_position = 0
         self._current_state_action = STATE_STOPPED  # Default.
         self._set_new_position = int | None
-        self._stop_switch = self._config.get(CONF_STOP_SWITCH_DP, None)
+        self._stop_switch = self._config.get(CONF_STOP_SWITCH_DP)
         self._position_inverted = self._config.get(CONF_POSITION_INVERTED)
         self._current_task = None
 
@@ -121,20 +121,18 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
         """Return the current state of the cover."""
         state = self._current_state_action
         curr_pos = self._current_cover_position
+
         # Reset STATE when cover is fully closed or fully opened.
-        if state == STATE_STOPPED or (
-            state in (STATE_CLOSING, STATE_OPENING) and curr_pos in (0, 100)
+        if (state == STATE_CLOSING and curr_pos == 0) or (
+            state == STATE_OPENING and curr_pos == 100
         ):
-            self._current_state_action = STATE_STOPPED
-        # in case cover moving by set position cmd.
-        if (
-            self._current_state_action == STATE_SET_CLOSING
-            or self._current_state_action == STATE_SET_OPENING
-        ):
+            return STATE_STOPPED
+        if state in (STATE_SET_CLOSING, STATE_SET_OPENING):
             set_pos = self._set_new_position
             # Reset state whenn cover reached the position.
             if curr_pos - set_pos < 5 and curr_pos - set_pos >= -5:
-                self._current_state_action = STATE_STOPPED
+                return STATE_STOPPED
+
         return self._current_state_action
 
     @property
@@ -157,10 +155,8 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def is_closed(self):
         """Return if the cover is closed or not."""
-        if isinstance(self._open_cmd, bool):
-            return self._current_cover_position == 0 and (
-                self._current_state == STATE_STOPPED
-            )
+        if isinstance(self._open_cmd, (bool, str)):
+            return self._current_cover_position == 0
         if self._config[CONF_POSITIONING_MODE] == MODE_NONE:
             return None
         return self.current_cover_position == 0 and self._current_state == STATE_STOPPED
@@ -283,14 +279,18 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
 
         if self.has_config(CONF_CURRENT_POSITION_DP):
             curr_pos = self.dp_value(CONF_CURRENT_POSITION_DP)
-            if isinstance(curr_pos, bool):
-                curr_pos = 0 if curr_pos else 100
-            elif isinstance(curr_pos, str):
-                curr_pos = 0 if curr_pos in ("fully_close") else 100
+            if isinstance(curr_pos, (bool, str)):
+                closed = curr_pos in (True, "fully_close")
+                stopped = (
+                    self._previous_state is None or self._previous_state == self._state
+                )
+                curr_pos = 0 if stopped and closed else (100 if stopped else 50)
+
             if self._position_inverted:
                 curr_pos = 100 - curr_pos
 
             self._current_cover_position = curr_pos
+
         if (
             self._config[CONF_POSITIONING_MODE] == MODE_TIME_BASED
             and self._state != self._previous_state
