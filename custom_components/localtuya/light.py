@@ -528,7 +528,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             hue = int(color[6:10], 16)
             sat = int(color[10:12], 16)
             value = int(color[12:14], 16)
-            self._hs = [hue, sat]
+            self._hs = [hue, (sat * 100 / 255)]
             self._brightness = value
         else:
             self.__from_color_v2(color)
@@ -564,10 +564,10 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             or self.has_config(CONF_BRIGHTNESS)
             or self.has_config(CONF_COLOR)
         ):
-
             brightness = map_value_by_percent(
                 int(kwargs[ATTR_BRIGHTNESS]), 255, self._upper_brightness
             )
+            brightness = max(brightness, self._lower_brightness)
 
             if self.is_color_mode and self._hs is not None:
                 states[self._config.get(CONF_COLOR)] = self.__to_color(
