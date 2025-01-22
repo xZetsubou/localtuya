@@ -126,12 +126,12 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
         if (state == STATE_CLOSING and curr_pos == 0) or (
             state == STATE_OPENING and curr_pos == 100
         ):
-            return STATE_STOPPED
+            self._current_state_action = STATE_STOPPED
         if state in (STATE_SET_CLOSING, STATE_SET_OPENING):
             set_pos = self._set_new_position
             # Reset state whenn cover reached the position.
             if curr_pos - set_pos < 5 and curr_pos - set_pos >= -5:
-                return STATE_STOPPED
+                self._current_state_action = STATE_STOPPED
 
         return self._current_state_action
 
@@ -323,7 +323,9 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
 
     def update_state(self, action, position=None):
         """Update cover current states."""
-        state = self._current_state_action
+        if (state := self._current_state_action) == action:
+            return
+
         # using Commands.
         if position is None:
             self._current_state_action = action
@@ -341,7 +343,7 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
             else:
                 self._current_state_action = STATE_STOPPED
         # Write state data.
-        self.async_write_ha_state()
+        self.schedule_update_ha_state()
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaCover, flow_schema)
