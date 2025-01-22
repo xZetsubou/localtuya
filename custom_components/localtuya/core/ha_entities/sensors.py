@@ -1382,9 +1382,30 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "fs": (
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT,
-            # name="temperature",
+            name="Current Temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfTemperature.CELSIUS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.HUMIDITY,
+            name="Current Humidity",
+            device_class=SensorDeviceClass.HUMIDITY,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(PERCENTAGE),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.HEAT_WD,
+            name="Heating Temperature",
+            device_class=SensorDeviceClass.TEMPERATURE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfTemperature.CELSIUS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.PVRPM,
+            name="Fan Speed",
+            icon="mdi:fan",
+            custom_configs=localtuya_sensor("rpm"),
         ),
     ),
     # eMylo Smart WiFi IR Remote

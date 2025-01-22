@@ -633,6 +633,21 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Temperature",
             device_class=NumberDeviceClass.TEMPERATURE,
             icon="mdi:thermometer-lines",
+            custom_configs=localtuya_numbers(1, 10, unit=UnitOfTemperature.CELSIUS),
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.TEMP_SET, DPCode.TEMP_SET_F),
+            name="Temperature",
+            entity_category=EntityCategory.CONFIG,
+            device_class=NumberDeviceClass.TEMPERATURE,
+            custom_configs=localtuya_numbers(40, 70, unit=UnitOfTemperature.CELSIUS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.COUNTDOWN,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
     ),
     # Humidifier

@@ -794,6 +794,18 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:account-lock",
             entity_category=EntityCategory.CONFIG,
         ),
+        LocalTuyaEntity(
+            id=DPCode.LCD_ONOF,
+            name="LCD",
+            icon="mdi:television",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SPEEK,
+            name="Sound",
+            icon="mdi:volume-medium",
+            entity_category=EntityCategory.CONFIG,
+        ),
     ),
     # Fan switch
     "fskg": (

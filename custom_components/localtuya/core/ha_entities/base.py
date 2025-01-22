@@ -303,6 +303,7 @@ class DPCode(StrEnum):
     ENERGY_REVERSE_B = "energy_reverse_b"
     ENERGY_REVERSE_C = "energy_reverse_c"
     EQUIPMENT_TIME = "equipment_time"
+    ERRO = "erro"
     FAN_BEEP = "fan_beep"  # Sound
     FAN_COOL = "fan_cool"  # Cool wind
     FAN_COUNTDOWN = "fan_countdown"
@@ -333,6 +334,7 @@ class DPCode(StrEnum):
     GAS_SENSOR_STATE = "gas_sensor_state"
     GAS_SENSOR_STATUS = "gas_sensor_status"
     GAS_SENSOR_VALUE = "gas_sensor_value"
+    HEAT_WD = "heat_wd"
     HIGHTPROTECTVALUE = "hightprotectvalue"
     HIJACK = "hijack"
     HUMIDIFIER = "humidifier"  # Humidification
@@ -356,6 +358,8 @@ class DPCode(StrEnum):
     IS_LOGIN = "is_login"
     KEY_STUDY = "key_study"
     KNOB_SWITCH_MODE_1 = "knob_switch_mode_1"
+    LCD_ONOF = "lcd_onof"
+    LEDLIGHT = "ledlight"
     LED_TYPE_1 = "led_type_1"
     LED_TYPE_2 = "led_type_2"
     LED_TYPE_3 = "led_type_3"
@@ -382,6 +386,7 @@ class DPCode(StrEnum):
     MASTER_MODE = "master_mode"  # alarm mode
     MASTER_STATE = "master_state"  # alarm mode
     MATERIAL = "material"  # Material
+    MATERIAL_TYPE = "material_type"
     MAXHUM_SET = "maxhum_set"
     MAXTEMP_SET = "maxtemp_set"
     MAX_HUMI = "max_humi"
@@ -485,6 +490,7 @@ class DPCode(StrEnum):
     PTZ_CONTROL = "ptz_control"
     PTZ_STOP = "ptz_stop"
     PUMP_RESET = "pump_reset"  # Water pump reset
+    PVRPM = "pvrpm"
     PV_CURRENT = "pv_current"
     PV_POWER = "pv_power"
     PV_VOLT = "pv_volt"
@@ -561,6 +567,7 @@ class DPCode(StrEnum):
     SOUND_MODE = "sound_mode"
     SOURCE = "source"
     SPEED = "speed"  # Speed level
+    SPEEK = "speek"
     SPRAY_MODE = "spray_mode"  # Spraying mode
     SPRAY_VOLUME = "spray_volume"  # Dehumidifier
     STA = "sta"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
@@ -718,6 +725,7 @@ class DPCode(StrEnum):
     UPPER_TEMP = "upper_temp"
     UPPER_TEMP_F = "upper_temp_f"
     UP_CONFIRM = "up_confirm"  # cover reset.
+    USB_BZ = "usb_bz"
     USE_TIME = "use_time"
     USE_TIME_ONE = "use_time_one"
     UV = "uv"  # UV sterilization
