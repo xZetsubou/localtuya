@@ -336,22 +336,22 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
             and (current_temperature := self._current_temperature) is not None
         ):
             target_precision_diff = target_temperature - self._precision
-            current__precision_diff = current_temperature + self._precision
+            current_precision_diff = current_temperature + self._precision
 
             if hvac_mode == HVACMode.HEAT:
                 if current_temperature < target_precision_diff:
                     hvac_action = HVACAction.HEATING
-                elif current__precision_diff > target_temperature:
+                elif current_precision_diff > target_temperature:
                     hvac_action = HVACAction.IDLE
             elif hvac_mode == HVACMode.COOL:
                 if current_temperature > target_precision_diff:
                     hvac_action = HVACAction.COOLING
-                elif current__precision_diff < target_temperature:
+                elif current_precision_diff < target_temperature:
                     hvac_action = HVACAction.IDLE
             elif hvac_mode == HVACMode.HEAT_COOL:
                 if current_temperature < target_precision_diff:
                     hvac_action = HVACAction.HEATING
-                elif current__precision_diff > target_temperature:
+                elif current_precision_diff > target_temperature:
                     hvac_action = HVACAction.COOLING
                 elif current_temperature == target_precision_diff:
                     hvac_action = HVACAction.IDLE
