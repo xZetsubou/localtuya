@@ -12,7 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntry
 
 from . import HassLocalTuyaData
-from .const import CONF_LOCAL_KEY, CONF_USER_ID, DOMAIN, CONF_NO_CLOUD
+from .const import CONF_LOCAL_KEY, CONF_USER_ID, DOMAIN, CONF_NO_CLOUD, DATA_DISCOVERY
 
 CLOUD_DEVICES = "cloud_devices"
 DEVICE_CONFIG = "device_config"
@@ -31,7 +31,6 @@ async def async_get_config_entry_diagnostics(
     data = dict(entry.data)
     hass_localtuya: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
     tuya_api = hass_localtuya.cloud_data
-    task_dps_query = None
     if data.get(CONF_NO_CLOUD, True) is not True:
         await hass.async_create_task(tuya_api.async_get_devices_dps_query())
     # censoring private information on integration diagnostic data
@@ -47,7 +46,8 @@ async def async_get_config_entry_diagnostics(
         for obf, obf_len in DATA_OBFUSCATE.items():
             if ob := data[CLOUD_DEVICES][dev_id].get(obf):
                 data[CLOUD_DEVICES][dev_id][obf] = obfuscate(ob, obf_len, obf_len)
-
+    if discovery := hass.data[DOMAIN].get(DATA_DISCOVERY):
+        data["Discovered_Devices"] = discovery.devices
     return data
 
 
@@ -76,6 +76,8 @@ async def async_get_device_diagnostics(
         # data[DEVICE_CLOUD_INFO][CONF_LOCAL_KEY] = local_key_obfuscated
 
     # data["log"] = hass.data[DOMAIN][CONF_DEVICES][dev_id].logger.retrieve_log()
+    if discovery := hass.data[DOMAIN].get(DATA_DISCOVERY):
+        data["Discovered_Devices"] = discovery.devices.get(dev_id)
     return data
 
 
