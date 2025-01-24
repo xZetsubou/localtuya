@@ -95,6 +95,8 @@ async def async_setup_entry(
                         device,
                         dev_entry,
                         entity_config[CONF_ID],
+                        # we need add_entites_callback in-case we want to add sub-entites, such as electric sensor "phase_a"
+                        add_entites_callback=async_add_entities,
                     )
                 )
     # Once the entities have been created, add to the TuyaDevice instance
@@ -139,6 +141,9 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         self._last_state = None
         self._stored_states: State | None = None
         self._hass = device._hass
+        self._componet_add_entities: AddEntitiesCallback = kwargs.get(
+            "add_entites_callback"
+        )
         self._loaded = False
 
         # Default value is available to be provided by Platform entities if required
@@ -221,7 +226,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def name(self) -> str:
         """Get name of Tuya entity."""
-        return self._config.get(CONF_FRIENDLY_NAME)
+        return getattr(self, "_attr_name", self._config.get(CONF_FRIENDLY_NAME))
 
     @property
     def icon(self) -> str | None:
@@ -231,7 +236,9 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def unique_id(self) -> str:
         """Return unique device identifier."""
-        return f"local_{self._device_config.id}_{self._dp_id}"
+        return getattr(
+            self, "_attr_unique_id", f"local_{self._device_config.id}_{self._dp_id}"
+        )
 
     @property
     def available(self) -> bool:
@@ -257,7 +264,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def device_class(self):
         """Return the class of this device."""
-        return self._config.get(CONF_DEVICE_CLASS, self._attr_device_class)
+        return getattr(self, "_attr_device_class", self._config.get(CONF_DEVICE_CLASS))
 
     def has_config(self, attr) -> bool:
         """Return if a config parameter has a valid value."""
