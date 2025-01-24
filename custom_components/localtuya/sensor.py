@@ -127,7 +127,7 @@ class LocalTuyaSensor(LocalTuyaEntity, SensorEntity):
         buf = base64.b64decode(data)
         voltage = (buf[1] | buf[0] << 8) / 10
         current = (buf[4] | buf[3] << 8) / 1000
-        power = buf[7] | buf[6] << 8
+        power = (buf[7] | buf[6] << 8) / 1000
         return {ATTR_VOLTAGE: voltage, ATTR_CURRENT: current, ATTR_POWER: power}
 
     async def __create_sub_sensors(self):
