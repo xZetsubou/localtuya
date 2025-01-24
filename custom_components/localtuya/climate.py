@@ -329,44 +329,35 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
 
         hvac_action = self._hvac_action
         hvac_mode = self._hvac_mode
-        if not self._conf_hvac_action_dp:
-            if hvac_mode == HVACMode.COOL:
-                hvac_action = HVACAction.COOLING
-            if hvac_mode == HVACMode.HEAT:
-                hvac_action = HVACAction.HEATING
-            if hvac_mode == HVACMode.DRY:
-                hvac_action = HVACAction.DRYING
-            if hvac_mode == HVACMode.FAN_ONLY:
-                hvac_action = HVACAction.FAN
 
         if (
-            self._config.get(CONF_HEURISTIC_ACTION)
+            (self._config.get(CONF_HEURISTIC_ACTION) or not self._conf_hvac_action_dp)
             and (target_temperature := self._target_temperature) is not None
             and (current_temperature := self._current_temperature) is not None
         ):
-            precision_target_diff = target_temperature - self._precision
-            precision_current_diff = current_temperature + self._precision
+            target_precision_diff = target_temperature - self._precision
+            current_precision_diff = current_temperature + self._precision
 
             if hvac_mode == HVACMode.HEAT:
-                if current_temperature < precision_target_diff:
+                if current_temperature < target_precision_diff:
                     hvac_action = HVACAction.HEATING
-                if precision_current_diff > target_temperature:
+                elif current_precision_diff > target_temperature:
                     hvac_action = HVACAction.IDLE
-            if hvac_mode == HVACMode.COOL:
-                if current_temperature > precision_target_diff:
+            elif hvac_mode == HVACMode.COOL:
+                if current_temperature > target_precision_diff:
                     hvac_action = HVACAction.COOLING
-                if precision_current_diff < target_temperature:
+                elif current_precision_diff < target_temperature:
                     hvac_action = HVACAction.IDLE
-            if hvac_mode == HVACMode.HEAT_COOL:
-                if current_temperature < precision_target_diff:
+            elif hvac_mode == HVACMode.HEAT_COOL:
+                if current_temperature < target_precision_diff:
                     hvac_action = HVACAction.HEATING
-                if current_temperature == precision_target_diff:
-                    hvac_action = HVACAction.IDLE
-                if precision_current_diff > target_temperature:
+                elif current_precision_diff > target_temperature:
                     hvac_action = HVACAction.COOLING
-            if hvac_mode == HVACMode.DRY:
+                elif current_temperature == target_precision_diff:
+                    hvac_action = HVACAction.IDLE
+            elif hvac_mode == HVACMode.DRY:
                 hvac_action = HVACAction.DRYING
-            if hvac_mode == HVACMode.FAN_ONLY:
+            elif hvac_mode == HVACMode.FAN_ONLY:
                 hvac_action = HVACAction.FAN
 
         return hvac_action
