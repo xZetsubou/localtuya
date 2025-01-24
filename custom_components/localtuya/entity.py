@@ -236,9 +236,10 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def unique_id(self) -> str:
         """Return unique device identifier."""
-        return getattr(
-            self, "_attr_unique_id", f"local_{self._device_config.id}_{self._dp_id}"
-        )
+        if getattr(self, "_attr_unique_id") is not None:
+            return self._attr_unique_id
+
+        return f"local_{self._device_config.id}_{self._dp_id}"
 
     @property
     def available(self) -> bool:
