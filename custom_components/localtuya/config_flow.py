@@ -323,6 +323,7 @@ class LocalTuyaOptionsFlowHandler(OptionsFlow):
 
             if user_input.pop(CONF_MASS_CONFIGURE, False):
                 # Handle auto configure all recognized devices.
+                await self.cloud_data.async_get_devices_dps_query()
                 devices, fails = await setup_localtuya_devices(
                     self.hass,
                     self.config_entry.entry_id,
@@ -1308,8 +1309,8 @@ async def validate_input(hass: HomeAssistant, entry_id, data):
     # Get DP descriptions from the cloud, if the device is there.
     cloud_dp_codes = {}
     cloud_data: TuyaCloudApi = hass.data[DOMAIN][entry_id].cloud_data
-    if device_cloud_data := cloud_data.device_list.get(data[CONF_DEVICE_ID]):
-        cloud_dp_codes = device_cloud_data.get("dps_data", {})
+    if (dev_id := data.get(CONF_DEVICE_ID)) in cloud_data.device_list:
+        cloud_dp_codes = await cloud_data.async_get_device_functions(dev_id)
 
     # Indicate an error if no datapoints found as the rest of the flow
     # won't work in this case

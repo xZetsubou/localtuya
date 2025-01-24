@@ -187,14 +187,18 @@ class TuyaCloudApi:
 
         self.device_list.update({dev["id"]: dev for dev in resp["result"]})
 
-        # Get Devices DPS Data.
-        await asyncio.wait(
-            asyncio.create_task(self.async_get_device_functions(devid))
-            for devid in self.device_list
-        )
-
         self._last_devices_update = int(time.time())
         return "ok"
+
+    async def async_get_devices_dps_query(self):
+        """Update All the devices dps_data."""
+        # Get Devices DPS Data.
+        async with aiohttp.ClientSession() as self._session:
+            await asyncio.wait(
+                asyncio.create_task(self.async_get_device_functions(devid))
+                for devid in self.device_list
+            )
+            return "ok"
 
     async def async_get_device_specifications(self, device_id) -> dict[str, dict]:
         """Obtain the DP ID mappings for a device."""

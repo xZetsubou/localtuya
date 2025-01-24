@@ -12,7 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntry
 
 from . import HassLocalTuyaData
-from .const import CONF_LOCAL_KEY, CONF_USER_ID, DOMAIN
+from .const import CONF_LOCAL_KEY, CONF_USER_ID, DOMAIN, CONF_NO_CLOUD
 
 CLOUD_DEVICES = "cloud_devices"
 DEVICE_CONFIG = "device_config"
@@ -31,6 +31,9 @@ async def async_get_config_entry_diagnostics(
     data = dict(entry.data)
     hass_localtuya: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
     tuya_api = hass_localtuya.cloud_data
+    task_dps_query = None
+    if data.get(CONF_NO_CLOUD, True) is not True:
+        await hass.async_create_task(tuya_api.async_get_devices_dps_query())
     # censoring private information on integration diagnostic data
     for field in [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID]:
         data[field] = obfuscate(data[field])
@@ -44,6 +47,7 @@ async def async_get_config_entry_diagnostics(
         for obf, obf_len in DATA_OBFUSCATE.items():
             if ob := data[CLOUD_DEVICES][dev_id].get(obf):
                 data[CLOUD_DEVICES][dev_id][obf] = obfuscate(ob, obf_len, obf_len)
+
     return data
 
 
@@ -61,6 +65,7 @@ async def async_get_device_diagnostics(
     hass_localtuya: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
     tuya_api = hass_localtuya.cloud_data
     if dev_id in tuya_api.device_list:
+        await tuya_api.async_get_device_functions(dev_id)
         data[DEVICE_CLOUD_INFO] = copy.deepcopy(tuya_api.device_list[dev_id])
         for obf, obf_len in DATA_OBFUSCATE.items():
             if ob := data[DEVICE_CLOUD_INFO].get(obf):
