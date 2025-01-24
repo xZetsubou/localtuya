@@ -105,8 +105,16 @@ class LocalTuyaSensor(LocalTuyaEntity, SensorEntity):
                 sub_state := self.decode_base64(state).get(sub_sensor)
             ):
                 self._state = sub_state
+            else:
+                self._state = state
         else:
             self._state = self.scale(state)
+
+    def status_restored(self, stored_state) -> None:
+        super().status_restored(stored_state)
+
+        if (last_state := self._last_state) and self.is_base64(last_state):
+            self._status.update({self._dp_id: last_state})
 
     # No need to restore state for a sensor
     async def restore_state_when_connected(self):
@@ -114,7 +122,7 @@ class LocalTuyaSensor(LocalTuyaEntity, SensorEntity):
         return
 
     def is_base64(self, data):
-        """Return if this data is valid base64"""
+        """Return if the data is valid Tuya raw Base64 encoded data."""
         return (
             (data and isinstance(data, str))
             and len(data) >= 12
@@ -123,7 +131,7 @@ class LocalTuyaSensor(LocalTuyaEntity, SensorEntity):
         )
 
     def decode_base64(self, data):
-        """Decode base64 such as DPS phase_a,b."""
+        """Decode data base64 such as DPS phase_a."""
         buf = base64.b64decode(data)
         voltage = (buf[1] | buf[0] << 8) / 10
         current = (buf[4] | buf[3] << 8) / 1000
@@ -136,7 +144,7 @@ class LocalTuyaSensor(LocalTuyaEntity, SensorEntity):
 
         for sensor in (ATTR_CURRENT, ATTR_POWER, ATTR_VOLTAGE):
             sub_entity = LocalTuyaSensor(
-                self._device, self._device_config.device_config, f"{self._dp_id}"
+                self._device, self._device_config.as_dict(), self._dp_id
             )
             setattr(sub_entity, "_attr_sub_sensor", sensor)
             setattr(sub_entity, "_attr_unique_id", f"{self.unique_id}_{sensor}")
