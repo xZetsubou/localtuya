@@ -166,7 +166,7 @@ def map_range(
     """Maps a value from one range to another."""
 
     if reverse:
-        value = from_max - (value + from_min)
+        value = from_max - (value - from_min)
 
     scale = (to_max - to_min) / (from_max - from_min)
     mapped_value = to_min + (value - from_min) * scale
