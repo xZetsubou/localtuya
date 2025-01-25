@@ -335,25 +335,27 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
             and (target_temperature := self._target_temperature) is not None
             and (current_temperature := self._current_temperature) is not None
         ):
-            target_precision_diff = target_temperature - self._precision
-            current_precision_diff = current_temperature + self._precision
+            # This function assumes that action changes based on target step different from current.
+            target_step = self.target_temperature_step
+            is_heating = current_temperature < (target_temperature - target_step)
+            is_cooling = current_temperature > (target_temperature + target_step)
 
             if hvac_mode == HVACMode.HEAT:
-                if current_temperature < target_precision_diff:
+                if is_heating:
                     hvac_action = HVACAction.HEATING
-                elif current_precision_diff > target_temperature:
+                elif current_temperature >= target_temperature:
                     hvac_action = HVACAction.IDLE
             elif hvac_mode == HVACMode.COOL:
-                if current_temperature > target_precision_diff:
+                if is_cooling:
                     hvac_action = HVACAction.COOLING
-                elif current_precision_diff < target_temperature:
+                elif current_temperature <= target_temperature:
                     hvac_action = HVACAction.IDLE
             elif hvac_mode == HVACMode.HEAT_COOL:
-                if current_temperature < target_precision_diff:
+                if is_heating:
                     hvac_action = HVACAction.HEATING
-                elif current_precision_diff > target_temperature:
+                elif is_cooling:
                     hvac_action = HVACAction.COOLING
-                elif current_temperature == target_precision_diff:
+                elif current_temperature == target_temperature:
                     hvac_action = HVACAction.IDLE
             elif hvac_mode == HVACMode.DRY:
                 hvac_action = HVACAction.DRYING
@@ -418,7 +420,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
             temperature = kwargs[ATTR_TEMPERATURE]
 
             if self._target_temp_forced_to_celsius:
-                # Revert temperature to Fahrenheit it was forced to celsius
+                # Revert Temperature to Fahrenheit it was forced to celsius
                 temperature = round(c_to_f(temperature))
 
             temperature = round(temperature / self._precision_target)
@@ -468,10 +470,10 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         super().connection_made()
 
         match self.dp_value(self._dp_id):
-            case str() as i if i.lower() in ("on", "off"):
-                self._state_on = "ON" if i.isupper() else "on"
-                self._state_off = "OFF" if i.isupper() else "off"
-            case int() as i if not isinstance(i, bool) and i in (0, 1):
+            case str() as v if v.lower() in ("on", "off"):
+                self._state_on = "ON" if v.isupper() else "on"
+                self._state_off = "OFF" if v.isupper() else "off"
+            case int() as v if not isinstance(v, bool) and v in (0, 1):
                 self._state_on = 1
                 self._state_off = 0
 
