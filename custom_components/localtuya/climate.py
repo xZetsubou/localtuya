@@ -159,7 +159,7 @@ def flow_schema(dps):
     }
 
 
-# Convertors
+# Converters
 def f_to_c(num):
     return (num - 32) * 5 / 9 if num else num
 
@@ -243,7 +243,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._min_temp = self._config.get(CONF_MIN_TEMP, DEFAULT_MIN_TEMP)
         self._max_temp = self._config.get(CONF_MAX_TEMP, DEFAULT_MAX_TEMP)
 
-        # Temperture unit
+        # Temperature unit
         config_temp_unit = self._config.get(CONF_TEMPERATURE_UNIT, "")
         target_unit, *current_unit = config_temp_unit.split("/")
         set_temp_unit = UnitOfTemperature.CELSIUS
@@ -418,7 +418,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
             temperature = kwargs[ATTR_TEMPERATURE]
 
             if self._target_temp_forced_to_celsius:
-                # Revert temperture to Fahrenheit it was forced to celsius
+                # Revert temperature to Fahrenheit it was forced to celsius
                 temperature = round(c_to_f(temperature))
 
             temperature = round(temperature / self._precision_target)

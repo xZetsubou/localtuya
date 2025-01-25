@@ -198,7 +198,6 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             raise ServiceValidationError(f"Remote {self.entity_id} is turned off")
 
         now, timeout = 0, kwargs.get(ATTR_TIMEOUT, 30)
-        sucess = False
 
         device = kwargs.get(ATTR_DEVICE)
         commands = kwargs.get(ATTR_COMMAND)
@@ -238,7 +237,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
                         self.hass, notification_id="learn_command"
                     )
 
-                # code retrive sucess and it's sotred in self._last_code
+                # code retrieve success and it's stored in self._last_code
                 # we will store the codes.
 
                 if command != commands[-1]:

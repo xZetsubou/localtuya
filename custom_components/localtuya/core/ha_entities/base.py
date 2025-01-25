@@ -23,7 +23,7 @@ class CLOUD_VALUE:
     `value_key(str)`: The "key" name of the targeted value.\n
     `prefer_type`: Convert values
             Integer: Type(value) ( int, float or str ).\n
-            Enums: convert the values to [dict or str splitted by comma, default is list].\n
+            Enums: convert the values to [dict or str split by comma, default is list].\n
     `remap_values(dict)`: Used to remap dict values, if prefer_type is dict.\n
     `reverse_dict(bool)`: Reverse dict keys, value, if prefer_type is dict.\n
     `scale(bool)`: For integers, scale final value.\n
@@ -122,7 +122,7 @@ class DPCode(StrEnum):
     ALARM_TIME = "alarm_time"  # Alarm time
     ALARM_VOLUME = "alarm_volume"  # Alarm volume
     ALL_ENERGY = "all_energy"
-    AMBIEN = "ambien"
+    AMBIEN = "ambien"  # codespell:ignore
     ANGLE_HORIZONTAL = "angle_horizontal"
     ANGLE_VERTICAL = "angle_vertical"
     ANION = "anion"  # Ionizer unit
@@ -303,7 +303,7 @@ class DPCode(StrEnum):
     ENERGY_REVERSE_B = "energy_reverse_b"
     ENERGY_REVERSE_C = "energy_reverse_c"
     EQUIPMENT_TIME = "equipment_time"
-    ERRO = "erro"
+    ERRO = "erro"  # codespell:ignore
     FAN_BEEP = "fan_beep"  # Sound
     FAN_COOL = "fan_cool"  # Cool wind
     FAN_COUNTDOWN = "fan_countdown"

@@ -2,6 +2,12 @@
 target-version = ["py312"]
 include = 'custom_components/localtuya/.*\.py'
 
+[tool.codespell]
+skip = '*.pyc,*.pyi,*~,*.json'
+ignore-words-list = "hass,contiuation"
+count = true
+quiet-level = 3
+
 # pylint config stolen from Home Assistant
 [tool.pylint.MAIN]
 # Use a conservative default here; 2 should speed up most setups and not hurt

@@ -338,7 +338,7 @@ class LocalTuyaOptionsFlowHandler(OptionsFlow):
                     for fail_dev in fails.values():
                         devices_fails += f"\n{fail_dev['name']}: {fail_dev['reason']}"
 
-                    msg = f"Sucessed devices: ``{len(devices)}``\n ```{devices_sucessed}\n```"
+                    msg = f"Succeeded devices: ``{len(devices)}``\n ```{devices_sucessed}\n```"
                     if fails:
                         msg += f" \n Failed devices: ``{len(fails)}``\n ```{devices_fails}\n```"
 
@@ -611,7 +611,7 @@ class LocalTuyaOptionsFlowHandler(OptionsFlow):
         errors = {}
         placeholders = {}
 
-        # Gather the informations
+        # Gather the information
         is_cloud = not self.config_entry.data.get(CONF_NO_CLOUD)
         dev_id = self.selected_device
         category = None
@@ -751,7 +751,7 @@ class LocalTuyaOptionsFlowHandler(OptionsFlow):
                     dev_id = self.device_data[CONF_DEVICE_ID]
                     new_data = self.config_entry.data.copy()
                     entry_id = self.config_entry.entry_id
-                    # Removing the unwanted entites.
+                    # Removing the unwanted entities.
                     entitesNames = [
                         name.get(CONF_FRIENDLY_NAME)
                         for name in self.device_data[CONF_ENTITIES]
@@ -1280,7 +1280,7 @@ async def validate_input(hass: HomeAssistant, entry_id, data):
             detected_dps = {}
 
         # if manual DPs are set, merge these.
-        # detected_dps_device used to pervent user from bypass handshake manual dps.
+        # detected_dps_device used to prevent user from bypass handshake manual dps.
         detected_dps_device = detected_dps.copy()
         logger.debug("Detected DPS: %s", detected_dps)
         if CONF_MANUAL_DPS in data:
@@ -1316,7 +1316,7 @@ async def validate_input(hass: HomeAssistant, entry_id, data):
     # won't work in this case
     if not bypass_connection and error:
         raise error
-    # If bypass handshake. otherwise raise faild to make handshake with device.
+    # If bypass handshake. otherwise raise failed to make handshake with device.
     # --- Cloud: We will use the DPS found on cloud if exists.
     # --- No cloud: user will have to input the DPS manually.
     if not detected_dps_device and not (

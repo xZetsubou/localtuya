@@ -188,7 +188,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     new_version = ENTRIES_VERSION
     stored_entries = hass.config_entries.async_entries(DOMAIN)
     if config_entry.version == 1:
-        # This an old version of original integration no nned to put it here.
+        # This an old version of original integration no need to put it here.
         pass
     # Update to version 3
     if config_entry.version == 2:
@@ -530,9 +530,9 @@ def check_if_device_disabled(hass: HomeAssistant, entry: ConfigEntry, dev_id: st
     entries = er.async_entries_for_config_entry(ent_reg, entry.entry_id)
     ha_device_id: str = None
 
-    for entitiy in entries:
-        if dev_id in entitiy.unique_id:
-            ha_device_id = entitiy.device_id
+    for entity in entries:
+        if dev_id in entity.unique_id:
+            ha_device_id = entity.device_id
             break
 
     if ha_device_id and (device := dr.async_get(hass).async_get(ha_device_id)):
