@@ -6,13 +6,68 @@ on:
   pull_request:
   workflow_dispatch:
 
+env:
+  PY_VERSION: "3.13"
+
 jobs:
-  black:
-    runs-on: "ubuntu-latest"
+  base:
+    name: Prepare dependences
+    runs-on: ubuntu-latest
+    outputs:
+      PY_PATH: ${{ steps.install_depends.outputs.PY_PATH }}
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
+
+      - name: "Setup Python"
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{env.PY_VERSION}}
+
       - name: "Install dependencies"
-        run: pip3 install -r requirements_test.txt
+        id: install_depends
+        run: |
+          echo "PY_PATH=${{env.pythonLocation}}" >> $GITHUB_OUTPUT
+          pip install -r requirements_test.txt
+
+      - name: "Cache dependencies"
+        uses: actions/cache@v4.2.0
+        with:
+          path: ${{env.pythonLocation}}
+          key: ${{ runner.os }}-pip-dependencies-${{ hashFiles('requirements.txt') }}
+
+  black:
+    name: Black codestyle
+    runs-on: ubuntu-latest
+    needs: base
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: Restore Python
+        uses: actions/cache/restore@v4.2.0
+        with:
+          path: ${{needs.base.outputs.PY_PATH}}
+          fail-on-cache-miss: true
+          key: ${{ runner.os }}-pip-dependencies-${{ hashFiles('requirements.txt') }}
+
       - name: "Black codestyle check"
-        run: black --check --diff .
+        run: ${{needs.base.outputs.PY_PATH}}/bin/black --check --diff .
+
+  codespell:
+    name: "Codespell check"
+    runs-on: ubuntu-latest
+    needs: base
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: Restore Python
+        uses: actions/cache/restore@v4.2.0
+        with:
+          path: ${{needs.base.outputs.PY_PATH}}
+          fail-on-cache-miss: true
+          key: ${{ runner.os }}-pip-dependencies-${{ hashFiles('requirements.txt') }}
+
+      - name: "Codespell check"
+        run: ${{needs.base.outputs.PY_PATH}}/bin/codespell

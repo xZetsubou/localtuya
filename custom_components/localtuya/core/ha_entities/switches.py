@@ -811,7 +811,7 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "fskg": (
         LocalTuyaEntity(
             id=DPCode.BACKLIGHT_SWITCH,
-            name="LED Siwtch",
+            name="LED Switch",
             icon="mdi:led-outline",
             entity_category=EntityCategory.CONFIG,
         ),

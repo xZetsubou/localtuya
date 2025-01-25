@@ -164,7 +164,7 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
                     entities[entity.get(CONF_ID)] = entity
                     _LOGGER.debug(f"{device_name}: Entity configured: {entity}")
 
-    # sort entites by id
+    # sort entities by id
     sorted_ids = sorted(entities, key=int)
 
     # convert to list of configs

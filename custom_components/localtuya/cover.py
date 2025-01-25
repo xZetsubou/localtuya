@@ -129,7 +129,7 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
             self._current_state_action = STATE_STOPPED
         if state in (STATE_SET_CLOSING, STATE_SET_OPENING):
             set_pos = self._set_new_position
-            # Reset state whenn cover reached the position.
+            # Reset state when cover reached the position.
             if curr_pos - set_pos < 5 and curr_pos - set_pos >= -5:
                 self._current_state_action = STATE_STOPPED
 

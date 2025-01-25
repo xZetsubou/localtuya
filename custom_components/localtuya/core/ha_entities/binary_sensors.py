@@ -84,7 +84,7 @@ BINARY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # https://developer.tuya.com/en/docs/iot/categoryfs?id=Kaiuz1xweel1c
     "fs": (
         LocalTuyaEntity(
-            id=DPCode.ERRO,
+            id=DPCode.ERRO,  # codespell:ignore
             name="Error",
             device_class=BinarySensorDeviceClass.PROBLEM,
             entity_category=EntityCategory.DIAGNOSTIC,

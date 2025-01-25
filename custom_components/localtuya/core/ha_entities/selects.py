@@ -473,7 +473,7 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
         LocalTuyaEntity(
             id=DPCode.EARTH_TEST,
-            name="Earch Test",
+            name="Earth Test",
             entity_category=EntityCategory.CONFIG,
             custom_configs=localtuya_selector(
                 {"enabled_energy": "Enable", "forbidden_energy": "Disable"}
@@ -580,7 +580,7 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
             name="Record Mode",
             custom_configs=localtuya_selector(
-                {"1": "Record Events Only", "2": "Allways Record"}
+                {"1": "Record Events Only", "2": "Always Record"}
             ),
         ),
         LocalTuyaEntity(
@@ -759,7 +759,7 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Direction",
             custom_configs=localtuya_selector(
                 {
-                    "foward": "Forward",
+                    "forward": "Forward",
                     "backward": "Backward",
                     "turn_left": "Left",
                     "turn_right": "Right",

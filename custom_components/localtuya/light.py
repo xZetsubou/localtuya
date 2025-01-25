@@ -62,7 +62,7 @@ SCENE_LIST_RGBW_255 = {
     "Night": "bd76000168ffff",
     "Read": "fffcf70168ffff",
     "Meeting": "cf38000168ffff",
-    "Leasure": "3855b40168ffff",
+    "Leisure": "3855b40168ffff",
     "Scenario 1": "scene_1",
     "Scenario 2": "scene_2",
     "Scenario 3": "scene_3",
@@ -77,7 +77,7 @@ SCENE_LIST_RGBW_1000 = {
     "Read 2": "010e0d000084000003e800000000",
     "Meeting": "020e0d0000000000000003e803e8",
     "Working": "020e0d00001403e803e800000000",
-    "Leasure 1": "030e0d0000000000000001f401f4",
+    "Leisure 1": "030e0d0000000000000001f401f4",
     "Leisure 2": "030e0d0000e80383031c00000000",
     "Soft": "04464602007803e803e800000000464602007803e8000a00000000",
     "Rainbow": "05464601000003e803e800000000464601007803e803e80000000046460100f003e803"
