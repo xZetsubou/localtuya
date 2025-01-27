@@ -233,7 +233,7 @@ class LocalTuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
         elif state_value in self._returning_status_list:
             self._state = VacuumActivity.RETURNING
         elif state_value in [self._config[CONF_PAUSED_STATE], "pause"] or (
-            not state_value and self.dp_value(CONF_PAUSE_DP) is True
+            self.dp_value(CONF_PAUSE_DP) is True
         ):
             self._state = VacuumActivity.PAUSED
         else:
