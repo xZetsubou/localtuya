@@ -15,7 +15,7 @@ jobs:
     name: Prepare dependences
     runs-on: ubuntu-latest
     outputs:
-      PY_PATH: ${{ steps.install_depends.outputs.PY_PATH }}
+      PY_PATH: ${{ steps.setup-outsputs.outputs.PY_PATH }}
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -26,6 +26,7 @@ jobs:
           python-version: ${{env.PY_VERSION}}
       
       - name: "Setup outputs"
+        id: setup-outsputs
         run: echo "PY_PATH=${{env.pythonLocation}}" >> $GITHUB_OUTPUT
 
       - name: "Cache dependencies"
@@ -36,7 +37,6 @@ jobs:
           key: ${{ runner.os }}-pip-dependencies-${{ hashFiles('requirements.txt') }}_${{env.CACHE_VERSION}}
 
       - name: "Install dependencies"
-        id: install_depends
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
         run: pip install -r requirements_test.txt
 
