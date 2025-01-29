@@ -25,17 +25,21 @@ jobs:
         with:
           python-version: ${{env.PY_VERSION}}
 
-      - name: "Install dependencies"
-        id: install_depends
-        run: |
-          echo "PY_PATH=${{env.pythonLocation}}" >> $GITHUB_OUTPUT
-          pip install -r requirements_test.txt
-
       - name: "Cache dependencies"
+        id: cache-dependencies
         uses: actions/cache@v4.2.0
         with:
           path: ${{env.pythonLocation}}
           key: ${{ runner.os }}-pip-dependencies-${{ hashFiles('requirements.txt') }}_${{env.CACHE_VERSION}}
+
+      - name: "Install dependencies"
+        id: install_depends
+        if: steps.cache-dependencies.outputs.cache-hit != 'true'
+        run: |
+          echo "PY_PATH=${{env.pythonLocation}}" >> $GITHUB_OUTPUT
+          pip install -r requirements_test.txt
+
+
 
   black:
     name: Black codestyle
