@@ -24,6 +24,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{env.PY_VERSION}}
+      
+      - name: "Setup outputs"
+        run: echo "PY_PATH=${{env.pythonLocation}}" >> $GITHUB_OUTPUT
 
       - name: "Cache dependencies"
         id: cache-dependencies
@@ -35,9 +38,7 @@ jobs:
       - name: "Install dependencies"
         id: install_depends
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
-        run: |
-          echo "PY_PATH=${{env.pythonLocation}}" >> $GITHUB_OUTPUT
-          pip install -r requirements_test.txt
+        run: pip install -r requirements_test.txt
 
 
 
