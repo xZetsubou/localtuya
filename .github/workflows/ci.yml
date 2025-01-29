@@ -29,6 +29,7 @@ jobs:
         run: |
           echo "PY_PATH=${{env.pythonLocation}}" >> $GITHUB_OUTPUT
           pip install -r requirements_test.txt
+          ls ${{needs.base.outputs.PY_PATH}}/bin
 
       - name: "Cache dependencies"
         uses: actions/cache@v4.2.0
@@ -89,5 +90,4 @@ jobs:
 
       - name: "Pytest"
         run: |
-          ls ${{needs.base.outputs.PY_PATH}}/bin
           ${{needs.base.outputs.PY_PATH}}/bin/pytest --cov --disable-warnings -s tests/
