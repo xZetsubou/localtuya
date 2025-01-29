@@ -90,4 +90,4 @@ jobs:
 
       - name: "Pytest"
         run: |
-          ${{needs.base.outputs.PY_PATH}}/bin/pytest --cov --disable-warnings -s tests/
+          ${{needs.base.outputs.PY_PATH}}/bin/pytest --cov tests/ --disable-warnings -s
