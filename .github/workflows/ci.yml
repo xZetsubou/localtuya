@@ -88,7 +88,4 @@ jobs:
           key: ${{ runner.os }}-pip-dependencies-${{ hashFiles('requirements.txt') }}
 
       - name: "Codespell check"
-        run: |
-          ${{needs.base.outputs.PY_PATH}}/bin/coverage run --source tests/ -m pytest --disable-warnings -s
-          ${{needs.base.outputs.PY_PATH}}/bin/coverage report -m
-        
+        run: ${{needs.base.outputs.PY_PATH}}/bin/pytest --cov --disable-warnings -s tests/
