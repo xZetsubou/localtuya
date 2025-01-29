@@ -71,3 +71,21 @@ jobs:
 
       - name: "Codespell check"
         run: ${{needs.base.outputs.PY_PATH}}/bin/codespell
+
+  pytest:
+    name: "Pytest"
+    runs-on: ubuntu-latest
+    needs: base
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: Restore Python
+        uses: actions/cache/restore@v4.2.0
+        with:
+          path: ${{needs.base.outputs.PY_PATH}}
+          fail-on-cache-miss: true
+          key: ${{ runner.os }}-pip-dependencies-${{ hashFiles('requirements.txt') }}
+
+      - name: "Codespell check"
+        run: ${{needs.base.outputs.PY_PATH}}/bin/pytest --disable-warnings -s
