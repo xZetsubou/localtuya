@@ -1,4 +1,4 @@
-""""""
+"""Init localtuya tests"""
 
 import asyncio
 import homeassistant.util.ulid as ulid_util
