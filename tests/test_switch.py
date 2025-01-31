@@ -1,6 +1,7 @@
 """Test for localtuya."""
 
 from . import *
+from homeassistant.const import EntityCategory
 from custom_components.localtuya.switch import LocalTuyaSwitch, DOMAIN as SWITCH_DOMAIN
 
 CONFIG = {
@@ -32,7 +33,6 @@ CONFIG = {
 DPS_STATUS = {"1": True, "2": False}
 
 
-@pytest.mark.asyncio
 async def test_switch():
     device = await init(CONFIG, SWITCH_DOMAIN, LocalTuyaSwitch)
     entities: list[LocalTuyaSwitch] = get_entites(device)

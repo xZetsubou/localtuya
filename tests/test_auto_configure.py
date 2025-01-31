@@ -205,7 +205,6 @@ COVER_DEVICE_DATA = {
 }
 
 
-@pytest.mark.asyncio
 async def test_auto_configure():
 
     for k in PLATFORMS.values():

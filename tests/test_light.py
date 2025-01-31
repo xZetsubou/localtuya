@@ -45,7 +45,6 @@ ENC_COLOR = "0319090087db1c"
 BLE_COLOR = "0319090087db1c"
 
 
-@pytest.mark.asyncio
 async def test_light():
     device = await init(CONFIG, PLATFORM_DOMAIN, LocalTuyaLight)
     entities: list[LocalTuyaLight] = get_entites(device)

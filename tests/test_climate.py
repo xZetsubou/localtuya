@@ -62,7 +62,6 @@ DPS_STATUS = {
 }
 
 
-@pytest.mark.asyncio
 async def test_climate():
     device = await init(CONFIG, PLATFORM_DOMAIN, LocalTuyaClimate)
     entities: list[LocalTuyaClimate] = get_entites(device)

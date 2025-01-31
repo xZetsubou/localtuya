@@ -10,15 +10,11 @@ import time
 from typing import Any
 from unittest.mock import AsyncMock, Mock
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from custom_components.localtuya import TuyaCloudApi
 from custom_components.localtuya import coordinator
 from custom_components.localtuya import entity
 from custom_components.localtuya.const import DOMAIN
-
-custom_comp_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-sys.path.append(custom_comp_path)
 
 HOST = "192.168.1.100"
 DEVICE_NAME = "device"

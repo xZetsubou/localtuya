@@ -48,7 +48,6 @@ DPS_STATUS = {
 }
 
 
-@pytest.mark.asyncio
 async def test_water_heater():
     device = await init(CONFIG, PLATFORM_DOMAIN, LocalTuyaWaterHeater)
     entities: list[LocalTuyaWaterHeater] = get_entites(device)

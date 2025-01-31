@@ -27,7 +27,6 @@ CONFIG = {
 DPS_STATUS = {"5": "back"}
 
 
-@pytest.mark.asyncio
 async def test_lock():
     device = await init(CONFIG, PLATFORM_DOMAIN, LocalTuyaSelect)
     entities: list[LocalTuyaSelect] = get_entites(device)

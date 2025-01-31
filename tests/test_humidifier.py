@@ -35,7 +35,6 @@ ENTITIES = CONFIG[DEVICE_NAME]["entities"]
 DPS_STATUS = {"1": True, "2": 34, "4": "drying", "16": 34}
 
 
-@pytest.mark.asyncio
 async def test_humidifier():
     device = await init(CONFIG, PLATFORM_DOMAIN, LocalTuyaHumidifier)
     entities: list[LocalTuyaHumidifier] = get_entites(device)

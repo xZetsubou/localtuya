@@ -45,7 +45,6 @@ CONFIG = {
 DPS_STATUS = {"1": None}
 
 
-@pytest.mark.asyncio
 async def test_alarm_control_panel():
     device = await init(CONFIG, PLATFORM_DOMAIN, LocalTuyaAlarmControlPanel)
     entities: list[LocalTuyaAlarmControlPanel] = get_entites(device)

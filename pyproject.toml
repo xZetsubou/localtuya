@@ -10,6 +10,11 @@ quiet-level = 3
 
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["tests"]
 
 # pylint config stolen from Home Assistant
 [tool.pylint.MAIN]

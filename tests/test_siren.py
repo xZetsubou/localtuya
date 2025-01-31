@@ -26,7 +26,6 @@ CONFIG = {
 DPS_STATUS = {"5": STATE_ON}
 
 
-@pytest.mark.asyncio
 async def test_siren():
     device = await init(CONFIG, PLATFORM_DOMAIN, LocalTuyaSiren)
     entities: list[LocalTuyaSiren] = get_entites(device)

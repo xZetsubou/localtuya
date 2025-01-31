@@ -25,7 +25,6 @@ CONFIG = {
 DPS_STATUS = {"1": None, "2": "unlocked"}
 
 
-@pytest.mark.asyncio
 async def test_lock():
     device = await init(CONFIG, PLATFORM_DOMAIN, LocalTuyaLock)
     entities: list[LocalTuyaLock] = get_entites(device)

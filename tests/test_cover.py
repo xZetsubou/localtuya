@@ -36,7 +36,6 @@ CONFIG = {
 DPS_STATUS = {"1": "stop", "2": 80, "3": 80}
 
 
-@pytest.mark.asyncio
 async def test_cover():
     device = await init(CONFIG, PLATFORM_DOMAIN, LocalTuyaCover)
     entities: list[LocalTuyaCover] = get_entites(device)

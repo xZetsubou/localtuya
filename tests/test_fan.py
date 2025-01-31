@@ -51,7 +51,6 @@ CONFIG = {
 DPS_STATUS = {"1": True, "2": "mid", "3": 4, "4": "reverse", "6": True}
 
 
-@pytest.mark.asyncio
 async def test_fan():
     device = await init(CONFIG, PLATFORM_DOMAIN, LocalTuyaFan)
     entities: list[LocalTuyaFan] = get_entites(device)

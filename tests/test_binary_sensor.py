@@ -27,7 +27,6 @@ CONFIG = {
 DPS_STATUS = {"1": "activated", "2": False}
 
 
-@pytest.mark.asyncio
 async def test_button():
     device = await init(CONFIG, PLATFORM_DOMAIN, LocalTuyaBinarySensor)
     entities: list[LocalTuyaBinarySensor] = get_entites(device)
