@@ -8,6 +8,9 @@ ignore-words-list = "hass,contiuation"
 count = true
 quiet-level = 3
 
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
+
 # pylint config stolen from Home Assistant
 [tool.pylint.MAIN]
 # Use a conservative default here; 2 should speed up most setups and not hurt
