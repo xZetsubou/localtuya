@@ -120,7 +120,6 @@ jobs:
         run: |
           notes="#### 🚨 **Note**: This draft has been released in $(date +'%Y.%m.%d - %H:%M:%S')\n\n"
 
-          # IFS=$'\n' read -rd '' -a lines <<< "${{env.release_commits}}"
           while read -r item; do
             echo "test 3"
 
