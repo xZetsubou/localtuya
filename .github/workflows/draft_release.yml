@@ -17,7 +17,6 @@ permissions:
   contents: write
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   release_commits: |
       {"section": "breaking_changes",    "prefix": "break",    "header": "💥 Breaking Changes"}
       {"section": "fixes",               "prefix": "fix",      "header": "🐛 Fixes"           }
@@ -106,7 +105,7 @@ jobs:
               if [[ "$first_lower" == $prefix*: ]]; then
                 commits_map[$section]+=$parsed_commit && added=true && break
               fi
-            done < <(echo "${{env.release_commits}}")
+            done < <(echo ${{env.release_commits}})
             [[ $added == false ]] && commits_map["more"]+=$parsed_commit
 
           done < commits.md
