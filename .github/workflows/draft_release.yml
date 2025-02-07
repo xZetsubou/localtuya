@@ -136,7 +136,7 @@ jobs:
             fi
           done < <(echo '${{env.release_commits}}')
 
-          echo -e '$notes' > commits.md
+          set -f; echo -e $notes > commits.md; set +f
           cat commits.md
 
       - name: Remove old Draft
