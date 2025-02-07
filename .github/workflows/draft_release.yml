@@ -105,7 +105,7 @@ jobs:
               if [[ "$first_lower" == $prefix*: ]]; then
                 commits_map[$section]+=$parsed_commit && added=true && break
               fi
-            done < <(echo ${{env.release_commits}})
+            done < <(echo '${{env.release_commits}}')
             [[ $added == false ]] && commits_map["more"]+=$parsed_commit
 
           done < commits.md
@@ -132,7 +132,7 @@ jobs:
             if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
               notes+="### $header \n $section_commits \n"
             fi
-          done < <(echo "${{env.release_commits}}")
+          done < <(echo '${{env.release_commits}}')
 
           echo -e $notes > commits.md
 
