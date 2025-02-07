@@ -127,6 +127,7 @@ jobs:
 
             [[ ! "$section" =~ [^[:space:]] ]] && continue
 
+            echo "${{ toJson(steps.parse_commits.outputs) }}"
             section_commits=$(echo '${{ toJson(steps.parse_commits.outputs) }}' | jq -r '.$section')
 
             if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
