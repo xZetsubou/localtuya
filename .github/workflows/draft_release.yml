@@ -117,7 +117,6 @@ jobs:
             jq --arg key "$key" --arg value "${commits_map[$key]}" \
               '. + {($key): $value}' commitsJson > tempJson && mv tempJson commitsJson
           done
-          cat commitsJson
 
       - name: Create Release Notes
         id: release-notes
@@ -133,11 +132,16 @@ jobs:
             section_commits=$(jq -r --arg k "$section" '.[$k]' commitsJson)
 
             if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
-              echo "Added notes $section_commits"
               notes+="### $header \n $section_commits \n"
             fi
           done < <(echo '${{env.release_commits}}')
 
+          echo "--------------- Notes --------------"
+          echo $notes
+          echo "--------------- Notes --------------"
+          echo "--------------- commits.md --------------"
+          cat commits.md
+          echo "--------------- commits.md --------------"
           echo -e $notes > commits.md
 
       - name: Remove old Draft
