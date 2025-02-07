@@ -130,7 +130,7 @@ jobs:
 
             [[ ! "$section" =~ [^[:space:]] ]] && continue
 
-            section_commits=$(jq -r --arg k "$section" '.[$k]' commitsJson)
+            section_commits=$(jq --arg k "$section" '.[$k]' commitsJson)
 
             if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
               notes+="### $header \n $section_commits \n"
@@ -141,9 +141,9 @@ jobs:
 
       - name: Remove old Draft
         id: remove_drafts
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
         run:
           gh release delete "Draft Latest version"
 
