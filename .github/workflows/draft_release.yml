@@ -117,6 +117,7 @@ jobs:
             jq --arg key "$key" --arg value "${commits_map[$key]}" \
               '. + {($key): $value}' commitsJson > tempJson && mv tempJson commitsJson
           done
+          cat commitsJson
 
 
       - name: Create Release Notes
