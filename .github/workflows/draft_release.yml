@@ -132,16 +132,11 @@ jobs:
             section_commits=$(jq -r --arg k "$section" '.[$k]' commitsJson)
 
             if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
+              echo -e "### $header \n $section_commits \n"
               notes+="### $header \n $section_commits \n"
             fi
           done < <(echo '${{env.release_commits}}')
 
-          echo "--------------- Notes --------------"
-          echo $notes
-          echo "--------------- Notes --------------"
-          echo "--------------- commits.md --------------"
-          cat commits.md
-          echo "--------------- commits.md --------------"
           echo -e $notes > commits.md
 
       - name: Remove old Draft
