@@ -138,8 +138,7 @@ jobs:
           done < <(echo '${{env.release_commits}}')
 
           echo -e $notes > commits.md
-          echo "Commits md is: -----------------------------"
-          cat commits.md
+
 
       - name: Remove old Draft
         id: remove_drafts
