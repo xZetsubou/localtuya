@@ -132,7 +132,7 @@ jobs:
 
             [[ ! "$section" =~ [^[:space:]] ]] && continue
 
-            section_commits=$(jq '.$section' commitsJson)
+            section_commits=$(jq -r '.$section' commitsJson)
 
             if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
               notes+="### $header \n $section_commits \n"
