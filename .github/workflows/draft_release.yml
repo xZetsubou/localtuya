@@ -119,7 +119,7 @@ jobs:
       - name: Create Release Notes
         id: release-notes
         run: |
-          echo "${{ toJson(steps.parse_commits.outputs) }}"
+          echo ${{ toJson(steps.parse_commits.outputs) }}
           notes="#### 🚨 **Note**: This draft has been released in $(date +'%Y.%m.%d - %H:%M:%S')\n\n"
 
           while read -r item; do
