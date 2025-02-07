@@ -120,7 +120,8 @@ jobs:
         run: |
           notes="#### 🚨 **Note**: This draft has been released in $(date +'%Y.%m.%d - %H:%M:%S')\n\n"
 
-          while read -r item; do
+          IFS=$'\n' read -rd '' -a lines <<< "${{env.release_commits}}"
+          for line in "${lines[@]}"; do
             echo "test 3"
             # section=$(echo "$item"  | jq -r '.section') && [[ ! "$section" =~ [^[:space:]] ]] && continue
             # header=$(echo "$item"   | jq -r '.header') 
@@ -132,7 +133,7 @@ jobs:
             # # if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
             # #   notes+="### $header \n $section_commits \n"
             # # fi
-          done < <(echo '${{env.release_commits}}')
+          done 
 
           echo -e $notes > commits.md
 
