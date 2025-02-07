@@ -119,7 +119,6 @@ jobs:
           done
           cat commitsJson
 
-
       - name: Create Release Notes
         id: release-notes
         run: |
