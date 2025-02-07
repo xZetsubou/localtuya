@@ -93,6 +93,7 @@ jobs:
 
           # Escape single quiet.
           sed -i "s/'/\\'\\'/g" commits.md
+          cat commits.md
 
           while IFS= read -r line; do
             first_lower=$(echo "$line" | awk '{print $1}' | tr '[:upper:]' '[:lower:]')
