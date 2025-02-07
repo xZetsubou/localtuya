@@ -93,7 +93,6 @@ jobs:
 
           # Escape single quiet.
           sed "s/'//g" commits.md
-          cat commits.md
 
           while IFS= read -r line; do
             first_lower=$(echo "$line" | awk '{print $1}' | tr '[:upper:]' '[:lower:]')
@@ -108,6 +107,7 @@ jobs:
               prefix=$(echo "$item"   | jq -r '.prefix')
 
               if [[ "$first_lower" == $prefix*: ]]; then
+                echo "Added $parse_commit into section $section"
                 commits_map[$section]+=$parsed_commit && added=true && break
               fi
             done < <(echo '${{env.release_commits}}')
