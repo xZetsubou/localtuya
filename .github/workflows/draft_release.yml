@@ -92,7 +92,7 @@ jobs:
           declare -A commits_map;
 
           # Escape single quiet.
-          sed -i "s/'/\\'\\'/g" commits.md
+          sed "s/'/\\\'/g" commits.md
           cat commits.md
 
           while IFS= read -r line; do
