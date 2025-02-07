@@ -114,6 +114,7 @@ jobs:
           
           jq -n '{}' commitsJson > tempJson && mv tempJson commitsJson
           for key in "${!commits_map[@]}"; do
+            echo "$key=${commits_map[$key]}" >> $GITHUB_OUTPUT
             jq --arg key "$key" --arg value "${commits_map[$key]}" \
               '. + {($key): $value}' commitsJson > tempJson && mv tempJson commitsJson
           done
@@ -131,7 +132,7 @@ jobs:
 
             [[ ! "$section" =~ [^[:space:]] ]] && continue
 
-            section_commits=$(jq -r --arg k "$section" '.[$k]' commitsJson)
+            section_commits=$(jq -r --arg k "$section" '.[$k]' ${{ toJson(steps.parse_commits.outputs) }})
 
             if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
               notes+="### $header \n $section_commits \n"
