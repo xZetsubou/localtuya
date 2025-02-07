@@ -115,8 +115,11 @@ jobs:
           jq -n '{}' commitsJson > tempJson && mv tempJson commitsJson
           for key in "${!commits_map[@]}"; do
             echo "$key=${commits_map[$key]}" >> $GITHUB_OUTPUT
-            jq '. + { $key: ${commits_map[$key]} }' commitsJson > tempJson && mv tempJson commitsJson
+            jq '. + { "$key": "${commits_map[$key]}" }' commitsJson > tempJson && mv tempJson commitsJson
           done
+          cat commitsJson
+          cat commitsJson
+          cat commitsJson
           cat commitsJson
 
 
