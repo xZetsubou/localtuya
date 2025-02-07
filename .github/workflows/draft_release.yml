@@ -126,7 +126,7 @@ jobs:
 
             [[ ! "$section" =~ [^[:space:]] ]] && continue
 
-            section_commits=$(echo "${{ toJson(steps.parse_commits.outputs) }}" | jq -r ".$section")
+            section_commits=$(echo "${{ steps.parse_commits.outputs }}" | jq -r ".$section")
 
             if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
               notes+="### $header \n $section_commits \n"
