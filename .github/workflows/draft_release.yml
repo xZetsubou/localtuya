@@ -119,15 +119,18 @@ jobs:
       - name: Create Release Notes
         id: release-notes
         run: |
+          echo "test"
           notes="#### 🚨 **Note**: This draft has been released in $(date +'%Y.%m.%d - %H:%M:%S')\n\n"
 
           while read -r item; do
+            echo "test1"
             section=$(echo "$item"  | jq -r '.section') && [[ ! "$section" =~ [^[:space:]] ]] && continue
             header=$(echo "$item"   | jq -r '.header') 
 
+            echo "test3"
             [[ ! "$section" =~ [^[:space:]] ]] && continue
 
-            echo "ttests"
+            echo "test4"
             echo "${{ toJson(steps.parse_commits.outputs) }}"
             section_commits=$(echo '${{ toJson(steps.parse_commits.outputs) }}' | jq -r '.$section')
 
