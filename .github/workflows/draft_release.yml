@@ -139,7 +139,6 @@ jobs:
 
           echo -e $notes > commits.md
 
-
       - name: Remove old Draft
         id: remove_drafts
         continue-on-error: true
