@@ -119,10 +119,8 @@ jobs:
       - name: Create Release Notes
         id: release-notes
         run: |
-          echo "test 1"
           notes="#### 🚨 **Note**: This draft has been released in $(date +'%Y.%m.%d - %H:%M:%S')\n\n"
 
-          echo "test 2"
           while read -r item; do
             echo "test 3"
             section=$(echo "$item"  | jq -r '.section') && [[ ! "$section" =~ [^[:space:]] ]] && continue
@@ -130,13 +128,12 @@ jobs:
 
             [[ ! "$section" =~ [^[:space:]] ]] && continue
 
-            echo "test 4"
             section_commits=$(echo '${{ toJson(steps.parse_commits.outputs) }}' | jq -r '.$section')
 
             if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
               notes+="### $header \n $section_commits \n"
             fi
-          done < <(echo '${{env.release_commits}}')
+          done < <(echo ${{env.release_commits}})
 
           echo -e $notes > commits.md
 
