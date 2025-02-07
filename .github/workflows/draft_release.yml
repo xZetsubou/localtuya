@@ -91,9 +91,6 @@ jobs:
         run: |
           declare -A commits_map;
 
-          # Escape single quiet.
-          sed "s/'//g" commits.md
-
           while IFS= read -r line; do
             first_lower=$(echo "$line" | awk '{print $1}' | tr '[:upper:]' '[:lower:]')
             scope=$(echo "$line" | cut -d' ' -f1)
@@ -114,10 +111,13 @@ jobs:
             [[ $added == false ]] && commits_map["more"]+=$parsed_commit
 
           done < commits.md
-
+          
+          touch commits_json
           for key in "${!commits_map[@]}"; do
             echo "$key=${commits_map[$key]}" >> $GITHUB_OUTPUT
+            jq -i '. + {$key: ${commits_map[$key]}}' commits_json
           done
+          cat commits_json
 
 
       - name: Create Release Notes
