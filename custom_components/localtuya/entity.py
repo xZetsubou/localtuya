@@ -208,18 +208,18 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         return attributes
 
     @property
-    def device_info(self) -> DeviceInfo:
+    def device_info(self):
         """Return device information for the device registry."""
-        model = self._device_config.model
+        device_config = self._device_config
         device_info = DeviceInfo(
             # Serial numbers are unique identifiers within a specific domain
-            identifiers={(DOMAIN, f"local_{self._device_config.id}")},
-            name=self._device_config.name,
+            identifiers={(DOMAIN, f"local_{device_config.id}")},
+            name=device_config.name,
             manufacturer="Tuya",
-            model=f"{model} ({self._device_config.id})",
-            sw_version=self._device_config.protocol_version,
+            model=f"{device_config.model} ({device_config.id})",
+            sw_version=device_config.protocol_version,
         )
-        if self._device.is_subdevice:
+        if self._device.is_subdevice and self._device.id != self._device.gateway.id:
             device_info[ATTR_VIA_DEVICE] = (DOMAIN, f"local_{self._device.gateway.id}")
         return device_info
 
