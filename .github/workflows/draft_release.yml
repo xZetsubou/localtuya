@@ -83,7 +83,6 @@ jobs:
                       username=$name && [[ -n $id ]] && username=$mail_name
                     fi
                     sed -i "s#$author_info#$username#g" "commits.md"
-                    
           done < commits.md
 
           
@@ -91,6 +90,10 @@ jobs:
         id: parse_commits
         run: |
           declare -A commits_map;
+
+          # Escape single quiet.
+          sed -i "s/'/\\'\\'/g" commits.md
+
           while IFS= read -r line; do
             first_lower=$(echo "$line" | awk '{print $1}' | tr '[:upper:]' '[:lower:]')
             scope=$(echo "$line" | cut -d' ' -f1)
@@ -127,7 +130,7 @@ jobs:
 
             [[ ! "$section" =~ [^[:space:]] ]] && continue
 
-            section_commits=$(printf '%s' "toJson(steps.parse_commits.outputs)" | jq -r '.section' )
+            section_commits=$(echo '${{ toJson(steps.parse_commits.outputs) }}' | jq -r '.$section')
 
             if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
               notes+="### $header \n $section_commits \n"
