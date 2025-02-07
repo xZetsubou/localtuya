@@ -107,7 +107,7 @@ jobs:
               prefix=$(echo "$item"   | jq -r '.prefix')
 
               if [[ "$first_lower" == $prefix*: ]]; then
-                echo "Added $parse_commit into section $section"
+                echo "Added $parsed_commit into section $section"
                 commits_map[$section]+=$parsed_commit && added=true && break
               fi
             done < <(echo '${{env.release_commits}}')
