@@ -120,7 +120,6 @@ jobs:
         run: |
           notes="#### 🚨 **Note**: This draft has been released in $(date +'%Y.%m.%d - %H:%M:%S')\n\n"
 
-          echo ${{toJson(steps.parse_commits.outputs)}}
           while read -r item; do
             section=$(echo "$item"  | jq -r '.section') && [[ ! "$section" =~ [^[:space:]] ]] && continue
             header=$(echo "$item"   | jq -r '.header') 
