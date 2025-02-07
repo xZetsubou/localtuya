@@ -141,6 +141,8 @@ jobs:
 
       - name: Remove old Draft
         id: remove_drafts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
         run:
           gh release delete "Draft Latest version"
