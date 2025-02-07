@@ -112,12 +112,12 @@ jobs:
 
           done < commits.md
           
-          touch commits_json
+          jq -n '{}' commitsJson > tempJson && mv tempJson commitsJson
           for key in "${!commits_map[@]}"; do
             echo "$key=${commits_map[$key]}" >> $GITHUB_OUTPUT
-            jq -i '. + {$key: ${commits_map[$key]}}' commits_json
+            jq '. + { "$key": "${commits_map[$key]}" }' commitsJson > tempJson && mv tempJson commitsJson
           done
-          cat commits_json
+          cat commitsJson
 
 
       - name: Create Release Notes
