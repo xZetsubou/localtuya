@@ -124,6 +124,10 @@ jobs:
             section=$(echo "$item"  | jq -r '.section') && [[ ! "$section" =~ [^[:space:]] ]] && continue
             header=$(echo "$item"   | jq -r '.header') 
 
+            [[ ! "$section" =~ [^[:space:]] ]] && continue
+
+            section_commits=$(echo '${{ toJson(steps.parse_commits.outputs) }}' | jq -r '.$section')
+
           done < <(echo '${{env.release_commits}}')
 
           echo -e $notes > commits.md
