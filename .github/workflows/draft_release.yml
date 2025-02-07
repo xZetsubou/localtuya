@@ -130,9 +130,10 @@ jobs:
 
             [[ ! "$section" =~ [^[:space:]] ]] && continue
 
-            section_commits=$(jq --arg k "$section" '.[$k]' commitsJson)
+            section_commits=$(jq -r --arg k "$section" '.[$k]' commitsJson)
 
             if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
+              echo "Added notes $section_commits"
               notes+="### $header \n $section_commits \n"
             fi
           done < <(echo '${{env.release_commits}}')
