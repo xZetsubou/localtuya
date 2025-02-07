@@ -139,7 +139,7 @@ jobs:
 
           echo -e $notes > commits.md
           echo "Commits md is: -----------------------------"
-          cat 
+          cat commits.md
 
       - name: Remove old Draft
         id: remove_drafts
