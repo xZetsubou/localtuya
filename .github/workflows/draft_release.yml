@@ -11,7 +11,6 @@ on:
     workflow_dispatch:
     branches:
       - master
-      - fix_draft_release_quites
 
 permissions:
   contents: write
@@ -85,7 +84,6 @@ jobs:
                     sed -i "s#$author_info#$username#g" "commits.md"
           done < commits.md
 
-          
       - name: Parse commit messages and categorize
         id: parse_commits
         run: |
