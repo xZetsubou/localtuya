@@ -163,8 +163,9 @@ There are two ways to create templates
         is_passive_entity: false
         platform: select
         restore_on_reconnect: false
-        select_options: forward;back
-        select_options_friendly: Forward;Reverse
+        select_options:
+            back: Back
+            forward: Forward
     - select:
         entity_category: config
         friendly_name: Motor Mode
@@ -172,8 +173,9 @@ There are two ways to create templates
         is_passive_entity: false
         platform: select
         restore_on_reconnect: false
-        select_options: contiuation;point
-        select_options_friendly: Auto;Manual
+        select_options:
+            contiuation: Auto
+            point: Manual
     - binary_sensor:
         device_class: problem
         entity_category: diagnostic
