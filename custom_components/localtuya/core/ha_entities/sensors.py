@@ -43,7 +43,7 @@ def localtuya_sensor(unit_of_measurement=None, scale_factor: float = 1) -> dict:
     return data
 
 
-# Commonly used battery sensors, that are re-used in the sensors down below.
+# Commonly used battery sensors, that are reused in the sensors down below.
 BATTERY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = (
     LocalTuyaEntity(
         id=DPCode.BATTERY_PERCENTAGE,

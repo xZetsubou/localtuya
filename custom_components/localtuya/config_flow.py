@@ -951,7 +951,7 @@ async def setup_localtuya_devices(
             update_fails(dev_id, f"no configured entities: {dev_entites} - {category}")
             continue
 
-        # Add configured entiteis
+        # Add configured entities
         devices[dev_id].update({CONF_ENTITIES: dev_entites})
 
     return devices, fails
