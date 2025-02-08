@@ -102,7 +102,6 @@ jobs:
               prefix=$(echo "$item"   | jq -r '.prefix')
 
               if [[ "$first_lower" == $prefix*: ]]; then
-                echo "Added $parsed_commit into section $section"
                 commits_map[$section]+=$parsed_commit && added=true && break
               fi
             done < <(echo '${{env.release_commits}}')
@@ -128,14 +127,13 @@ jobs:
             [[ ! "$section" =~ [^[:space:]] ]] && continue
 
             section_commits=$(jq -r --arg k "$section" '.[$k]' commitsJson)
-
             if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
               notes+="### $header \n $section_commits \n"
             fi
+
           done < <(echo '${{env.release_commits}}')
 
           set -f; echo -e $notes > commits.md; set +f
-          cat commits.md
 
       - name: Remove old Draft
         id: remove_drafts
