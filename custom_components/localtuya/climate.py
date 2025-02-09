@@ -497,7 +497,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         if self._target_temp_forced_to_celsius:
             self._target_temperature = f_to_c(self._target_temperature)
         elif self._target_temp_forced_to_celsius is False:
-            self._current_temperature = f_to_c(self._current_temperature)
+            self._current_temperature = c_to_f(self._current_temperature)
 
         # Update preset states
         if self._has_presets:
