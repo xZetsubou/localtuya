@@ -82,7 +82,9 @@ class LocalTuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
                 self._is_on = False
                 self.async_write_ha_state()
 
-            async_call_later(self.hass, self._reset_timer, async_reset_state)
+            self._reset_timer_interval = async_call_later(
+                self.hass, self._reset_timer, async_reset_state
+            )
 
     # No need to restore state for a sensor
     async def restore_state_when_connected(self):
