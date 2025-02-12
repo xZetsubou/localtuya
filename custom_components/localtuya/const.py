@@ -84,6 +84,7 @@ CONF_ALARM_SUPPORTED_STATES = "alarm_supported_states"
 
 # Binary_sensor, Siren
 CONF_STATE_ON = "state_on"
+CONF_RESET_TIMER = "reset_timer"
 
 # light
 CONF_BRIGHTNESS_LOWER = "brightness_lower"
