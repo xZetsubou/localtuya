@@ -1616,11 +1616,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
 
 async def connect(
-    address,
-    device_id,
-    local_key,
-    protocol_version,
-    enable_debug,
+    address: str,
+    device_id: str,
+    local_key: str,
+    protocol_version: float,
+    enable_debug: bool,
     listener=None,
     port=6668,
     timeout=5,
@@ -1629,8 +1629,8 @@ async def connect(
     loop = asyncio.get_running_loop()
     on_connected = loop.create_future()
     try:
-        _, protocol = await asyncio.wait_for(
-            loop.create_connection(
+        async with asyncio.timeout(3):
+            _, protocol = await loop.create_connection(
                 lambda: TuyaProtocol(
                     device_id,
                     local_key,
@@ -1641,9 +1641,7 @@ async def connect(
                 ),
                 address,
                 port,
-            ),
-            timeout=3,
-        )
+            )
     # Assuming the connect timed out then then the host isn't reachable.
     except (OSError, TimeoutError) as ex:
         if ex.errno == errno.EHOSTUNREACH or isinstance(ex, TimeoutError):
@@ -1651,7 +1649,6 @@ async def connect(
                 errno.EHOSTUNREACH,
                 os.strerror(errno.EHOSTUNREACH) + f" ('{address}', '{port}')",
             )
-
         raise ex
     except (Exception, asyncio.CancelledError) as ex:
         raise ex

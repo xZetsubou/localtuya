@@ -127,7 +127,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
         self._codes = {}  # Contains only device commands.
         self._global_codes = {}  # contains all devices commands.
 
-        self._codes_storage = Store(self._hass, CODE_STORAGE_VERSION, SOTRAGE_KEY)
+        self._codes_storage = Store(self.hass, CODE_STORAGE_VERSION, SOTRAGE_KEY)
 
         self._storage_loaded = False
 

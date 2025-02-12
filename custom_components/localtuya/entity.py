@@ -140,8 +140,8 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         self._state = None
         self._last_state = None
         self._stored_states: State | None = None
-        self._hass = device._hass
-        self._componet_add_entities: AddEntitiesCallback = kwargs.get(
+        self.hass = device.hass
+        self.componet_add_entities: AddEntitiesCallback = kwargs.get(
             "add_entites_callback"
         )
         self._loaded = False
