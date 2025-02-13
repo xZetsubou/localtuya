@@ -1,28 +1,27 @@
 """Platform to present any Tuya DP as a binary sensor."""
 
 import logging
+import voluptuous as vol
+
 from functools import partial
 
-import voluptuous as vol
-from homeassistant.helpers.selector import (
-    NumberSelector,
-    NumberSelectorConfig,
-)
+from homeassistant.helpers.selector import NumberSelector, NumberSelectorConfig
 from homeassistant.helpers.event import async_call_later
+from homeassistant.core import callback, CALLBACK_TYPE
+from homeassistant.const import CONF_DEVICE_CLASS
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASSES_SCHEMA,
     DOMAIN,
     BinarySensorEntity,
 )
-from homeassistant.core import callback
-from homeassistant.const import CONF_DEVICE_CLASS
 
 from .entity import LocalTuyaEntity, async_setup_entry
 from .const import CONF_STATE_ON, CONF_RESET_TIMER
 
-_LOGGER = logging.getLogger(__name__)
 
 CONF_STATE_OFF = "state_off"
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def flow_schema(dps):
@@ -31,8 +30,8 @@ def flow_schema(dps):
         vol.Required(CONF_STATE_ON, default="True"): str,
         # vol.Required(CONF_STATE_OFF, default="False"): str,
         vol.Optional(CONF_DEVICE_CLASS): DEVICE_CLASSES_SCHEMA,
-        vol.Optional(CONF_RESET_TIMER): NumberSelector(
-            NumberSelectorConfig(min=0, unit_of_measurement="s", mode="box")
+        vol.Optional(CONF_RESET_TIMER, default=0): NumberSelector(
+            NumberSelectorConfig(min=0, unit_of_measurement="Seconds", mode="box")
         ),
     }
 
@@ -52,7 +51,7 @@ class LocalTuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
         self._is_on = False
 
         self._reset_timer: float = self._config.get(CONF_RESET_TIMER, 0)
-        self._reset_timer_interval = None
+        self._reset_timer_interval: CALLBACK_TYPE | None = None
 
     @property
     def is_on(self):
