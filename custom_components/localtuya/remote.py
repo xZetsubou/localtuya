@@ -23,8 +23,8 @@ from homeassistant.components.remote import (
     RemoteEntityFeature,
 )
 from homeassistant.components import persistent_notification
-from homeassistant.const import CONF_DEVICE_ID, STATE_OFF
-from homeassistant.core import HomeAssistant, State
+from homeassistant.const import STATE_OFF
+from homeassistant.core import State, callback
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.storage import Store
 
@@ -75,6 +75,20 @@ ATTR_DELAY = "delay"
 ATTR_INTERVALS = "intervals"
 ATTR_STUDY_FREQ = "study_feq"
 
+RF_DEFAULTS = (
+    (ATTR_RF_TYPE, "sub_2g"),
+    (ATTR_STUDY_FREQ, "433.92"),
+    (ATTR_VER, "2"),
+    ("feq", "0"),
+    ("rate", "0"),
+    ("mode", "0"),
+)
+SEND_DEFAULTS = (
+    (ATTR_TIMES, "6"),
+    (ATTR_DELAY, "0"),
+    (ATTR_INTERVALS, "0"),
+)
+
 CODE_STORAGE_VERSION = 1
 SOTRAGE_KEY = "localtuya_remotes_codes"
 
@@ -90,12 +104,21 @@ def flow_schema(dps):
 
 
 def rf_decode_button(base64_code):
+    """Decode base64 RF command."""
     try:
         jstr = base64.b64decode(base64_code)
-        jdata = json.loads(jstr)
+        jdata: dict = json.loads(jstr)
         return jdata
     except:
         return {}
+
+
+def parse_head_key(head_key: str):
+    """Head and key should looks similar to :HEAD:000:KEY:000. return head, key"""
+    head_key = head_key.split(":HEAD:")[-1]
+    head = head_key.split(":KEY:")[0]
+    key = head_key.split(":KEY:")[1]
+    return head, key
 
 
 class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
@@ -260,56 +283,71 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
 
     async def send_signal(self, control, base64_code=None, rf=False):
         rf_data = rf_decode_button(base64_code)
+        is_rf = rf_data or rf
+
+        @callback
+        def async_handle_enum_type():
+            """Handle enum type IR."""
+            commands = {self._dp_id: control, "13": 0}
+            if control == ControlMode.SEND_IR:
+                if all(i in base64_code for i in (":HEAD:", ":KEY:")):
+                    head, key = parse_head_key(base64_code)
+                    commands["3"] = head
+                    commands["4"] = key
+                else:
+                    commands[self._dp_id] = ControlMode.STUDY_KEY.value
+                    commands[self._dp_key_study] = base64_code
+            return commands
+
+        @callback
+        def async_handle_json_type():
+            """Handle json type IR."""
+            commands = {NSDP_CONTROL: control}
+            if control == ControlMode.SEND_IR:
+                commands[NSDP_TYPE] = 0
+                if all(i in base64_code for i in (":HEAD:", ":KEY:")):
+                    head, key = parse_head_key(base64_code)
+                    commands[NSDP_HEAD] = head
+                    commands[NSDP_KEY1] = "0" + key
+                else:
+                    commands[NSDP_HEAD] = ""
+                    commands[NSDP_KEY1] = "1" + base64_code
+            return commands
+
+        @callback
+        def async_handle_rf_json_type():
+            """Handle json type RF."""
+            commands = {NSDP_CONTROL: MODE_IR_TO_RF[control]}
+            if freq := rf_data.get(ATTR_STUDY_FREQ):
+                commands[ATTR_STUDY_FREQ] = freq
+            if ver := rf_data.get(ATTR_VER):
+                commands[ATTR_VER] = ver
+
+            for attr, default_value in RF_DEFAULTS:
+                if attr not in commands:
+                    commands[attr] = default_value
+
+            if control == ControlMode.SEND_IR:
+                commands[NSDP_KEY1] = {"code": base64_code}
+                for attr, default_value in SEND_DEFAULTS:
+                    if attr not in commands[NSDP_KEY1]:
+                        commands[NSDP_KEY1][attr] = default_value
+            return commands
 
         if self._ir_control_type == ControlType.ENUM:
-            command = {self._dp_id: control}
-            if control == ControlMode.SEND_IR:
-                command[self._dp_id] = ControlMode.STUDY_KEY.value
-                command[self._dp_key_study] = base64_code
-                command["13"] = 0
+            commands = async_handle_enum_type()
         else:
-            command = {
-                NSDP_CONTROL: MODE_IR_TO_RF[control] if (rf_data or rf) else control
-            }
-            if rf_data or rf:
-                if freq := rf_data.get(ATTR_STUDY_FREQ):
-                    command[ATTR_STUDY_FREQ] = freq
-                if ver := rf_data.get(ATTR_VER):
-                    command[ATTR_VER] = ver
-
-                for attr, default_value in (
-                    (ATTR_RF_TYPE, "sub_2g"),
-                    (ATTR_STUDY_FREQ, "433.92"),
-                    (ATTR_VER, "2"),
-                    ("feq", "0"),
-                    ("rate", "0"),
-                    ("mode", "0"),
-                ):
-                    if attr not in command:
-                        command[attr] = default_value
-
-                if control == ControlMode.SEND_IR:
-                    command[NSDP_KEY1] = {"code": base64_code}
-                    for attr, default_value in (
-                        (ATTR_TIMES, "6"),
-                        (ATTR_DELAY, "0"),
-                        (ATTR_INTERVALS, "0"),
-                    ):
-                        if attr not in command[NSDP_KEY1]:
-                            command[NSDP_KEY1][attr] = default_value
+            if is_rf:
+                commands = async_handle_rf_json_type()
             else:
-                if control == ControlMode.SEND_IR:
-                    command[NSDP_TYPE] = 0
-                    command[NSDP_HEAD] = ""  # also known as ir_code
-                    command[NSDP_KEY1] = "1" + base64_code  # also code: key_code
+                commands = async_handle_json_type()
+            commands = {self._dp_id: json.dumps(commands)}
 
-            command = {self._dp_id: json.dumps(command)}
-
-        self.debug(f"Sending Command: {command}")
+        self.debug(f"Sending Command: {commands}")
         if rf_data:
             self.debug(f"Decoded RF Button: {rf_data}")
 
-        await self._device.set_dps(command)
+        await self._device.set_dps(commands)
 
     async def _delete_command(self, device, command) -> None:
         """Store new code into stoarge."""
