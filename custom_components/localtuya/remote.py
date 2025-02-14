@@ -282,6 +282,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             await self._delete_command(device, command)
 
     async def send_signal(self, control, base64_code=None, rf=False):
+        """Send command to the remote device."""
         rf_data = rf_decode_button(base64_code)
         is_rf = rf_data or rf
 
