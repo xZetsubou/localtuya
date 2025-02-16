@@ -24,8 +24,8 @@ from homeassistant.components.remote import (
 )
 from homeassistant.components import persistent_notification
 from homeassistant.const import STATE_OFF
-from homeassistant.core import State, callback
-from homeassistant.exceptions import ServiceValidationError
+from homeassistant.core import ServiceCall, State, callback, HomeAssistant
+from homeassistant.exceptions import ServiceValidationError, NoEntitySpecifiedError
 from homeassistant.helpers.storage import Store
 
 from .entity import LocalTuyaEntity, async_setup_entry
@@ -250,7 +250,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
                 try:
                     self.debug(f"Waiting for code from DP: {self._dp_recieve}")
                     await asyncio.wait_for(self._event.wait(), timeout)
-                    await self._save_new_command(device, command, self._last_code)
+                    await self.save_new_command(device, command, self._last_code)
                 except TimeoutError:
                     raise ServiceValidationError(f"Timeout: Failed to learn: {command}")
                 finally:
@@ -377,8 +377,11 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             self._global_codes.pop(device)
         await self._codes_storage.async_save(codes_data)
 
-    async def _save_new_command(self, device, command, code) -> None:
+    async def save_new_command(self, device, command, code) -> None:
         """Store new code into stoarge."""
+        if not self._storage_loaded:
+            await self._async_load_storage()
+
         device_unqiue_id = self._device_id
         codes = self._codes
 
@@ -456,4 +459,39 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
         self._attr_is_on = state is None or state.state != STATE_OFF
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaRemote, flow_schema)
+async def async_setup_services(hass: HomeAssistant, entities: list[LocalTuyaRemote]):
+    """Setup remote services."""
+
+    async def _handle_add_key(call: ServiceCall):
+        """Handle add remote key service's action."""
+        entity = None
+        for ent in entities:
+            if call.data.get("target") == ent.device_entry.id:
+                entity = ent
+        if not entity:
+            raise NoEntitySpecifiedError("The targeted device could not be found")
+
+        if base65code := call.data.get("base64"):
+            await entity.save_new_command(
+                call.data["device_name"], call.data["command_name"], base65code
+            )
+        elif (head := call.data.get("head")) and (key := call.data.get("key")):
+            base65code = f":HEAD:{head}:KEY:{key}"
+            await entity.save_new_command(
+                call.data["device_name"], call.data["command_name"], base65code
+            )
+        else:
+            raise ServiceValidationError(
+                "Ensure that the fields for Raw Base64 code or header/key are valid"
+            )
+
+    hass.services.async_register("localtuya", "remote_add_code", _handle_add_key)
+
+
+async_setup_entry = partial(
+    async_setup_entry,
+    DOMAIN,
+    LocalTuyaRemote,
+    flow_schema,
+    async_setup_services=async_setup_services,
+)

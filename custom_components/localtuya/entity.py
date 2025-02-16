@@ -1,7 +1,7 @@
 """Code shared between all platforms."""
 
 import logging
-from typing import Any
+from typing import Any, Coroutine, Callable
 
 from homeassistant.core import HomeAssistant, State
 from homeassistant.config_entries import ConfigEntry
@@ -49,12 +49,13 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-    domain,
-    entity_class,
-    flow_schema,
+    domain: str,
+    entity_class: Any,
+    flow_schema: Callable,
     hass: HomeAssistant,
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
+    async_setup_services: Coroutine[HomeAssistant, list, None] = None,
 ):
     """Set up a Tuya platform based on a config entry.
 
@@ -103,6 +104,9 @@ async def async_setup_entry(
     if entities:
         device.add_entities(entities)
         async_add_entities(entities)
+
+        if async_setup_services:
+            await async_setup_services(hass, entities)
 
 
 def get_dps_for_platform(flow_schema):
