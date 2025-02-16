@@ -309,7 +309,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
                 if all(i in base64_code for i in (":HEAD:", ":KEY:")):
                     head, key = parse_head_key(base64_code)
                     commands[NSDP_HEAD] = head
-                    commands[NSDP_KEY1] = "0" + key
+                    commands[NSDP_KEY1] = key
                 else:
                     commands[NSDP_HEAD] = ""
                     commands[NSDP_KEY1] = "1" + base64_code
