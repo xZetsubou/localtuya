@@ -189,6 +189,8 @@ NO_PROTOCOL_HEADER_CMDS = [
 ]
 
 HEARTBEAT_INTERVAL = 8.3
+TIMEOUT_CONNECT = 5
+TIMEOUT_REPLY   = 5
 
 # DPS that are known to be safe to use with update_dps (0x12) command
 UPDATE_DPS_WHITELIST = [18, 19, 20]  # Socket (Wi-Fi)
@@ -1636,13 +1638,13 @@ async def connect(
     enable_debug: bool,
     listener=None,
     port=6668,
-    timeout=5,
+    timeout=TIMEOUT_REPLY,
 ):
     """Connect to a device."""
     loop = asyncio.get_running_loop()
     on_connected = loop.create_future()
     try:
-        async with asyncio.timeout(3):
+        async with asyncio.timeout(TIMEOUT_CONNECT):
             _, protocol = await loop.create_connection(
                 lambda: TuyaProtocol(
                     device_id,
