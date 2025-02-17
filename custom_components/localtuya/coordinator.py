@@ -23,6 +23,7 @@ from .core.pytuya import (
     ContextualLogger,
     DecodeError,
     HEARTBEAT_INTERVAL,
+    TIMEOUT_CONNECT,
     SubdeviceState,
     TuyaListener,
     TuyaProtocol,
@@ -479,7 +480,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         # Delay shutdown.
         if not self.is_closing:
             try:
-                await asyncio.sleep(3 + self._device_config.sleep_time)
+                await asyncio.sleep(TIMEOUT_CONNECT + self._device_config.sleep_time)
             except asyncio.CancelledError as e:
                 self.debug(f"Shutdown entities task has been canceled: {e}", force=True)
                 return
