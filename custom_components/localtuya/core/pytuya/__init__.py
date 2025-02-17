@@ -188,7 +188,7 @@ NO_PROTOCOL_HEADER_CMDS = [
     LAN_EXT_STREAM,
 ]
 
-HEARTBEAT_INTERVAL = 9
+HEARTBEAT_INTERVAL = 8.3
 
 # DPS that are known to be safe to use with update_dps (0x12) command
 UPDATE_DPS_WHITELIST = [18, 19, 20]  # Socket (Wi-Fi)
@@ -945,9 +945,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             """Continuously send heart beat updates."""
             self.debug("Started keep alive loop.")
             fail_attempt = 0
+            delta = 0
             while True:
+                start = time.time()
                 try:
-                    await asyncio.sleep(HEARTBEAT_INTERVAL)
+                    await asyncio.sleep(HEARTBEAT_INTERVAL - delta)
                     await action()
                     fail_attempt = 0
                 except asyncio.CancelledError:
@@ -961,6 +963,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 except Exception as ex:  # pylint: disable=broad-except
                     self.exception("Heartbeat failed (%s), disconnecting", ex)
                     break
+                delta = (time.time() - start) - HEARTBEAT_INTERVAL
+                if delta < 0:
+                    delta = 0
+                elif delta > HEARTBEAT_INTERVAL:
+                    delta = HEARTBEAT_INTERVAL
 
             self.heartbeater = None
             if self.transport is not None:
