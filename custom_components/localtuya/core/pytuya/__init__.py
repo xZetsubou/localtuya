@@ -277,7 +277,6 @@ class ContextualLogger:
         self._logger = None
         self._enable_debug = False
 
-        self._reset_warning = int(time.time())
         self._last_warning = ""
 
     def set_logger(self, logger, device_id, enable_debug=False, name=None):
@@ -1012,7 +1011,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             while self.last_command_sent < 0.050:
                 await asyncio.sleep(0.010)
 
-            self._last_command_sent = time.time()
+            self._last_command_sent = time.monotonic()
             self.transport.write(data)
 
     async def close(self):
@@ -1621,7 +1620,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     @property
     def last_command_sent(self):
         """Return last command sent by seconds"""
-        return time.time() - self._last_command_sent
+        return time.monotonic() - self._last_command_sent
 
     def __repr__(self):
         """Return internal string representation of object."""
