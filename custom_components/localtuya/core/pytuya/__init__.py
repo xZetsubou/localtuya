@@ -1635,7 +1635,6 @@ async def connect(
     enable_debug: bool,
     listener=None,
     port=6668,
-    timeout=TIMEOUT_REPLY,
 ):
     """Connect to a device."""
     loop = asyncio.get_running_loop()
@@ -1667,5 +1666,4 @@ async def connect(
     except:
         raise Exception(f"The host refused to connect")
 
-    await asyncio.wait_for(on_connected, timeout=timeout)
     return protocol
