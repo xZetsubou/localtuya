@@ -190,7 +190,7 @@ NO_PROTOCOL_HEADER_CMDS = [
 
 HEARTBEAT_INTERVAL = 8.3
 TIMEOUT_CONNECT = 5
-TIMEOUT_REPLY   = 5
+TIMEOUT_REPLY = 5
 
 # DPS that are known to be safe to use with update_dps (0x12) command
 UPDATE_DPS_WHITELIST = [18, 19, 20]  # Socket (Wi-Fi)
