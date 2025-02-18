@@ -362,6 +362,8 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
             elif hvac_mode == HVACMode.FAN_ONLY:
                 hvac_action = HVACAction.FAN
 
+            self._hvac_action = hvac_action
+
         return hvac_action
 
     @property
