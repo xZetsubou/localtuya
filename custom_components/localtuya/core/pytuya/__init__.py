@@ -858,7 +858,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 off_devs = self.sub_devices_states.get("offline")
                 listener = self.listener and self.listener()
                 if listener is None or (on_devs is None and off_devs is None):
-                    self._sub_devs_query_task = None
                     return
                 for cid, device in listener.sub_devices.items():
                     if cid in on_devs:
@@ -869,7 +868,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                         device.subdevice_state_updated(SubdeviceState.ABSENT)
             except asyncio.CancelledError:
                 pass
-            self._sub_devs_query_task = None
+            finally:
+                self._sub_devs_query_task = None
 
         if (data := decoded_message.get("data")) and isinstance(data, dict):
             devs_states = self.sub_devices_states
