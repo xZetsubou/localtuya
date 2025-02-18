@@ -951,7 +951,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             fail_attempt = 0
             delta = 0
             while True:
-                start = time.time()
+                start = time.monotonic()
                 try:
                     await asyncio.sleep(HEARTBEAT_INTERVAL - delta)
                     await action()
@@ -967,11 +967,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 except Exception as ex:  # pylint: disable=broad-except
                     self.exception("Heartbeat failed (%s), disconnecting", ex)
                     break
-                delta = (time.time() - start) - HEARTBEAT_INTERVAL
-                if delta < 0:
-                    delta = 0
-                elif delta > HEARTBEAT_INTERVAL:
-                    delta = HEARTBEAT_INTERVAL
+                # Adjusts sleep time to maintain the heartbeat interval
+                delta = (time.monotonic() - start) - HEARTBEAT_INTERVAL
+                delta = max(0, min(delta, HEARTBEAT_INTERVAL))
 
             self.heartbeater = None
             if self.transport is not None:
