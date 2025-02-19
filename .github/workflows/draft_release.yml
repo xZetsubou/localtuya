@@ -11,6 +11,7 @@ on:
     workflow_dispatch:
     branches:
       - master
+      - ci-draft-release-ignore-colon
 
 permissions:
   contents: write
@@ -101,7 +102,7 @@ jobs:
               section=$(echo "$item"  | jq -r '.section')
               prefix=$(echo "$item"   | jq -r '.prefix')
 
-              if [[ "$first_lower" == $prefix*: ]]; then
+              if [[ "$first_lower" == $prefix* ]]; then
                 commits_map[$section]+=$parsed_commit && added=true && break
               fi
             done < <(echo '${{env.release_commits}}')
