@@ -1635,12 +1635,13 @@ async def connect(
     enable_debug: bool,
     listener=None,
     port=6668,
+    timeout=TIMEOUT_CONNECT,
 ):
     """Connect to a device."""
     loop = asyncio.get_running_loop()
     on_connected = loop.create_future()
     try:
-        async with asyncio.timeout(TIMEOUT_CONNECT):
+        async with asyncio.timeout(timeout):
             _, protocol = await loop.create_connection(
                 lambda: TuyaProtocol(
                     device_id,
