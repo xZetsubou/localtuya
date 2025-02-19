@@ -49,7 +49,7 @@ sean6541, for the working (standard) Python Handler for Tuya devices.
 
 [uzlonewolf](https://github.com/uzlonewolf), for maintaining TinyTuya who improved the tool so much and introduced new features like new protocols, etc.
 
-[postlund](https://github.com/postlund), for the ideas, for coding 95% of the refactoring and boosting the quality of this repo to levels hard to imagine (by me, at least) and teaching me A LOT of how things work in Home Assistant.
+[postlund](https://github.com/postlund), for the ideas, for coding 95% of the refactoring and boosting the quality of the upstream repository.
 
 </p>
 </details> 
