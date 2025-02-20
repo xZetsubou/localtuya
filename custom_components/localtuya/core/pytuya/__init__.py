@@ -769,7 +769,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         local_key: str,
         protocol_version: float,
         enable_debug: bool,
-        on_connected: asyncio.Future,
         listener: TuyaListener,
     ):
         """
@@ -803,7 +802,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.transport = None
         self.listener = weakref.ref(listener)
         self.dispatcher = self._setup_dispatcher()
-        self.on_connected = on_connected
         self.heartbeater: asyncio.Task | None = None
         self._sub_devs_query_task: asyncio.Task | None = None
         self.dps_cache = {}
@@ -936,7 +934,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     def connection_made(self, transport):
         """Did connect to the device."""
         self.transport = transport
-        self.on_connected.set_result(True)
 
     def keep_alive(self, is_gateway: bool = False):
         """
@@ -1639,7 +1636,6 @@ async def connect(
 ):
     """Connect to a device."""
     loop = asyncio.get_running_loop()
-    on_connected = loop.create_future()
     try:
         async with asyncio.timeout(timeout):
             _, protocol = await loop.create_connection(
@@ -1648,7 +1644,6 @@ async def connect(
                     local_key,
                     protocol_version,
                     enable_debug,
-                    on_connected,
                     listener or EmptyListener(),
                 ),
                 address,
