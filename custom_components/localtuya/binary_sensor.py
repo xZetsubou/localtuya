@@ -78,6 +78,9 @@ class LocalTuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
             @callback
             def async_reset_state(now):
                 """Set the state of the entity to off."""
+                # "_update_handler" logic, if status hasn't changed "status_updated" will not be called.
+                # Maybe we can find better solution then this workaround?
+                self._status[self._dp_id] = "reset_state_binary_sensor"
                 self._is_on = False
                 self.async_write_ha_state()
 
