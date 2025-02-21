@@ -135,13 +135,12 @@ class TuyaDevice(TuyaListener, ContextualLogger):
     @property
     def is_sleep(self):
         """Return whether the device is sleep or not."""
-        device_sleep = self._device_config.sleep_time
-        if device_sleep > 0:
+        if (device_sleep := self._device_config.sleep_time) > 0:
             setattr(self, "low_power", True)
             last_update = int(time.monotonic()) - self._last_update_time
             return last_update < device_sleep
-        else:
-            return False
+
+        return False
 
     @property
     def is_write_only(self):
