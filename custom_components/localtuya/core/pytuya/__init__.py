@@ -609,7 +609,7 @@ class MessageDispatcher(ContextualLogger):
             if isinstance(sem, asyncio.Semaphore):
                 sem.release()
 
-    async def wait_for(self, seqno, cmd, timeout=5):
+    async def wait_for(self, seqno, cmd, timeout=TIMEOUT_REPLY):
         """Wait for response to a sequence number to be received and return it."""
         if seqno in self.listeners:
             self.debug(f"listener exists for {seqno}")
