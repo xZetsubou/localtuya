@@ -143,8 +143,6 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         else:
             return False
 
-        return device_sleep > 0 and is_sleep
-
     @property
     def is_write_only(self):
         """Return if this sub-device is BLE. We uses 0 in manual dps as mark for BLE devices.
