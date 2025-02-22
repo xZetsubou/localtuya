@@ -573,10 +573,6 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             # - We want only to update if status changed except for 1 DP trigger, for scene controls.
             if len(self._interface.dispatched_dps) == 1:
                 dpid_trigger, dpid_value = next(iter(self._interface.dispatched_dps))
-                if type(dpid_value) in (int, float) and self._last_update_time < 10:
-                    # NOTE: This workaround to avoid massive temp sensors updates.
-                    return
-
                 data = {"dp": dpid_trigger, "value": dpid_value}
                 fire_event(event_device_dp_triggered, data)
             elif old_status != new_status:
@@ -605,8 +601,8 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             # Fake gateways are only used to pass commands no need to update status.
             return
 
-        self._handle_event(self._status, status)
         self._last_update_time = int(time.monotonic())
+        self._handle_event(self._status, status)
         self._status.update(status)
         self._dispatch_status()
 
