@@ -556,39 +556,28 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         signal = f"localtuya_{self._device_config.id}"
         dispatcher_send(self.hass, signal, self._status)
 
-    def _handle_event(self, old_status: dict, new_status: dict, deviceID=None):
+    def _handle_event(self, old_status: dict, new_status: dict):
         """Handle events in HA when devices updated."""
 
         def fire_event(event, data: dict):
-            event_data = {CONF_DEVICE_ID: deviceID or self._device_config.id}
-            event_data.update(data.copy())
-            # Send an event with status, The default length of event without data is 2.
+            """Fire events."""
+            event_data = {CONF_DEVICE_ID: self.id, **data}
             if len(event_data) > 1:
                 self.hass.bus.async_fire(f"localtuya_{event}", event_data)
 
-        event = "states_update"
-        device_triggered = "device_triggered"
-        device_dp_triggered = "device_dp_triggered"
+        event_status_update = "status_update"
+        event_device_dp_triggered = "device_dp_triggered"
 
-        # Device Initializing. if not old_states.
-        # States update event.
-        if old_status and old_status != new_status:
-            data = {"old_states": old_status, "new_states": new_status}
-            fire_event(event, data)
-
-        # Device triggered event.
-        if old_status and new_status is not None:
-            event = device_triggered
-            data = {"states": new_status}
-            fire_event(event, data)
-
-            if self._interface is not None:
-                if len(self._interface.dispatched_dps) == 1:
-                    event = device_dp_triggered
-                    dpid_trigger = list(self._interface.dispatched_dps)[0]
-                    dpid_value = self._interface.dispatched_dps.get(dpid_trigger)
-                    data = {"dp": dpid_trigger, "value": dpid_value}
-                    fire_event(event, data)
+        if self._interface and old_status and new_status:
+            # A massive number of events that can be triggered when some devices update too quickly such as temp sensors,
+            # - We want only to update if status changed except for 1 DP trigger, for scene controls.
+            if len(self._interface.dispatched_dps) == 1:
+                dp, value = next(iter(self._interface.dispatched_dps.items()))
+                data = {"dp": dp, "value": value}
+                fire_event(event_device_dp_triggered, data)
+            if old_status != new_status:
+                data = {"old_status": old_status, "new_status": new_status}
+                fire_event(event_status_update, data)
 
     def _get_gateway(self):
         """Return the gateway device of this sub device."""
@@ -611,8 +600,8 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         if self._fake_gateway:
             # Fake gateways are only used to pass commands no need to update status.
             return
-        self._last_update_time = int(time.monotonic())
 
+        self._last_update_time = int(time.monotonic())
         self._handle_event(self._status, status)
         self._status.update(status)
         self._dispatch_status()
