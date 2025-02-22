@@ -572,8 +572,8 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             # A massive number of events that can be triggered when some devices update too quickly such as temp sensors,
             # - We want only to update if status changed except for 1 DP trigger, for scene controls.
             if len(self._interface.dispatched_dps) == 1:
-                dpid_trigger, dpid_value = next(iter(self._interface.dispatched_dps))
-                data = {"dp": dpid_trigger, "value": dpid_value}
+                dp, value = next(iter(self._interface.dispatched_dps.items()))
+                data = {"dp": dp, "value": value}
                 fire_event(event_device_dp_triggered, data)
             elif old_status != new_status:
                 data = {"old_status": old_status, "new_status": new_status}
