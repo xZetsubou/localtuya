@@ -575,7 +575,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
                 dp, value = next(iter(self._interface.dispatched_dps.items()))
                 data = {"dp": dp, "value": value}
                 fire_event(event_device_dp_triggered, data)
-            elif old_status != new_status:
+            if old_status != new_status:
                 data = {"old_status": old_status, "new_status": new_status}
                 fire_event(event_status_update, data)
 
