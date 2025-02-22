@@ -68,7 +68,7 @@ Examples
 
         ```
 
-!!! annotate danger "Database flooding"
+!!! annotate warning "Database flooding"
     If the recorder is enabled, devices like temperature sensors may update frequently (e.g., every second). 
     This can cause excessive events and significantly increase database size. 
     It is recommended to exclude _localtuya_ events from the recorder to prevent database overload.
