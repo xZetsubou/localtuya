@@ -213,6 +213,47 @@ DEFAULT_CATEGORIES = {
 
 
 @dataclass
+class DictSelector:
+    """A class that manages the mapping between Tuya and HA values."""
+
+    tuya_ha: dict[str, Any]
+    reverse: bool = False
+
+    def __post_init__(self):
+        if self.reverse:
+            self.tuya_ha = {v: k for k, v in self.tuya_ha.items()}
+
+    @property
+    def as_dict(self):
+        """Return options as dict."""
+        return self.tuya_ha
+
+    @property
+    def values(self) -> list:
+        """Return options Tuya keys."""
+        return getattr(self, "_cached_keys__tuya_ha", list(self.tuya_ha.keys()))
+
+    @property
+    def names(self) -> list:
+        """Return options HA values."""
+        return getattr(self, "_cached_values_tuya_ha", list(self.tuya_ha.values()))
+
+    def to_ha(self, value: str, default=None):
+        """Return the friendly name of value."""
+        return self.tuya_ha.get(value, default)
+
+    def to_tuya(self, name: str):
+        """Return the tuya device value of name."""
+        reversed_dict = getattr(
+            self, "_cached_reverse_tuya_ha", {v: k for k, v in self.tuya_ha.items()}
+        )
+        return reversed_dict.get(name)
+
+    def __repr__(self) -> str:
+        "valid" if self.tuya_ha else ""
+
+
+@dataclass
 class DeviceConfig:
     """Represent the main configuration for LocalTuya device."""
 
