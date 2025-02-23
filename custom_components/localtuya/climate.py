@@ -239,10 +239,13 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._fan_supported_speeds = fan_speeds
 
         # Swing configurations.
-        self._swing_mode_dp = self._config.get(CONF_SWING_MODE_DP, {})
+        self._swing_mode_dp = self._config.get(CONF_SWING_MODE_DP)
         self._swing_modes = self._config.get(CONF_SWING_MODES, {})
-        self._swing_horizontal_mode_dp = self._config.get(CONF_SWING_HORIZONTAL_DP, {})
+        self._swing_v_name = {v: k for k, v in self._swing_modes.items()}
+
+        self._swing_horizontal_mode_dp = self._config.get(CONF_SWING_HORIZONTAL_DP)
         self._swing_horizontal_modes = self._config.get(CONF_SWING_HORIZONTAL_MODES, {})
+        self._swing_h_name = {v: k for k, v in self._swing_horizontal_modes.items()}
 
         # Eco!?
         self._eco_dp = self._config.get(CONF_ECO_DP)
@@ -432,20 +435,22 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def swing_modes(self) -> list[str] | None:
         """Return the list of available swing modes."""
-        return list(self._swing_modes)
+        return list(self._swing_modes.values())
 
     @property
     def swing_horizontal_modes(self) -> list[str] | None:
         """Return the list of available horizontal swing modes."""
-        return list(self._swing_horizontal_modes)
+        return list(self._swing_horizontal_modes.values())
 
     async def async_set_swing_mode(self, swing_mode):
         """Set new target swing operation."""
-        await self._device.set_dp(swing_mode, self._swing_mode_dp)
+        await self._device.set_dp(self._swing_v_name[swing_mode], self._swing_mode_dp)
 
     async def async_set_swing_horizontal_mode(self, swing_mode):
         """Set new target horizontal swing operation."""
-        await self._device.set_dp(swing_mode, self._swing_horizontal_mode_dp)
+        await self._device.set_dp(
+            self._swing_h_name[swing_mode], self._swing_horizontal_mode_dp
+        )
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
