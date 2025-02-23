@@ -1,4 +1,4 @@
-{
+{   
     "config": {
         "abort": {
             "already_configured": "This account has already been configured.",
@@ -246,7 +246,11 @@
                     "target_temperature_high_dp":"(Optional) Target Temperature High DP",
                     "target_temperature_low_dp":"(Optional) Target Temperature Low DP",
                     "color_mode_set":"Supported modes set (Leave as default if you aren't sure)",
-                    "reset_timer": "(Optional) Interval timer to reset state to off"
+                    "reset_timer": "(Optional) Interval timer to reset state to off",
+                    "swing_mode_dp": "(Optional) Vertical swing DP",
+                    "swing_modes": "(Optional) Available Vertical swing options",
+                    "swing_horizontal_dp": "(Optional) Horizontal swing DP",
+                    "swing_horizontal_modes": "(Optional) Available horizontal swing options"
                 },
                 "data_description": {
                     "hvac_mode_set":"Each line represents [ hvac_mode: device_value ] [Supported HVAC Modes](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-modes)",
@@ -254,6 +258,8 @@
                     "preset_set":"Each line represents [ device_value: friendly name ]",
                     "scene_values":"Each line represents [ device_value: friendly name ]",
                     "select_options":"Each line represents [ device_value: friendly name ]",
+                    "swing_modes":"Each line represents [ device_value: friendly name ]",
+                    "swing_horizontal_modes":"Each line represents [ device_value: friendly name ]",
                     "alarm_supported_states":"Each line represents [ supported state: device value ] [Supported States](https://developers.home-assistant.io/docs/core/entity/alarm-control-panel/#states)",
                     "humidifier_available_modes":"Each line represents [ device_value: friendly name ]",
                     "device_class": "Find out more about [Device Classes](https://www.home-assistant.io/integrations/homeassistant/#device-class)",

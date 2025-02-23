@@ -5,7 +5,7 @@ from enum import StrEnum
 import logging
 from functools import partial
 from .config_flow import col_to_select
-from homeassistant.helpers import selector
+from homeassistant.helpers.selector import ObjectSelector
 
 import voluptuous as vol
 from homeassistant.components.climate import (
@@ -53,6 +53,10 @@ from .const import (
     CONF_HVAC_ADD_OFF,
     CONF_FAN_SPEED_DP,
     CONF_FAN_SPEED_LIST,
+    CONF_SWING_MODE_DP,
+    CONF_SWING_MODES,
+    CONF_SWING_HORIZONTAL_DP,
+    CONF_SWING_HORIZONTAL_MODES,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -141,17 +145,17 @@ def flow_schema(dps):
             CONF_TARGET_PRECISION, default=str(DEFAULT_PRECISION)
         ): col_to_select(SUPPORTED_PRECISIONS),
         vol.Optional(CONF_HVAC_MODE_DP): col_to_select(dps, is_dps=True),
-        vol.Optional(
-            CONF_HVAC_MODE_SET, default=HVAC_MODE_SETS
-        ): selector.ObjectSelector(),
+        vol.Optional(CONF_HVAC_MODE_SET, default=HVAC_MODE_SETS): ObjectSelector(),
         vol.Optional(CONF_HVAC_ACTION_DP): col_to_select(dps, is_dps=True),
-        vol.Optional(
-            CONF_HVAC_ACTION_SET, default=HVAC_ACTION_SETS
-        ): selector.ObjectSelector(),
+        vol.Optional(CONF_HVAC_ACTION_SET, default=HVAC_ACTION_SETS): ObjectSelector(),
         vol.Optional(CONF_ECO_DP): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_ECO_VALUE): str,
         vol.Optional(CONF_PRESET_DP): col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_PRESET_SET, default={}): selector.ObjectSelector(),
+        vol.Optional(CONF_PRESET_SET, default={}): ObjectSelector(),
+        vol.Optional(CONF_SWING_MODE_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_SWING_MODES, default={}): ObjectSelector(),
+        vol.Optional(CONF_SWING_HORIZONTAL_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_SWING_HORIZONTAL_MODES, default={}): ObjectSelector(),
         vol.Optional(CONF_FAN_SPEED_DP): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_FAN_SPEED_LIST, default=FAN_SPEEDS_DEFAULT): str,
         vol.Optional(CONF_TEMPERATURE_UNIT): col_to_select(SUPPORTED_TEMPERATURES),
@@ -233,7 +237,15 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         if fan_speeds := self._config.get(CONF_FAN_SPEED_LIST, []):
             fan_speeds = [v.lstrip() for v in fan_speeds.split(",")]
         self._fan_supported_speeds = fan_speeds
-        self._has_fan_mode = self._fan_speed_dp and self._fan_supported_speeds
+
+        # Swing configurations.
+        self._swing_mode_dp = self._config.get(CONF_SWING_MODE_DP)
+        self._swing_modes = self._config.get(CONF_SWING_MODES, {})
+        self._swing_v_name = {v: k for k, v in self._swing_modes.items()}
+
+        self._swing_horizontal_mode_dp = self._config.get(CONF_SWING_HORIZONTAL_DP)
+        self._swing_horizontal_modes = self._config.get(CONF_SWING_HORIZONTAL_MODES, {})
+        self._swing_h_name = {v: k for k, v in self._swing_horizontal_modes.items()}
 
         # Eco!?
         self._eco_dp = self._config.get(CONF_ECO_DP)
@@ -269,8 +281,12 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
             supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
         if self._has_presets:
             supported_features |= ClimateEntityFeature.PRESET_MODE
-        if self._has_fan_mode:
+        if self._fan_speed_dp and self._fan_supported_speeds:
             supported_features |= ClimateEntityFeature.FAN_MODE
+        if self._swing_modes and self._swing_modes:
+            supported_features |= ClimateEntityFeature.SWING_MODE
+        if self._swing_horizontal_mode_dp and self._swing_horizontal_modes:
+            supported_features |= ClimateEntityFeature.SWING_HORIZONTAL_MODE
 
         supported_features |= ClimateEntityFeature.TURN_OFF
         supported_features |= ClimateEntityFeature.TURN_ON
@@ -416,6 +432,26 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         """Return the list of available fan modes."""
         return self._fan_supported_speeds
 
+    @property
+    def swing_modes(self) -> list[str] | None:
+        """Return the list of available swing modes."""
+        return list(self._swing_modes.values())
+
+    @property
+    def swing_horizontal_modes(self) -> list[str] | None:
+        """Return the list of available horizontal swing modes."""
+        return list(self._swing_horizontal_modes.values())
+
+    async def async_set_swing_mode(self, swing_mode):
+        """Set new target swing operation."""
+        await self._device.set_dp(self._swing_v_name[swing_mode], self._swing_mode_dp)
+
+    async def async_set_swing_horizontal_mode(self, swing_mode):
+        """Set new target horizontal swing operation."""
+        await self._device.set_dp(
+            self._swing_h_name[swing_mode], self._swing_horizontal_mode_dp
+        )
+
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
         if ATTR_TEMPERATURE in kwargs and self.has_config(CONF_TARGET_TEMPERATURE_DP):
@@ -530,6 +566,12 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
                 if self.dp_value(CONF_HVAC_ACTION_DP) == tuya_value:
                     self._hvac_action = ha_action
                     break
+
+        # Update swing actions
+        if (swing_v := self.dp_value(self._swing_mode_dp)) is not None:
+            self._attr_swing_mode = self._swing_modes.get(swing_v)
+        if (swing_h := self.dp_value(self._swing_horizontal_mode_dp)) is not None:
+            self._attr_swing_horizontal_mode = self._swing_horizontal_modes.get(swing_h)
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaClimate, flow_schema)
