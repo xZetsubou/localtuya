@@ -77,7 +77,7 @@ class LocalTuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
         ):
             self._attr_supported_features |= HumidifierEntityFeature.MODES
             modes = {
-                v: k if k else v.replace("_", " ").capitalize()
+                k: v if k else v.replace("_", " ").capitalize()
                 for k, v in modes.copy().items()
             }
         self._available_modes = DictSelector(modes)
