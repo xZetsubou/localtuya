@@ -24,7 +24,7 @@ Examples
 === "localtuya_states_update"
 
     ```yaml title=""
-    # This will only triggeres if status changed.
+    # This will only triggers if status changed.
     trigger:
       - platform: event
         event_type: localtuya_status_update
@@ -39,7 +39,7 @@ Examples
 === "localtuya_device_dp_triggered"
 
     ```yaml title=""
-    # This will always triggeres if DP used.
+    # This will always triggers if DP used.
     trigger:
       - platform: event
         event_type: localtuya_device_dp_triggered
