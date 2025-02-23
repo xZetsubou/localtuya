@@ -189,6 +189,12 @@ CONF_KEY_STUDY_DP = "key_study_dp"
 CONF_JAMMED_DP = "jammed_dp"
 CONF_LOCK_STATE_DP = "lock_state_dp"
 
+# Humidifier
+CONF_HUMIDIFIER_SET_HUMIDITY_DP = "humidifier_set_humidity_dp"
+CONF_HUMIDIFIER_CURRENT_HUMIDITY_DP = "humidifier_current_humidity_dp"
+CONF_HUMIDIFIER_MODE_DP = "humidifier_mode_dp"
+CONF_HUMIDIFIER_AVAILABLE_MODES = "humidifier_available_modes"
+
 # Water Heater
 CONF_TARGET_TEMPERATURE_LOW_DP = "target_temperature_low_dp"
 CONF_TARGET_TEMPERATURE_HIGH_DP = "target_temperature_high_dp"
